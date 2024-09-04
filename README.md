@@ -27,6 +27,9 @@
 - HTML source (src/main/resources/...) had templates and supporting files.  Find index.html as this file is launched by defaul in Spring.  Other HTML files are loaded by building an "@Controller"
 - Use java version 17:
     - to install, run: sudo apt-get update -y;sudo apt-get upgrade -y;sudo apt install openjdk-17-jdk openjdk-17-jre
+        - sudo apt-get update -y: updates package index files on your system
+        - sudo apt-get upgrade -y: downloads and installs most recent packages
+        - sudo apt install openjdk-17-jdk openjdk-17-jre: installs java 17 onto your system
 
 ## IDE management
 
