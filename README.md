@@ -25,6 +25,8 @@
 - Play or entry point is Main.java, look for Run option in code.  This eanbles Spring to load
 - Java source (src/main/java/...) has Java files.  Find "controllers" path, these files enable HTTP route and HTML file relationship.
 - HTML source (src/main/resources/...) had templates and supporting files.  Find index.html as this file is launched by defaul in Spring.  Other HTML files are loaded by building an "@Controller"
+- Use java version 17:
+    - to install, run: sudo apt-get update -y;sudo apt-get upgrade -y;sudo apt install openjdk-17-jdk openjdk-17-jre
 
 ## IDE management
 
