@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -114,7 +116,22 @@ public class UserApiController {
         }
 
     }
+
+    @GetMapping("/leaderboard")
+    @ResponseBody
+    public List<LeaderboardEntry> getLeaderboard() {
+        return userService.getTopUsersByBalance();
+    }
 }
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class LeaderboardEntry {
+    private String username;
+    private double balance;
+}
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -356,6 +373,13 @@ class UserService implements UserDetailsService {
         return stockList;
     }
 
+    public List<LeaderboardEntry> getTopUsersByBalance() {
+        return userRepository.findAll().stream()
+                .sorted(Comparator.comparingDouble(User::getBalance).reversed())
+                .limit(10)
+                .map(user -> new LeaderboardEntry(user.getUsername(), user.getBalance()))
+                .collect(Collectors.toList());
+    }    
     // public User updateBalance(long questionId, long answerId, long userId) {
 
     //     // Fetch the question, answer, and user from the database
