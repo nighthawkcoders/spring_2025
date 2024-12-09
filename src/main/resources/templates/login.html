@@ -17,9 +17,9 @@
     </div>
 
     <div class="container py-4 text-light bg-success">
-
         <div class="container bg-secondary py-4">
             <div class="p-5 mb-4 bg-light text-dark rounded-3">
+                <h3>Login To Account</h3>
                 <form name="f" th:action="@{/login}" method="POST">
                     <table>
                         <tr th:if="${param.error}" class="alert alert-error">
@@ -29,10 +29,15 @@
                             You have been logged out.
                         </tr>
                         <!-- 'ghid' is mapped to 'username' for Spring Security -->
-                        <tr><th><label for="username">ghid</label></th></tr>
-                        <tr><td><input type="ghid" id='username' name="username" size="20" required></td></tr>
-                        <tr><th><label for="password">Password</label></th></tr>
-                        <tr><td><input type="password" id="password" name="password" size="20" required></td></tr>
+                        <div class="form-group mb-2 mr-sm-2">
+                            <tr><td><input type="ghid" id='username' name="username" placeholder="GitHub ID" size="20" required></td></tr>   
+                    </div>                     
+                    <div class="form-group mb-2 mr-sm-2">
+
+
+                        <tr><td><input type="password" id="password" name="password" placeholder="Password" size="20" required></td></tr>
+                    </div>                     
+
                         <tr><th><input type="submit" value="Submit"></th></tr>
                         <tr><td><a th:href="@{/mvc/person/create}">Sign Up</a></td></tr>
 
