@@ -6,7 +6,13 @@
         <span class="fs-4">Login Page</span>
     </header>
 </div>
+<th:block layout:fragment="body" th:remove="tag">
 
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom border-primary text-dark">
+            <span class="fs-4">Login Page</span>
+        </header>
+    </div>
 <head>
     <title>Create Account</title>
     <script>
@@ -96,7 +102,6 @@
 </head>
 
 <body>
-    <th:block layout:fragment="body" th:remove="tag">
         <div class="container py-4 text-light bg-success">
 
             <div class="container bg-secondary py-4">
@@ -154,6 +159,8 @@
                             <!-- Submit Button -->
                             <button type="submit" class="btn btn-primary">Create Account</button>
                         </form>
+                        <tr><td><a th:href="@{/login}">Log In</a></td></tr>
+
                     </div>
                 </div>
             </div>
