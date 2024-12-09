@@ -1,6 +1,12 @@
 <!DOCTYPE HTML>
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/base}" lang="en">
 
+<div class="container py-4">
+    <header class="pb-3 mb-4 border-bottom border-primary text-dark">
+        <span class="fs-4">Login Page</span>
+    </header>
+</div>
+
 <head>
     <title>Create Account</title>
     <script>
@@ -91,9 +97,15 @@
 
 <body>
     <th:block layout:fragment="body" th:remove="tag">
+        <div class="container py-4 text-light bg-success">
+
+            <div class="container bg-secondary py-4">
+                <div class="p-5 mb-4 bg-light text-dark rounded-3">
+
         <div class="container">
             <div class="row justify-content-md-center">
                 <div class="col8">
+                    
                     <div class="jumbotron">
                         <h3>Create New Account</h3>
                         <!-- Form submits the data to the backend for account creation -->
@@ -152,6 +164,9 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+</div>
     </th:block>
 </body>
 
