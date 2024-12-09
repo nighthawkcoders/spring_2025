@@ -18,7 +18,7 @@ public class Dice {
         Random rand = new Random();
         double rand_double = rand.nextDouble(1);
         if (rand_double <= winChance) {
-            return this.betSize*(1.95 - this.winChance)/this.winChance;
+            return this.betSize*(0.95 - this.winChance)/this.winChance;
         } else { 
             return 0-this.betSize;
         }
