@@ -35,7 +35,7 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
     List<Person> findAllByOrderByNameAsc();
     List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
     Person findByEmailAndPassword(String email, String password);
-    Person findById(Integer personid);
+
     /**
      * Custom JPA query using the @Query annotation.
      * This allows for more complex queries that can't be expressed through the method name.
