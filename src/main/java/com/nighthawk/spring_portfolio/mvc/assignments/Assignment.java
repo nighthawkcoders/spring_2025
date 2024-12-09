@@ -108,6 +108,7 @@ public class Assignment {
         return new Assignment[] {
             new Assignment("Assignment 1", "Class Homework", "Unit 1 Homework", 1.0, "10/25/2024"),
             new Assignment("Sprint 1 Live Review", "Live Review", "The final review for sprint 1", 1.0, "11/2/2024"),
+            new Assignment("Seed", "Seed", "The student's seed grade", 1.0, "11/2/2080"),
         };
     }
 
