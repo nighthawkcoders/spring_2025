@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -110,5 +112,77 @@ public class AssignmentsApiController {
             simple.add(map);
         }
         return new ResponseEntity<>(simple, HttpStatus.OK);
+    }
+
+    @GetMapping("/getQueue/{id}")
+    public ResponseEntity<Queue> getQueue(@PathVariable long id) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            
+            return new ResponseEntity<>(assignment.getAssignmentQueue(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+
+    @PutMapping("/initQueue/{id}")
+    public ResponseEntity<Assignment> initQueue(@PathVariable long id, @RequestBody List<String> people) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            assignment.initQueue(people);
+            assignmentRepo.save(assignment);
+            return new ResponseEntity<>(assignment, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PutMapping("/addQueue/{id}")
+    public ResponseEntity<Assignment> addQueue(@PathVariable long id, @RequestBody List<String> person) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            assignment.addQueue(person.get(0));
+            assignmentRepo.save(assignment);
+            return new ResponseEntity<>(assignment, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PutMapping("/removeQueue/{id}")
+    public ResponseEntity<Assignment> removeQueue(@PathVariable long id, @RequestBody List<String> person) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            assignment.removeQueue(person.get(0));
+            assignmentRepo.save(assignment);
+            return new ResponseEntity<>(assignment, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PutMapping("/doneQueue/{id}")
+    public ResponseEntity<Assignment> doneQueue(@PathVariable long id, @RequestBody List<String> person) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            assignment.doneQueue(person.get(0));
+            assignmentRepo.save(assignment);
+            return new ResponseEntity<>(assignment, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PutMapping("/resetQueue/{id}")
+    public ResponseEntity<Assignment> resetQueue(@PathVariable long id) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            assignment.resetQueue();
+            assignmentRepo.save(assignment);
+            return new ResponseEntity<>(assignment, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

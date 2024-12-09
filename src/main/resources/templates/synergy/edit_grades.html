@@ -63,10 +63,10 @@
 
     <h2>View Grades</h2>
 
-    <button class="save-btn" type="submit" form="grade-form">Save Grades</button>
+    <button class="save-btn" type="button" id="save-btn">Save Grades</button>
 
     <div class="scrollable-table">
-        <form id="grade-form" action="/api/synergy/update-grades" method="post">
+        <form id="grade-form">
             <table>
                 <thead>
                     <tr>
@@ -110,7 +110,25 @@
 
 <th:block layout:fragment="script" th:remove="tag">
 <script>
+    document.getElementById('save-btn').addEventListener('click', async function () {
+        const form = document.getElementById('grade-form');
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/api/synergy/update-all-grades', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Grades saved successfully!');
+            } else {
+                alert('Failed to save grades. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('An error occurred. Please try again.');
+        }
+    });
 </script>
 </th:block>
-
-</html>

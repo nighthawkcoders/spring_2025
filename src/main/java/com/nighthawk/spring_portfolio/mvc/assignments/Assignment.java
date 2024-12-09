@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.nighthawk.spring_portfolio.mvc.synergy.Grade;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -61,7 +62,33 @@ public class Assignment {
     @NotNull
     private Double points;
 
+    @Convert(converter = QueueConverter.class)
+    private Queue assignmentQueue;
+
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    public void resetQueue() {
+        assignmentQueue.reset();
+    }
+
+    public void initQueue(List<String> people) {
+        assignmentQueue.getHaventGone().addAll(people);
+    }
+
+    public void addQueue(String person) {
+        assignmentQueue.getHaventGone().remove(person);
+        assignmentQueue.getQueue().add(person);
+    }
+
+    public void removeQueue(String person) {
+        assignmentQueue.getQueue().remove(person);
+        assignmentQueue.getHaventGone().add(person);
+    }
+
+    public void doneQueue(String person) {
+        assignmentQueue.getQueue().remove(person);
+        assignmentQueue.getDone().add(person);
+    }
 
     public Assignment(String name, String type, String description, Double points, String dueDate) {
         this.name = name;
@@ -70,6 +97,7 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
+        this.assignmentQueue = new Queue();
     }
 
     public static Assignment[] init() {

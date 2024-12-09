@@ -8,6 +8,7 @@ import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GradeJpaRepository extends JpaRepository<Grade, Long> {
@@ -18,7 +19,9 @@ public interface GradeJpaRepository extends JpaRepository<Grade, Long> {
 
     List<Grade> findByAssignment(Assignment assignment);
 
-    List<Grade> findByAssignmentId(int assignmentId);
+    List<Grade> findByAssignmentId(Long assignmentId);
+
+    Optional<Grade> findByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
 
     @Query("SELECT DISTINCT g.assignment.id FROM Grade g")
     List<Integer> findAllAssignmentIds();
