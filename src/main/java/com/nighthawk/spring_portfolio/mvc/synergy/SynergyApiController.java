@@ -121,15 +121,6 @@ public class SynergyApiController {
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
     }
 
-    /**
-     * A data transfer object that stores the id of a grade request.
-     */
-    @Getter
-    @Setter
-    public class GradeRequestIdDTO {
-        private Long requestId;
-    }
-
 
     /**
      * Accepts a grade request.
