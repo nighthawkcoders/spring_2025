@@ -34,6 +34,15 @@ public class AssignmentsApiController {
     @Autowired
     private PersonJpaRepository personRepo;
 
+    /**
+     * A POST endpoint to create an assignment, accepts parametes as FormData.
+     * @param name The name of the assignment.
+     * @param type The type of assignment.
+     * @param description The description of the assignment.
+     * @param points The amount of points the assignment is worth.
+     * @param dueDate The due date of the assignment, in MM/DD/YYYY format.
+     * @return The saved assignment.
+     */
     @PostMapping("/create") 
     public ResponseEntity<?> createAssignment(
             @RequestParam String name,
@@ -41,18 +50,28 @@ public class AssignmentsApiController {
             @RequestParam String description,
             @RequestParam Double points,
             @RequestParam String dueDate
-            ) {
+    ) {
         Assignment newAssignment = new Assignment(name, type, description, points, dueDate);
         Assignment savedAssignment = assignmentRepo.save(newAssignment);
         return new ResponseEntity<>(savedAssignment, HttpStatus.CREATED);
     }
 
+    /**
+     * A GET endpoint to retrieve all the assignments.
+     * @return A list of all the assignments.
+     */
     @GetMapping("/")
     public ResponseEntity<?> getAllAssignments() {
         List<Assignment> assignments = assignmentRepo.findAll();
         return new ResponseEntity<>(assignments, HttpStatus.OK);
     }
 
+    /**
+     * A POST endpoint to edit an assignment.
+     * @param name The name of the assignment.
+     * @param body The new information about the assignment.
+     * @return The edited assignment.
+     */
     @PostMapping("/edit/{name}")
     public ResponseEntity<?> editAssignment(
             @PathVariable String name,
@@ -68,6 +87,11 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * A POST endpoint to delete an assignment.
+     * @param id The ID of the assignment to delete.
+     * @return A JSON object indicating that the assignment was deleted.
+     */
     @PostMapping("/delete/{id}")
     public ResponseEntity<?> deleteAssignment(@PathVariable Long id) {
         Assignment assignment = assignmentRepo.findById(id).orElse(null);
@@ -82,7 +106,10 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-
+    /**
+     * A GET endpoint used for debugging which returns information about every assignment.
+     * @return Information about all the assignments.
+     */
     @GetMapping("/debug") 
     public ResponseEntity<?> debugAssignments() {
         List<Assignment> assignments = assignmentRepo.findAll();
@@ -99,7 +126,14 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(simple, HttpStatus.OK);
     }
-    // ians thing
+    
+    /**
+     * A POST endpoint to submit an assignment.
+     * @param assignmentId The ID of the assignment being submitted.
+     * @param studentId The ID of the student submitting the assignment.
+     * @param content The content of the student's submission.
+     * @return The saved submission, if it successfully submitted.
+     */
     @PostMapping("/submit/{assignmentId}")
     public ResponseEntity<?> submitAssignment(
             @PathVariable Long assignmentId,
@@ -116,6 +150,12 @@ public class AssignmentsApiController {
         error.put("error", "Assignment not found");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
+    /**
+     * A GET endpoint to retrieve all submissions for the assignment.
+     * @param assignmentId The ID of the assignment.
+     * @return All submissions for the assignment.
+     */
     @GetMapping("/{assignmentId}/submissions")
     public ResponseEntity<?> getSubmissions(@PathVariable Long assignmentId) {
         List<Submission> submissions = submissionRepo.findByAssignmentId(assignmentId);
