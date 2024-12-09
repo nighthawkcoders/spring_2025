@@ -1,6 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.mortevision;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -31,9 +32,9 @@ public class SFU implements PeerConnectionObserver {
     MediaStream broadcaster;
 
     @PostMapping("/consume")
-    public String consumer(String stp) {
+    public JSONObject consumer(String stp) {
         if (broadcaster == null) {
-            return new JSONObject("{'error':'no broadcast'}").toString();
+            return new JSONObject("{'error':'no broadcast'}");
         }
         RTCIceServer iceServer = new RTCIceServer();
         iceServer.urls = Collections.singletonList("stun:stun.l.google.com:19302");
@@ -51,11 +52,11 @@ public class SFU implements PeerConnectionObserver {
         peerConnection.createAnswer(new RTCAnswerOptions(), null);
         peerConnection.setLocalDescription(peerConnection.getLocalDescription(), null);
         JSONObject payload = new JSONObject().put("sdp", peerConnection.getLocalDescription());
-        return payload.toString();
+        return payload;
     }
 
     @PostMapping(value="/broadcast",consumes ="application/json")
-    public String broadcast(@RequestBody String body) {
+    public Map<String, String> broadcast(@RequestBody String body) {
         String sdp = new JSONObject(body).getJSONObject("sdp").getString("sdp");
         RTCIceServer iceServer = new RTCIceServer();
         iceServer.urls = Collections.singletonList("stun:stun.l.google.com:19302");
@@ -110,8 +111,10 @@ public class SFU implements PeerConnectionObserver {
             }
 
         });
-        JSONObject payload = new JSONObject().put("sdp", peerConnection.getLocalDescription());
-        return payload.toString();
+        HashMap<String, String> map = new HashMap<>();
+        map.put("type",peerConnection.getLocalDescription().sdpType.name().toLowerCase());
+        map.put("sdp",peerConnection.getLocalDescription().sdp);
+        return map;
     }
 
     @Override
