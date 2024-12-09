@@ -35,8 +35,14 @@ public class SynergyViewController {
     @Autowired
     private PersonJpaRepository personRepository;
 
+    /**
+     * Opens the teacher or student gradebook. The teacher gradebook is for editing grades, while the student gradebook allows them to view grades.
+     * @param model The parameters for the webpage
+     * @param userDetails The details of the logged in user
+     * @return The template for the gradebook
+     */
     @GetMapping("/gradebook")
-    public String editGrades(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+    public String editGrades(Model model, @AuthenticationPrincipal UserDetails userDetails) throws ResponseStatusException {
         String email = userDetails.getUsername();
         Person user = personRepository.findByEmail(email);
         if (user == null) {
@@ -77,6 +83,13 @@ public class SynergyViewController {
         );
     }
 
+    /**
+     * Formats the grades, students, and assignments for displaying for teachers
+     * @param gradesList A list of grades
+     * @param assignments A list of assignments
+     * @param students A list of students
+     * @return A map of format Map[ASSIGNMENT_ID: Map[STUDENT_ID: Grade]]
+     */
     private Map<Long, Map<Long, Double>> createGradesMap(List<Grade> gradesList, List<Assignment> assignments, List<Person> students) {
         Map<Long, Map<Long, Double>> gradesMap = new HashMap<>();
 
@@ -97,6 +110,11 @@ public class SynergyViewController {
         return gradesMap;
     }
 
+    /**
+     * A page to view grade requests.
+     * @param model The parameters for the webpage
+     * @return The template for viewing grade requests
+     */
     @GetMapping("/view-grade-requests")
     public String viewRequests(Model model) {
         List<GradeRequest> requests = gradeRequestRepository.findAll();
@@ -104,6 +122,11 @@ public class SynergyViewController {
         return "synergy/view_grade_requests";
     }
 
+    /**
+     * A page to create grade requests.
+     * @param model The parameters for the webpage
+     * @return The template for create grade requests
+     */
     @GetMapping("/create-grade-request")
     public String createGradeRequest(Model model) {
         List<Assignment> assignments = assignmentRepository.findAll();

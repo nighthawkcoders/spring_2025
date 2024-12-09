@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SubmissionJPA extends JpaRepository<Submission, Long> {
     List<Submission> findByAssignmentId(Long assignmentId);
-    // submission jpa
+    List<Submission> findByStudentId(Long studentId);
+    
 }
