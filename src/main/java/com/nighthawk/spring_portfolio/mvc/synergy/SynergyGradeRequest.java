@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class GradeRequest {
+public class SynergyGradeRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -45,7 +45,7 @@ public class GradeRequest {
     private Assignment assignment;
 
 
-    public GradeRequest(Assignment assignment, Person student, Person grader, String explanation, Double gradeSuggestion) {
+    public SynergyGradeRequest(Assignment assignment, Person student, Person grader, String explanation, Double gradeSuggestion) {
         this.gradeSuggestion = gradeSuggestion;
         this.explanation = explanation;
         this.grader = grader;

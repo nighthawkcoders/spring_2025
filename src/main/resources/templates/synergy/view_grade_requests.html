@@ -243,9 +243,9 @@
         };
         console.log(body);
 
-        var url = '/api/synergy/reject-request';
+        var url = '/api/synergy/grade/requests/reject';
         if (accepted) {
-            url = '/api/synergy/accept-request';
+            url = '/api/synergy/grade/requests/accept';
         }
 
         fetch(url, {

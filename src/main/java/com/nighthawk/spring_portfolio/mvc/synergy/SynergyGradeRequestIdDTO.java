@@ -1,6 +1,9 @@
 package com.nighthawk.spring_portfolio.mvc.synergy;
 
-public class RequestIdDTO {
+/**
+ * A data transfer object that stores the id of a grade request.
+ */
+public class SynergyGradeRequestIdDTO {
     private Long requestId;
 
     public void setRequestId(Long requestId) {

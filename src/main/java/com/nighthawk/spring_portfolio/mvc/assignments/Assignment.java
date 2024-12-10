@@ -2,14 +2,13 @@ package com.nighthawk.spring_portfolio.mvc.assignments;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.nighthawk.spring_portfolio.mvc.synergy.Grade;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -22,13 +21,18 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Getter
+@Setter
+
 public class Assignment {
     // @JsonInclude(JsonInclude.Include.NON_NULL)
     @NotNull
@@ -54,10 +58,10 @@ public class Assignment {
 
     @OneToMany(mappedBy = "assignment")
     @JsonIgnore
-    private List<Submission> submissions;
+    private List<AssignmentSubmission> submissions;
 
     @OneToMany(mappedBy="assignment")
-    private List<Grade> grades;
+    private List<SynergyGrade> grades;
 
     @NotNull
     private Double points;
@@ -104,6 +108,12 @@ public class Assignment {
         return new Assignment[] {
             new Assignment("Assignment 1", "Class Homework", "Unit 1 Homework", 1.0, "10/25/2024"),
             new Assignment("Sprint 1 Live Review", "Live Review", "The final review for sprint 1", 1.0, "11/2/2024"),
+            new Assignment("Seed", "Seed", "The student's seed grade", 1.0, "11/2/2080"),
         };
+    }
+
+    @Override
+    public String toString(){
+        return this.name;
     }
 }
