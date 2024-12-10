@@ -70,7 +70,7 @@ public class SynergyApiController {
             String[] ids = key.replace("grades[", "").replace("]", "").split("\\[");
             Long assignmentId = Long.parseLong(ids[0]);
             Long studentId = Long.parseLong(ids[1]);
-            String gradeString = grades.get(key);
+            String gradeValueStr = grades.get(key);
 
             if (isNumeric(gradeValueStr)) { // otherwise, we have an empty string so ignore it
                 Double gradeValue = Double.parseDouble(gradeValueStr);
