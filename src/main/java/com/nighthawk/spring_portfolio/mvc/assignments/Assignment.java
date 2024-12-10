@@ -75,17 +75,17 @@ public class Assignment {
         assignmentQueue.getWorking().addAll(people);
     }
 
-    public void addQueue(String person) {
+    public void queueToWaiting(String person) {
         assignmentQueue.getWorking().remove(person);
         assignmentQueue.getWaiting().add(person);
     }
 
-    public void removeQueue(String person) {
+    public void queueToWorking(String person) {
         assignmentQueue.getWaiting().remove(person);
         assignmentQueue.getWorking().add(person);
     }
 
-    public void doneQueue(String person) {
+    public void queueToComplete(String person) {
         assignmentQueue.getWaiting().remove(person);
         assignmentQueue.getComplete().add(person);
     }

@@ -143,7 +143,7 @@ public class AssignmentsApiController {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.addQueue(person.get(0));
+            assignment.queueToWaiting(person.get(0));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
@@ -155,7 +155,7 @@ public class AssignmentsApiController {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.removeQueue(person.get(0));
+            assignment.queueToWorking(person.get(0));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
@@ -167,7 +167,7 @@ public class AssignmentsApiController {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.doneQueue(person.get(0));
+            assignment.queueToComplete(person.get(0));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
