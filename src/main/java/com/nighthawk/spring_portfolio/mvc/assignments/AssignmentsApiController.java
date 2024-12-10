@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 @RequestMapping("/api/assignments")
 public class AssignmentsApiController {
@@ -60,9 +62,14 @@ public class AssignmentsApiController {
      * A GET endpoint to retrieve all the assignments.
      * @return A list of all the assignments.
      */
+    @Transactional
     @GetMapping("/")
     public ResponseEntity<?> getAllAssignments() {
+        System.out.println("here");
         List<Assignment> assignments = assignmentRepo.findAll();
+        System.out.println("here");
+        System.out.println(assignments);
+        System.out.println(new ResponseEntity<>(assignments, HttpStatus.OK));
         return new ResponseEntity<>(assignments, HttpStatus.OK);
     }
 
