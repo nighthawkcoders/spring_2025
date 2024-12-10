@@ -28,20 +28,21 @@ public class DiceApiController {
         private String email;
     }
 
+
     @PostMapping("/calculate")
-    public ResponseEntity<Person> postDice(@RequestBody DiceRequest diceRequest) {
+    public ResponseEntity<Double> postDice(@RequestBody DiceRequest diceRequest) {
         System.out.println("Received request: " + diceRequest);
         Dice dice = new Dice(diceRequest.getWinChance(), diceRequest.getBetSize());
         System.out.println(diceRequest.getEmail());
         
         Person user = personJpaRepository.findByEmail(diceRequest.getEmail());
 
-        // System.out.println(user);
-        // double currentBalance = user.getBalance();
-        // user.setBalance(currentBalance + dice.calculateWin());
-        // personJpaRepository.save(user);  // Save the updated balance
+        double currentBalance = user.getBalance();
+        System.out.println(user.getBalance());
+        user.setBalance(currentBalance + dice.calculateWin());
+        personJpaRepository.save(user);  // Save the updated balance
 
-        return new ResponseEntity<>(user, HttpStatus.OK);  // Return updated user data
+        return new ResponseEntity<>(user.getBalance(), HttpStatus.OK);  // Return updated user data
     }
 
 }
