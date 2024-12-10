@@ -42,6 +42,8 @@ public class StudentInfo {
     private int trimester;
 
     private int period;
+    
+    
 
     public StudentInfo(String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int trimester, int period) {
         this.username = username;

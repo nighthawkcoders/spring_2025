@@ -178,35 +178,48 @@ public ResponseEntity<String> completeTask(@RequestBody TasksDto tasksDto) {
     }
     @Getter
     public static class ProgressDto {
-    private int table;
-    }
+    private int table; // The table number to calculate progress for
+}
 
-    @GetMapping("/progress")
-    public ResponseEntity<Integer> getProgress(@RequestBody ProgressDto progressDto) {
-       int table = progressDto.getTable();
+@GetMapping("/progress")
+public ResponseEntity<Integer> getProgress(@RequestBody ProgressDto progressDto) {
+    int table = progressDto.getTable();
+    List<StudentInfo> allStudents = studentJPARepository.findAll();
+    List<StudentInfo> studentsAtTable = new ArrayList<>();
+    System.out.println("Received table number: " + progressDto.getTable());
 
-       List<StudentInfo> allStudents = studentJPARepository.findAll(); 
-       List<StudentInfo> studentsAtTable = new ArrayList<>(); //To match all the specific ones at a certain point ---- EXPPECTED TABLE PARSING MATCH LOGIC 
-
-       for (StudentInfo student : allStudents) { // ALL Students are meant to go throguh the entire allStudents
-        if (student.getTableNumber() == table) { // if that is equal to requesteed table
+    for (StudentInfo student : allStudents) {
+        if (student.getTableNumber() == table) {
             studentsAtTable.add(student);
         }
     }
     if (studentsAtTable.isEmpty()) {
         System.out.println("No students found for table " + table);
-        return ResponseEntity.status(404).body(null); // No students at the specified table
+        return ResponseEntity.status(404).body(0); 
+    }
+    int totalPossibleTasks = 0;
+    int totalCompletedTasks = 0;
+
+    for (StudentInfo student : studentsAtTable) {
+        if (student.getTasks() != null) {
+            totalPossibleTasks += student.getTasks().size(); // Count all pending tasks for this student
+        }
+        if (student.getCompleted() != null) {
+            totalCompletedTasks += student.getCompleted().size(); // Count all completed tasks for this student
+        }
     }
 
-   int totalCompletedTasks = 0;
-   int totalPossibleTasks = 0; 
-
-    int progress = (totalCompletedTasks * 100) / (totalPossibleTasks + totalCompletedTasks);
-    return ResponseEntity.ok(progress); 
-
-
-
+    // Step 5: Handle edge case where no tasks exist at all
+    if (totalPossibleTasks == 0 && totalCompletedTasks == 0) {
+        return ResponseEntity.ok(0); // No tasks exist, so progress is 0%
     }
+
+    int totalTasks = totalPossibleTasks + totalCompletedTasks;
+    int progress = (int) Math.round(((double) totalCompletedTasks / totalTasks) * 100);
+    return ResponseEntity.ok(progress);
+}
+
+
 
 
 }
