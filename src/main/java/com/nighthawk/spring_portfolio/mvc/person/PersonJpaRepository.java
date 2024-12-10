@@ -1,9 +1,9 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
-import java.util.List;
 
 /**
  * The PersonJpaRepository interface is automatically implemented by Spring Data JPA at runtime.
@@ -35,7 +35,6 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
     List<Person> findAllByOrderByNameAsc();
     List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
     Person findByEmailAndPassword(String email, String password);
-
     /**
      * Custom JPA query using the @Query annotation.
      * This allows for more complex queries that can't be expressed through the method name.
