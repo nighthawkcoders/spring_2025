@@ -23,6 +23,6 @@ public interface SynergyGradeJpaRepository extends JpaRepository<SynergyGrade, L
 
     Optional<SynergyGrade> findByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
 
-    @Query("SELECT DISTINCT g.assignment.id FROM Grade g")
+    @Query("SELECT DISTINCT g.assignment.id FROM SynergyGrade g")
     List<Integer> findAllAssignmentIds();
 }
