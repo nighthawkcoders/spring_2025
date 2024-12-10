@@ -163,7 +163,7 @@ public class AssignmentsApiController {
     }
 
     @GetMapping("/getQueue/{id}")
-    public ResponseEntity<Queue> getQueue(@PathVariable long id) {
+    public ResponseEntity<AssignmentQueue> getQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
@@ -183,12 +183,13 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    @PutMapping("/addQueue/{id}")
+
+    @PutMapping("/queueToWaiting/{id}")
     public ResponseEntity<Assignment> addQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.addQueue(person.get(0));
+            assignment.queueToWaiting(person.get(0));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
@@ -199,23 +200,25 @@ public class AssignmentsApiController {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.removeQueue(person.get(0));
+            assignment.queueToWorking(person.get(0));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
     @PutMapping("/doneQueue/{id}")
     public ResponseEntity<Assignment> doneQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.doneQueue(person.get(0));
+            assignment.queueToComplete(person.get(0));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    
     @PutMapping("/resetQueue/{id}")
     public ResponseEntity<Assignment> resetQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);

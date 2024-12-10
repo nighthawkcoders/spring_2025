@@ -63,10 +63,10 @@
 
     <h2>View Grades</h2>
 
-    <button class="save-btn" type="button" id="save-btn">Save Grades</button>
+    <button class="save-btn" type="submit" form="grade-form">Save Grades</button>
 
     <div class="scrollable-table">
-        <form id="grade-form">
+        <form id="grade-form" action="/api/synergy/update-all-grades" method="post">
             <table>
                 <thead>
                     <tr>
@@ -110,6 +110,7 @@
 
 <th:block layout:fragment="script" th:remove="tag">
 <script>
+<<<<<<< HEAD
     document.getElementById('save-btn').addEventListener('click', async function () {
         const form = document.getElementById('grade-form');
         const formData = new FormData(form);
@@ -130,5 +131,9 @@
             alert('An error occurred. Please try again.');
         }
     });
+=======
+>>>>>>> d7b2e5f35104ce78be89fa0a9e6372341c0b4c68
 </script>
 </th:block>
+
+</html>

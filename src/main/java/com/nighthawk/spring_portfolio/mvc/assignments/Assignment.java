@@ -66,8 +66,8 @@ public class Assignment {
     @NotNull
     private Double points;
 
-    @Convert(converter = QueueConverter.class)
-    private Queue assignmentQueue;
+    @Convert(converter = AssignmentQueueConverter.class)
+    private AssignmentQueue assignmentQueue;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -76,22 +76,22 @@ public class Assignment {
     }
 
     public void initQueue(List<String> people) {
-        assignmentQueue.getHaventGone().addAll(people);
+        assignmentQueue.getWorking().addAll(people);
     }
 
-    public void addQueue(String person) {
-        assignmentQueue.getHaventGone().remove(person);
-        assignmentQueue.getQueue().add(person);
+    public void queueToWaiting(String person) {
+        assignmentQueue.getWorking().remove(person);
+        assignmentQueue.getWaiting().add(person);
     }
 
-    public void removeQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getHaventGone().add(person);
+    public void queueToWorking(String person) {
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getWorking().add(person);
     }
 
-    public void doneQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getDone().add(person);
+    public void queueToComplete(String person) {
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getComplete().add(person);
     }
 
     public Assignment(String name, String type, String description, Double points, String dueDate) {
@@ -101,7 +101,8 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        this.assignmentQueue = new Queue();
+        // not necessary, if initialized as null converter will not insert empty queue but null, need to check and initialize in converter
+        // this.assignmentQueue = new AssignmentQueue();
     }
 
     public static Assignment[] init() {
