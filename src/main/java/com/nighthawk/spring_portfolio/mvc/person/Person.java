@@ -28,11 +28,11 @@ import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
@@ -82,6 +82,7 @@ public class Person {
     private Collection<PersonRole> roles = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
     private userStocksTable user_stocks;
 
     /** email, password, roles are key attributes to login and authentication

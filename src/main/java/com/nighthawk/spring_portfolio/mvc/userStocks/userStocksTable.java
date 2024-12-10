@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Column;
@@ -39,6 +40,7 @@ public class userStocksTable {
     @OneToOne
     @JoinColumn(name = "person_id", referencedColumnName = "id") // Maps to the Person table's primary key
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private Person person; // One-to-One relationship with Person entity
 
     private String stonks; // Stock ticker
