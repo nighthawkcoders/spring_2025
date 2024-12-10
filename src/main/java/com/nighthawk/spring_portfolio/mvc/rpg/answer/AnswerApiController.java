@@ -1,4 +1,3 @@
-// define package and import necessary libraries
 package com.nighthawk.spring_portfolio.mvc.rpg.answer;
 import java.io.IOException;
 import java.util.List;
@@ -30,19 +29,16 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-// define controller for handling answer-related api requests
 @RestController
-@RequestMapping("/rpg_answer") // set base url for controller
-@CrossOrigin(origins = "http://127.0.0.1:5501") // allow cross-origin requests
+@RequestMapping("/rpg_answer")
+@CrossOrigin(origins = "http://127.0.0.1:5501") 
 public class AnswerApiController {
 
-    // initialize environment variables using dotenv library
+    // Load environment variables using dotenv
     private final Dotenv dotenv = Dotenv.load();
-    private final String apiUrl = dotenv.get("GAMIFY_API_URL"); // fetch api url from environment variables
-    private final String apiKey = dotenv.get("GAMIFY_API_KEY"); // fetch api key from environment variables
+    private final String apiUrl = dotenv.get("GAMIFY_API_URL");
+    private final String apiKey = dotenv.get("GAMIFY_API_KEY");
 
-    // autowire repositories for database interactions
     @Autowired
     private AnswerJpaRepository answerJpaRepository;
     @Autowired
@@ -50,171 +46,170 @@ public class AnswerApiController {
     @Autowired
     private QuestionJpaRepository questionJpaRepository;
 
-    // define dto class for handling answer data
     @Getter 
     public static class AnswerDto {
-        private String content; // store answer content
-        private Long questionId; // store related question id
-        private Long personId; // store related person id
-        private Long chatScore; // store chat score
+        private String content;
+        private Long questionId;
+        private Long personId;
+        private Long chatScore; 
     }
 
-    // api endpoint to get count of questions answered by a person
     @GetMapping("/getQuestionsAnswered/{personid}")
     public ResponseEntity<Integer> getQuestionsAnswered(@PathVariable Integer personid) {
-        List<Answer> useranswers = answerJpaRepository.findByPersonId(personid); // fetch answers by person id
+        List<Answer> useranswers = answerJpaRepository.findByPersonId(personid);
 
-        Integer questionsAnswered = useranswers.size(); // count total answers
+        Integer questionsAnswered = useranswers.size();
 
-        return new ResponseEntity<>(questionsAnswered, HttpStatus.OK); // return count with http ok status
+        return new ResponseEntity<>(questionsAnswered, HttpStatus.OK);
+
     }
 
-    // api endpoint to fetch all questions
     @GetMapping("getQuestions")
     public ResponseEntity<List<Question>> getQuestions() {
-        List<Question> questions = questionJpaRepository.findAllByOrderByTitleAsc(); // fetch questions ordered by title
+        List<Question> questions = questionJpaRepository.findAllByOrderByTitleAsc();
 
-        return new ResponseEntity<>(questions, HttpStatus.OK); // return question list with http ok status
+        return new ResponseEntity<>(questions, HttpStatus.OK);
     }
 
-    // api endpoint to fetch a single question by id
     @GetMapping("getQuestion/{questionid}") 
     public ResponseEntity<Question> getQuestion(@PathVariable Integer questionid) {
-        Question question = questionJpaRepository.findById(questionid); // fetch question by id
+        Question question = questionJpaRepository.findById(questionid);
 
-        return new ResponseEntity<>(question, HttpStatus.OK); // return question with http ok status
+        return new ResponseEntity<>(question, HttpStatus.OK);
     }
 
-    // api endpoint to get total chat score of a person
     @GetMapping("/getChatScore/{personid}")
     public ResponseEntity<Long> getChatScore(@PathVariable Integer personid) {
-        List<Answer> personsanswers = answerJpaRepository.findByPersonId(personid); // fetch answers by person id
-        Long totalChatScore = 0L; // initialize total chat score
+        List<Answer> personsanswers = answerJpaRepository.findByPersonId(personid);
+        Long totalChatScore = 0L;
 
-        // loop through answers to calculate total chat score
         for (Answer personanswer : personsanswers) {
             Long questionChatScore = personanswer.getChatScore();
-            totalChatScore += questionChatScore; // add chat score to total
+            totalChatScore += questionChatScore;
         }
 
-        return new ResponseEntity<>(totalChatScore, HttpStatus.OK); // return total chat score with http ok status
+        return new ResponseEntity<>(totalChatScore, HttpStatus.OK);
+
     }
 
-    // api endpoint to fetch balance of a person by id
     @GetMapping("/getBalance/{personid}") 
     public ResponseEntity<Double> getBalance(@PathVariable Long personid) {
-        Optional<Person> optional = personJpaRepository.findById(personid); // fetch person by id
-        Person personOpt = optional.get(); // get person object from optional
+        Optional<Person> optional = personJpaRepository.findById(personid);
+        Person personOpt = optional.get();  
+        
 
-        Double balance = personOpt.getBalance(); // fetch balance
+        Double balance = personOpt.getBalance();
 
-        return new ResponseEntity<>(balance, HttpStatus.OK); // return balance with http ok status
+        return new ResponseEntity<>(balance, HttpStatus.OK);
+
     }
 
-    // api endpoint to submit an answer
     @PostMapping("/submitAnswer")
     public ResponseEntity<Answer> postAnswer(@RequestBody AnswerDto answerDto) {
-        Optional<Question> questionOpt = questionJpaRepository.findById(answerDto.getQuestionId()); // fetch question by id
-        Optional<Person> personOpt = personJpaRepository.findById(answerDto.getPersonId()); // fetch person by id
+        Optional<Question> questionOpt = questionJpaRepository.findById(answerDto.getQuestionId());
+        Optional<Person> personOpt = personJpaRepository.findById(answerDto.getPersonId());
         
-        // print api key for debugging
-        System.out.println("api key: " + apiKey);
+        System.out.println("API Key: " + apiKey);
 
-        // check if question or person does not exist
         if (questionOpt.isEmpty() || personOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // return not found status
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        Question question = questionOpt.get(); // get question object
-        Person person = personOpt.get(); // get person object
+        Question question = questionOpt.get();
+        Person person = personOpt.get();
 
-        System.out.println(question); // print question for debugging
+        // System.out.println(person);
+        System.out.println(question);
 
-        // define rubric for chat score calculation
-        String rubric = "correctness and completeness (500 points): 500 - completely correct, "
+        String rubric = "Correctness and Completeness (500 points): 500 - completely correct, "
                         + "450 - minor issues or unhandled edge cases, 400 - several small errors, "
                         + "350 - partial with multiple issues, below 300 - major issues/incomplete; "
-                        + "efficiency and optimization (200 points): 200 - optimal or near-optimal, "
-                        + "180 - minor optim needed, 160 - functional but inefficient, "
-                        + "140 - improvements needed, below 140 - inefficient; code structure and organization "
+                        + "Efficiency and Optimization (200 points): 200 - optimal or near-optimal, "
+                        + "180 - minor optimization needed, 160 - functional but inefficient, "
+                        + "140 - improvements needed, below 140 - inefficient; Code Structure and Organization "
                         + "(150 points): 150 - well-organized, 130 - mostly organized, 110 - readable but lacks structure, "
-                        + "90 - hard to follow, below 90 - unorganized; readability and documentation (100 points): "
+                        + "90 - hard to follow, below 90 - unorganized; Readability and Documentation (100 points): "
                         + "100 - clear, well-documented, 85 - readable but limited comments, 70 - somewhat readable, "
-                        + "50 - minimally readable, below 50 - poor readability; error handling and edge cases "
+                        + "50 - minimally readable, below 50 - poor readability; Error Handling and Edge Cases "
                         + "(50 points): 50 - handles all cases, 40 - most cases covered, 30 - some cases covered, "
-                        + "20 - minimal handling, below 20 - little attention; extra credit (100 points): "
-                        + "impressive/innovative elements. give me an integer score from 1-1000 and only respond with a number and no text.";
+                        + "20 - minimal handling, below 20 - little attention; Extra Credit (100 points): "
+                        + "impressive/innovative elements. Give me an integer score from 1-1000 AND ONLY RESPOND WITH A NUMBER AND NO TEXT.";
 
-        Long chatScore = getChatScore(answerDto.getContent(), rubric); // calculate chat score based on rubric
+        Long chatScore = getChatScore(answerDto.getContent(), rubric);
 
-        Answer answer = new Answer(answerDto.getContent(), question, person, chatScore); // create new answer object
-        answerJpaRepository.save(answer); // save answer to database
+        Answer answer = new Answer(answerDto.getContent(), question, person, chatScore);
+        answerJpaRepository.save(answer);
 
-        // update balance of person based on question points
+        // updateBalance
         double questionPoints = question.getPoints();
         person.setBalance(person.getBalance() + questionPoints);
-        personJpaRepository.save(person); // save updated person object
+        personJpaRepository.save(person);
 
-        return new ResponseEntity<>(answer, HttpStatus.OK); // return saved answer with http ok status
+
+        return new ResponseEntity<>(answer, HttpStatus.OK);
     }
 
-    // method to calculate chat score using external api
     private Long getChatScore(String content, String rubric) {
-        OkHttpClient client = new OkHttpClient(); // initialize http client
-        ObjectMapper mapper = new ObjectMapper(); // initialize object mapper
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper mapper = new ObjectMapper();
 
-        // construct json request body
+        // Construct JSON request body
         ObjectNode requestBody = mapper.createObjectNode();
-        requestBody.put("model", "gpt-3.5-turbo"); // specify model
+        requestBody.put("model", "gpt-3.5-turbo");
 
-        // construct messages array
+        // Construct messages array
         ArrayNode messages = requestBody.putArray("messages");
         ObjectNode systemMessage = messages.addObject();
-        systemMessage.put("role", "system"); // define system role
-        systemMessage.put("content", rubric); // add rubric content
+        systemMessage.put("role", "system");
+        systemMessage.put("content", rubric);
 
         ObjectNode userMessage = messages.addObject();
-        userMessage.put("role", "user"); // define user role
-        userMessage.put("content", content); // add user content
+        userMessage.put("role", "user");
+        userMessage.put("content", content);
 
-        requestBody.put("temperature", 0.0); // set temperature for model response
+        requestBody.put("temperature", 0.0);
 
-        // create http request
+        // Create request
         okhttp3.RequestBody body = okhttp3.RequestBody.create(requestBody.toString(), MediaType.get("application/json"));
         Request request = new Request.Builder()
                 .url(apiUrl)
                 .post(body)
-                .addHeader("authorization", "bearer " + apiKey) // add api key authorization
+                .addHeader("Authorization", "Bearer " + apiKey)
                 .build();
 
-        try (Response response = client.newCall(request).execute()) { // execute http request
+        try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful() && response.body() != null) {
-                System.out.println(response); // print response for debugging
-                JsonNode jsonNode = mapper.readTree(response.body().string()); // parse response
-                String chatGptResponse = jsonNode.get("choices").get(0).get("message").get("content").asText(); // extract score
-                return Long.parseLong(chatGptResponse); // return score as long
+                System.out.println(response);
+                JsonNode jsonNode = mapper.readTree(response.body().string());
+                String chatGptResponse = jsonNode.get("choices").get(0).get("message").get("content").asText();
+                return Long.parseLong(chatGptResponse);
             } else {
-                System.err.println("request failed: " + response); // print error if request fails
+                System.err.println("Request failed: " + response);
             }
         } catch (IOException e) {
-            e.printStackTrace(); // print stack trace if exception occurs
+            e.printStackTrace();
         }
-        return 0L; // return 0 if failure
+        return 0L;
     }
 
+
     /* 
-    // commented out leaderboard method for future implementation
     @GetMapping("/leaderboard")
     public List<LeaderboardDto> getLeaderboard() {
-        List<LeaderboardDto> leaderboardEntries = answerJpaRepository.findTop10UsersByTotalScore();
+    List<LeaderboardDto> leaderboardEntries = answerJpaRepository.findTop10UsersByTotalScore();
 
-        for (LeaderboardDto entry : leaderboardEntries) {
-            Optional<User> user = userJpaRepository.findById(entry.getId());
-            String userName = user.isPresent() ? user.get().getUsername() : "unknown";
-            entry.setuserName(userName);
-        }
+    for (LeaderboardDto entry : leaderboardEntries) {
+        Optional<User> user = userJpaRepository.findById(entry.getId());
+        String userName = user.isPresent() ? user.get().getUsername() : "Unknown";
+        entry.setuserName(userName);
+    }
 
-        return leaderboardEntries;
+    return leaderboardEntries;
     }  
     */
 }
+    
+
+    
+    
+ 
