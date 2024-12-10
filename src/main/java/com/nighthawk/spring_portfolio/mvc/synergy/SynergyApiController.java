@@ -29,10 +29,10 @@ import lombok.Setter;
 @RequestMapping("/api/synergy")
 public class SynergyApiController {
     @Autowired
-    private GradeJpaRepository gradeRepository;
+    private SynergyGradeJpaRepository gradeRepository;
 
     @Autowired
-    private GradeRequestJpaRepository gradeRequestRepository;
+    private SynergyGradeRequestJpaRepository gradeRequestRepository;
 
     @Autowired
     private AssignmentJpaRepository assignmentRepository;
@@ -46,7 +46,7 @@ public class SynergyApiController {
      * @return A JSON object confirming that the grade was saved.
      */
     @PostMapping("/update-grade")
-    public ResponseEntity<Map<String, String>> updateGrade(@RequestBody Grade grade) {
+    public ResponseEntity<Map<String, String>> updateGrade(@RequestBody SynergyGrade grade) {
         gradeRepository.save(grade);
         return ResponseEntity.ok(Map.of("message", "Successfully saved this grade."));
     }
@@ -70,7 +70,7 @@ public class SynergyApiController {
                 // Person student = personRepository.findById(studentId).orElse(null);
                 
                 // Grade grade = gradeRepository.findByAssignmentAndStudent(assignment, student);
-                Grade grade = gradeRepository.findByAssignmentIdAndStudentId(assignmentId, studentId).orElse(null);
+                SynergyGrade grade = gradeRepository.findByAssignmentIdAndStudentId(assignmentId, studentId).orElse(null);
                 if (grade == null) {
                     Assignment assignment = assignmentRepository.findById(assignmentId).orElseThrow(() -> 
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid assignment ID passed")
@@ -79,7 +79,7 @@ public class SynergyApiController {
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student ID passed")
                     );
     
-                    grade = new Grade();
+                    grade = new SynergyGrade();
                     grade.setAssignment(assignment);
                     grade.setStudent(student);
                 }
@@ -99,7 +99,7 @@ public class SynergyApiController {
      * @return A JSON object signifying that the request was created.
      */
     @PostMapping("/create-grade-request")
-    public ResponseEntity<Map<String, String>> createGradeRequest(@AuthenticationPrincipal UserDetails userDetails, @RequestBody GradeRequestDTO requestData) throws ResponseStatusException {
+    public ResponseEntity<Map<String, String>> createGradeRequest(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SynergyGradeRequestDTO requestData) throws ResponseStatusException {
         String email = userDetails.getUsername();
         Person grader = personRepository.findByEmail(email);
         if (grader == null) {
@@ -115,7 +115,7 @@ public class SynergyApiController {
             new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid assignment ID passed")
         );;
         
-        GradeRequest gradeRequest = new GradeRequest(assignment, student, grader, requestData.explanation, requestData.gradeSuggestion);
+        SynergyGradeRequest gradeRequest = new SynergyGradeRequest(assignment, student, grader, requestData.explanation, requestData.gradeSuggestion);
         gradeRequestRepository.save(gradeRequest);
 
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
@@ -128,12 +128,12 @@ public class SynergyApiController {
      * @return A JSON object signifying that the request was accepted.
      */
     @PostMapping("/accept-request")
-    public ResponseEntity<Map<String, String>> acceptRequest(@Valid @RequestBody GradeRequestIdDTO body) throws ResponseStatusException {
+    public ResponseEntity<Map<String, String>> acceptRequest(@Valid @RequestBody SynergyGradeRequestIdDTO body) throws ResponseStatusException {
         if (body == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request body");
         }
 
-        GradeRequest request = gradeRequestRepository.findById((long) body.getRequestId()).orElse(null);
+        SynergyGradeRequest request = gradeRequestRepository.findById((long) body.getRequestId()).orElse(null);
         if (request == null) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Grade request not found"
@@ -147,9 +147,9 @@ public class SynergyApiController {
 
         Assignment assignment = request.getAssignment();
         Person student = request.getStudent();
-        Grade grade = gradeRepository.findByAssignmentAndStudent(assignment, request.getStudent());
+        SynergyGrade grade = gradeRepository.findByAssignmentAndStudent(assignment, request.getStudent());
         if (grade == null) {
-            grade = new Grade();
+            grade = new SynergyGrade();
             grade.setAssignment(assignment);
             grade.setStudent(student);
         }
@@ -168,12 +168,12 @@ public class SynergyApiController {
      * @return A JSON object signifying that the request was rejected.
      */
     @PostMapping("/reject-request")
-    public ResponseEntity<Map<String, String>> rejectRequest(@RequestBody GradeRequestIdDTO body) throws ResponseStatusException {
+    public ResponseEntity<Map<String, String>> rejectRequest(@RequestBody SynergyGradeRequestIdDTO body) throws ResponseStatusException {
         if (body == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request body.");
         }
     
-        GradeRequest request = gradeRequestRepository.findById((long) body.getRequestId()).orElse(null);
+        SynergyGradeRequest request = gradeRequestRepository.findById((long) body.getRequestId()).orElse(null);
         if (request == null) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Grade request not found."

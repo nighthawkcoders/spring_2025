@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Submission {
+public class AssignmentSubmission {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -39,7 +39,7 @@ public class Submission {
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public Submission(Assignment assignment, Person student, String content) {
+    public AssignmentSubmission(Assignment assignment, Person student, String content) {
         this.assignment = assignment;
         this.student = student;
         this.content = content;

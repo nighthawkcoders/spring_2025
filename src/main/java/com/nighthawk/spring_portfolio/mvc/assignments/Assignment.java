@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.nighthawk.spring_portfolio.mvc.synergy.Grade;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -58,10 +58,10 @@ public class Assignment {
 
     @OneToMany(mappedBy = "assignment")
     @JsonIgnore
-    private List<Submission> submissions;
+    private List<AssignmentSubmission> submissions;
 
     @OneToMany(mappedBy="assignment")
-    private List<Grade> grades;
+    private List<SynergyGrade> grades;
 
     @NotNull
     private Double points;

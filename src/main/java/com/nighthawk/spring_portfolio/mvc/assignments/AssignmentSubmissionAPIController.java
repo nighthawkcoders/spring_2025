@@ -21,10 +21,10 @@ import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/api/submissions")
-public class SubmissionAPIController {
+public class AssignmentSubmissionAPIController {
 
     @Autowired
-    private SubmissionJPA submissionRepo;
+    private AssignmentSubmissionJPA submissionRepo;
 
     @Autowired
     private AssignmentJpaRepository assignmentRepo;
@@ -34,7 +34,7 @@ public class SubmissionAPIController {
 
     @GetMapping
     public ResponseEntity<?> getAllSubmissions() {
-        List<Submission> submissions = submissionRepo.findAll();
+        List<AssignmentSubmission> submissions = submissionRepo.findAll();
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
     @Transactional
@@ -44,7 +44,7 @@ public class SubmissionAPIController {
             @RequestParam Double grade,
             @RequestParam(required = false) String feedback) {
         
-        Submission submission = submissionRepo.findById(submissionId).orElse(null);
+        AssignmentSubmission submission = submissionRepo.findById(submissionId).orElse(null);
         submission.setGrade(grade);
         submission.setFeedback(feedback);
         System.out.println(submission.getContent());
@@ -83,11 +83,11 @@ public class SubmissionAPIController {
         }
 
         // Find submissions for this assignment
-        List<Submission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
         
         System.out.println("Found " + submissions.size() + " submissions");
 
-        ResponseEntity<List<Submission>> response = new ResponseEntity<>(submissions, HttpStatus.OK);
+        ResponseEntity<List<AssignmentSubmission>> response = new ResponseEntity<>(submissions, HttpStatus.OK);
         System.out.println(response);
         
         return new ResponseEntity<>(submissions, HttpStatus.OK);
