@@ -121,6 +121,36 @@ public class SynergyApiController {
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
     }
 
+    /**
+     * A POST endpoint to create a grade request.
+     * @param userDetails The information about the logged in user. Automatically passed in by thymeleaf.
+     * @param requestData The JSON data passed in, of the format studentId: Long, assignmentId: Long,
+     *                    gradeSuggestion: Double, explanation: String
+     * @return A JSON object signifying that the request was created.
+     */
+    @PostMapping("/grades/requests/self")
+    public ResponseEntity<Map<String, String>> createGradeRequestForSelf(
+        @AuthenticationPrincipal UserDetails userDetails, 
+        @RequestBody SynergyGradeRequestSelfDTO requestData
+    ) throws ResponseStatusException {
+        String email = userDetails.getUsername();
+        Person student = personRepository.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        Assignment assignment = assignmentRepository.findById(requestData.assignmentId).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid assignment ID passed")
+        );;
+        
+        SynergyGradeRequest gradeRequest = new SynergyGradeRequest(assignment, student, student, requestData.explanation, requestData.gradeSuggestion);
+        gradeRequestRepository.save(gradeRequest);
+
+        return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
+    }
+
 
     /**
      * A POST endpoint to accept a grade request.
