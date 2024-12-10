@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.synergy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +60,11 @@ public class SynergyApiController {
      */
     @GetMapping("/grades")
     public ResponseEntity<?> getGrades() {
-        List<SynergyGrade> grades = gradeRepository.findAll();
-        return ResponseEntity.ok(Map.of("grades", grades));
+        List<SynergyGradeDTO> grades = new ArrayList<>();
+        for (SynergyGrade grade : gradeRepository.findAll()) {
+            grades.add(new SynergyGradeDTO(grade));
+        }
+        return ResponseEntity.ok(grades);
     }
     
     /**
