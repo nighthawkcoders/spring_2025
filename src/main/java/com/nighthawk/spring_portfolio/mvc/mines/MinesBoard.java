@@ -56,11 +56,11 @@ public class MinesBoard {
     }
 
     public double winnings() {
-         double pts = switch (stakes) {
-             case "low" -> LOW_INITIAL * Math.pow(LOW_MULTIPLIER, cleared);
-             case "medium" -> MEDIUM_INITIAL * Math.pow(MEDIUM_MULTIPLIER, cleared);
-             case "high" -> HIGH_INITIAL * Math.pow(HIGH_MULTIPLIER, cleared);
-             default -> -1;
+        double pts = switch (stakes) {
+            case "low" -> LOW_INITIAL * Math.pow(LOW_MULTIPLIER, cleared);
+            case "medium" -> MEDIUM_INITIAL * Math.pow(MEDIUM_MULTIPLIER, cleared);
+            case "high" -> HIGH_INITIAL * Math.pow(HIGH_MULTIPLIER, cleared);
+            default -> -1;
          };
 
         return pts;
