@@ -52,8 +52,30 @@
                     </ul>
                 </div>
 
-            </div>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0" sec:authorize="isAuthenticated()">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink0" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Grading
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink0">
+                                <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/assignments/tracker}">Assignment Tracker</a></li>
+                                <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/synergy/gradebook}">Edit Student Grades</a></li>
+                                <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_STUDENT')" th:href="@{/mvc/synergy/gradebook}">View Grades</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/synergy/create-grade-request}">Create Grade Request</a></li>
+                                <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/synergy/view-grade-requests}">View Grade Requests</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
 
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0" sec:authorize="isAuthenticated()">
+                    <ul class="navbar-nav">
+                        <a id="awayStudents" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')"></a>
+                    </ul>
+                </div>
+
+            </div>
 
             <div class="btn-group">
                 <!-- Search Box -->
@@ -89,10 +111,7 @@
                                     <p style="font-size:0.75em;margin:1px" sec:authorize="hasRole('TESTER')">TESTER</p>
                                 </div>
                             </li>
-                            <li><a class="dropdown-item active" th:href='@{/logout}'>Profile</a></li>
-                            <li><a class="dropdown-item active" th:href='@{/mvc/bathroom/issues}'>Report Issues</a></li>
                             <li><a class="dropdown-item active" th:href='@{/logout}'>Logout</a></li>
-                        
                         </ul>
                     </div>
                 </th:block>
@@ -164,9 +183,37 @@
                 }
                 // End Dark Mode Control
 
+                function appendStatus(data) {
+                    awayStudents = document.getElementById('awayStudents');
 
+                    if (data) {
+                        awayStudents.innerHTML = data + ' is currently in the bathroom';
+                    } else {
+                        awayStudents.innerHTML = "Nobody is in the bathroom as of right now"
+                    }
 
+                }
+                function fetchStatus() {
+                    fetch('http://localhost:8085/api/queue/getActive')
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (data) {
+                            console.log("Data received:", JSON.stringify(data[0], null, 2));  // Pretty print the object
+                            appendStatus(data[0].frontStudent);
+                        })
+                        .catch(function (err) {
+                            console.log('error: ' + err);
+                    });
+                }
 
+                window.addEventListener('load', function () {
+                    // Your document is loaded.
+                    var fetchInterval = 5000; // 5 seconds.
+
+                    // Invoke the request every 5 seconds.
+                    setInterval(fetchStatus, fetchInterval);
+                });
             </script>
 
         </div>

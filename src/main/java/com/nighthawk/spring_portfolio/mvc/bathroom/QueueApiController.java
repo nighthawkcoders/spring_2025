@@ -44,6 +44,7 @@ public class QueueApiController {
         }
         return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherName(), HttpStatus.CREATED);
     }
+
     @CrossOrigin(origins = "http://127.0.0.1:4100")
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
@@ -84,6 +85,12 @@ public class QueueApiController {
 
     @GetMapping("/all")
     public ResponseEntity<List<BathroomQueue>> getAllQueues() {
+        return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
+    }
+   
+    @CrossOrigin(origins = "http://localhost:8085")
+    @GetMapping("/getActive")
+    public ResponseEntity<Object> getActiveQueues() {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
     }
 }
