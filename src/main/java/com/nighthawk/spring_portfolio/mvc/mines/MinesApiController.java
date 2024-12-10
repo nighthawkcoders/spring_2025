@@ -32,7 +32,6 @@ public class MinesApiController {
     @PostMapping("/winnings")
     public ResponseEntity<Double> calculateWinnings(@RequestBody MinesRequest minesRequest) {
         Person user = personJpaRepository.findByEmail(minesRequest.getEmail());
-
         double betSize = minesRequest.getBetSize();
         if (user.getBalance() < betSize) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
