@@ -72,22 +72,22 @@ public class Assignment {
     }
 
     public void initQueue(List<String> people) {
-        assignmentQueue.getHaventGone().addAll(people);
+        assignmentQueue.getWorking().addAll(people);
     }
 
     public void addQueue(String person) {
-        assignmentQueue.getHaventGone().remove(person);
-        assignmentQueue.getQueue().add(person);
+        assignmentQueue.getWorking().remove(person);
+        assignmentQueue.getWaiting().add(person);
     }
 
     public void removeQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getHaventGone().add(person);
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getWorking().add(person);
     }
 
     public void doneQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getDone().add(person);
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getComplete().add(person);
     }
 
     public Assignment(String name, String type, String description, Double points, String dueDate) {
