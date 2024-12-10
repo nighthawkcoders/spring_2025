@@ -135,7 +135,7 @@ public class AnswerApiController {
                         + "450 - minor issues or unhandled edge cases, 400 - several small errors, "
                         + "350 - partial with multiple issues, below 300 - major issues/incomplete; "
                         + "efficiency and optimization (200 points): 200 - optimal or near-optimal, "
-                        + "180 - minor optimization needed, 160 - functional but inefficient, "
+                        + "180 - minor optim needed, 160 - functional but inefficient, "
                         + "140 - improvements needed, below 140 - inefficient; code structure and organization "
                         + "(150 points): 150 - well-organized, 130 - mostly organized, 110 - readable but lacks structure, "
                         + "90 - hard to follow, below 90 - unorganized; readability and documentation (100 points): "
