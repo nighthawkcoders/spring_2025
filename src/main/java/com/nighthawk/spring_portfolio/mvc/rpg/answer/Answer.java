@@ -1,7 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.rpg.answer;
 
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
-import com.nighthawk.spring_portfolio.mvc.user.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +14,6 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 
 @Data
 @NoArgsConstructor
@@ -32,16 +31,20 @@ public class Answer {
     private Question question;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "person_id", nullable = false)
+    private Person person;
 
-    // add date 
+    /*   
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt = new Date();
+    */
+
     private Long chatScore;
 
-    public Answer (String content, Question question, User user, Long chatScore) {
+    public Answer (String content, Question question, Person person, Long chatScore) {
         this.content = content;
         this.question = question;
-        this.user = user;
+        this.person = person;
         this.chatScore = chatScore;
     }
 
