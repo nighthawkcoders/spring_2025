@@ -1,22 +1,20 @@
 package com.nighthawk.spring_portfolio.mvc.synergy;
 
-import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
@@ -26,12 +24,6 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/synergy")
@@ -70,7 +62,7 @@ public class SynergyApiController {
             String[] ids = key.replace("grades[", "").replace("]", "").split("\\[");
             Long assignmentId = Long.parseLong(ids[0]);
             Long studentId = Long.parseLong(ids[1]);
-            String gradeString = grades.get(key);
+            String gradeValueStr = grades.get(key);
 
             if (isNumeric(gradeValueStr)) { // otherwise, we have an empty string so ignore it
                 Double gradeValue = Double.parseDouble(gradeValueStr);
@@ -116,10 +108,12 @@ public class SynergyApiController {
             );
         }
 
-        Person student = personRepository.findById(requestData.studentId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid student ID: " + requestData.studentId));
-        Assignment assignment = assignmentRepository.findById(requestData.assignmentId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid assignment ID: " + requestData.assignmentId));
+        Person student = personRepository.findById(requestData.studentId).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student ID passed")
+        );
+        Assignment assignment = assignmentRepository.findById(requestData.assignmentId).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid assignment ID passed")
+        );;
         
         SynergyGradeRequest gradeRequest = new SynergyGradeRequest(assignment, student, grader, requestData.explanation, requestData.gradeSuggestion);
         gradeRequestRepository.save(gradeRequest);
