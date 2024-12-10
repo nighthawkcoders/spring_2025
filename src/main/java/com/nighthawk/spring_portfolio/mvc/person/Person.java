@@ -70,8 +70,8 @@ public class Person implements Comparable<Person> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToMany(mappedBy="student")
-    private List<SynergyGrade> grades;
+    // @OneToMany(mappedBy="student")
+    // private List<SynergyGrade> grades;
     
     @ManyToMany(fetch = EAGER)
     @JoinTable(
