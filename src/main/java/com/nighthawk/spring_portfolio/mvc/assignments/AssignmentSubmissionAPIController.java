@@ -32,11 +32,27 @@ public class AssignmentSubmissionAPIController {
     @Autowired
     private PersonJpaRepository personRepo;
 
-    @GetMapping
-    public ResponseEntity<?> getAllSubmissions() {
-        List<AssignmentSubmission> submissions = submissionRepo.findAll();
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+    // @GetMapping
+    // public ResponseEntity<?> getAllSubmissions() {
+    //     List<Submission> submissions = submissionRepo.findAll();
+    //     return new ResponseEntity<>(submissions, HttpStatus.OK);
+    // }
+
+
+    /*
+     * Returns all of the submissions
+     * Note there are no parameters needed to be passed in here
+     */
+    @Transactional
+    @GetMapping("/getSubmissions/{studentId}")
+    public ResponseEntity<List<AssignmentSubmission>> getSubmissions(@PathVariable Long studentId) {
+        List<AssignmentSubmission> submissions = submissionRepo.findByStudentId(studentId);
+        ResponseEntity<List<AssignmentSubmission>> responseEntity = new ResponseEntity<>(submissions, HttpStatus.OK);
+        return responseEntity;
     }
+
+    
+
     @Transactional
     @PostMapping("/grade/{submissionId}")
     public ResponseEntity<?> gradeSubmission(
@@ -64,6 +80,9 @@ public class AssignmentSubmissionAPIController {
         return new ResponseEntity<>("All good", HttpStatus.OK);
     }
     
+
+
+
     @Transactional
     @GetMapping("/assignment/{assignmentId}")
     public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId) {
@@ -92,4 +111,7 @@ public class AssignmentSubmissionAPIController {
         
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
+
+
+
 }
