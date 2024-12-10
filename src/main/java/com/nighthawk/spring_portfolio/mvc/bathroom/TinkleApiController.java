@@ -26,7 +26,7 @@ public class TinkleApiController {
     public static class TinkleDto {
         private String studentEmail;
         private String timeIn;
-        private double averageDuration;
+        // private double averageDuration;
     }
 
     @PostMapping("/add")
