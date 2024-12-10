@@ -18,12 +18,17 @@ import com.nighthawk.spring_portfolio.mvc.note.Note;
 import com.nighthawk.spring_portfolio.mvc.note.NoteJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
 import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -32,9 +37,12 @@ public class ModelInit {
     @Autowired NoteJpaRepository noteRepo;
     @Autowired PersonRoleJpaRepository roleJpaRepository;
     @Autowired PersonDetailsService personDetailsService;
+    @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
     @Autowired QuestionJpaRepository questionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
+    @Autowired AssignmentJpaRepository assignmentJpaRepository;
+    @Autowired AssignmentSubmissionJPA submissionJPA;
 
     @Bean
     @Transactional
@@ -106,6 +114,18 @@ public class ModelInit {
                 }
             }
 
+            // Assignment database is populated with sample assignments
+            Assignment[] assignmentArray = Assignment.init();
+            for (Assignment assignment : assignmentArray) {
+                Assignment assignmentFound = assignmentJpaRepository.findByName(assignment.getName());
+                if (assignmentFound == null) { // if the assignment doesn't exist
+                    Assignment newAssignment = new Assignment(assignment.getName(), assignment.getType(), assignment.getDescription(), assignment.getPoints(), assignment.getDueDate());
+                    assignmentJpaRepository.save(newAssignment);
+
+                    // create sample submission
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
+                }
+            }
         };
     }
 }
