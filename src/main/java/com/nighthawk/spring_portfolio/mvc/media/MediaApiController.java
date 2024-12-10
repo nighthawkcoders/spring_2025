@@ -25,10 +25,13 @@ public class MediaApiController {
     @Autowired
     private PersonJpaRepository personJpaRepository;
 
+    @Autowired
+    private MediaJpaRepository mediaJpaRepository;
+
     // Get all analytics records
     // Get all analytics records
     @GetMapping("/")
-    public ResponseEntity<List<SynergyGrade>> getAllAnalytics() {
+    public ResponseEntity<List<Scores>> getAllAnalytics() {
         List<SynergyGrade> gradeList = gradeJpaRepository.findAll();  // Fetch all grade records from database
         if (gradeList.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT); // No records found
