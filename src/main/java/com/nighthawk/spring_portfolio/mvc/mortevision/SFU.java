@@ -1,7 +1,9 @@
 package com.nighthawk.spring_portfolio.mvc.mortevision;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -32,10 +34,11 @@ public class SFU implements PeerConnectionObserver {
     MediaStream broadcaster;
 
     @PostMapping("/consume")
-    public JSONObject consumer(String stp) {
+    public JSONObject consumer(@RequestBody String body) {
         if (broadcaster == null) {
             return new JSONObject("{'error':'no broadcast'}");
         }
+        String sdp = new JSONObject(body).getJSONObject("sdp").getString("sdp");
         RTCIceServer iceServer = new RTCIceServer();
         iceServer.urls = Collections.singletonList("stun:stun.l.google.com:19302");
 
@@ -43,14 +46,60 @@ public class SFU implements PeerConnectionObserver {
         config.iceServers = Collections.singletonList(iceServer);
 
         PeerConnectionFactory PCF = new PeerConnectionFactory();
-        RTCPeerConnection peerConnection = PCF.createPeerConnection(config, null);
+        RTCPeerConnection peerConnection = PCF.createPeerConnection(config, this);
 
-        RTCSessionDescription sessionDescription = new RTCSessionDescription(RTCSdpType.OFFER, stp);
-        peerConnection.setRemoteDescription(sessionDescription, null); // this is most likley the problem
-        peerConnection.addTrack((MediaStreamTrack) broadcaster.getAudioTracks()[0], null);
-        peerConnection.addTrack((MediaStreamTrack) broadcaster.getVideoTracks()[0], null);
-        peerConnection.createAnswer(new RTCAnswerOptions(), null);
-        peerConnection.setLocalDescription(peerConnection.getLocalDescription(), null);
+        RTCSessionDescription sessionDescription = new RTCSessionDescription(RTCSdpType.OFFER, sdp);
+        peerConnection.setRemoteDescription(sessionDescription, new SetSessionDescriptionObserver() {
+
+            @Override
+            public void onSuccess() {
+                // TODO Auto-generated method stub
+                // throw new UnsupportedOperationException("Unimplemented method 'onSuccess'");
+            }
+
+            @Override
+            public void onFailure(String error) {
+                // TODO Auto-generated method stub
+                // throw new UnsupportedOperationException("Unimplemented method 'onFailure'");
+            }
+            
+        }); // this is most likley the problem
+        List<String> audioList = new ArrayList<String>();
+        audioList.add(broadcaster.getAudioTracks()[0].getId());
+        List<String> videoList = new ArrayList<String>();
+        audioList.add(broadcaster.getVideoTracks()[0].getId());
+
+        peerConnection.addTrack((MediaStreamTrack) broadcaster.getAudioTracks()[0], audioList);
+        peerConnection.addTrack((MediaStreamTrack) broadcaster.getVideoTracks()[0], videoList);
+        peerConnection.createAnswer(new RTCAnswerOptions(), new CreateSessionDescriptionObserver() {
+
+            @Override
+            public void onSuccess(RTCSessionDescription description) {
+                peerConnection.setLocalDescription(description, new SetSessionDescriptionObserver() {
+
+                    @Override
+                    public void onSuccess() {
+                        // TODO Auto-generated method stub
+                        // throw new UnsupportedOperationException("Unimplemented method 'onSuccess'");
+                    }
+        
+                    @Override
+                    public void onFailure(String error) {
+                        // TODO Auto-generated method stub
+                        // throw new UnsupportedOperationException("Unimplemented method 'onFailure'");
+                    }
+                    
+                });
+            }
+
+            @Override
+            public void onFailure(String error) {
+                // TODO Auto-generated method stub
+                // throw new UnsupportedOperationException("Unimplemented method 'onFailure'");
+            }
+            
+        });
+     
         JSONObject payload = new JSONObject().put("sdp", peerConnection.getLocalDescription());
         return payload;
     }
@@ -62,12 +111,8 @@ public class SFU implements PeerConnectionObserver {
         iceServer.urls = Collections.singletonList("stun:stun.l.google.com:19302");
         RTCConfiguration config = new RTCConfiguration();
         config.iceServers = Collections.singletonList(iceServer);
-        System.out.println("I HATE PEOPLE I HATE PEOPLE I HATE PEOPLE");
         PeerConnectionFactory PCF = new PeerConnectionFactory();
-        System.out.println("FU");
         RTCPeerConnection peerConnection = PCF.createPeerConnection(config, this);
-        System.out.println("FUDGE");
-        System.out.println(sdp);
         RTCSessionDescription sessionDescription = new RTCSessionDescription(RTCSdpType.OFFER, sdp);
         peerConnection.setRemoteDescription(sessionDescription, new SetSessionDescriptionObserver() {
 
@@ -84,7 +129,6 @@ public class SFU implements PeerConnectionObserver {
             }
             
         });
-        System.out.println("kill myself arc");
 
         peerConnection.createAnswer(new RTCAnswerOptions(), new CreateSessionDescriptionObserver() {
 
