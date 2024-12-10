@@ -1,9 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.mortevision;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -31,12 +29,15 @@ import dev.onvoid.webrtc.media.MediaStreamTrack;
 @RequestMapping("/webrtc")
 public class SFU implements PeerConnectionObserver {
 
-    MediaStream broadcaster;
+    MediaStreamTrack videoTrack;
+    MediaStreamTrack audioTrack;
 
     @PostMapping("/consume")
-    public JSONObject consumer(@RequestBody String body) {
-        if (broadcaster == null) {
-            return new JSONObject("{'error':'no broadcast'}");
+    public Map<String,String> consumer(@RequestBody String body) {
+        if (videoTrack == null) {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("error","no broadcast");
+            return map;
         }
         String sdp = new JSONObject(body).getJSONObject("sdp").getString("sdp");
         RTCIceServer iceServer = new RTCIceServer();
@@ -64,13 +65,18 @@ public class SFU implements PeerConnectionObserver {
             }
             
         }); // this is most likley the problem
-        List<String> audioList = new ArrayList<String>();
-        audioList.add(broadcaster.getAudioTracks()[0].getId());
-        List<String> videoList = new ArrayList<String>();
-        audioList.add(broadcaster.getVideoTracks()[0].getId());
 
-        peerConnection.addTrack((MediaStreamTrack) broadcaster.getAudioTracks()[0], audioList);
-        peerConnection.addTrack((MediaStreamTrack) broadcaster.getVideoTracks()[0], videoList);
+        if(videoTrack != null)
+        {
+            peerConnection.addTrack(videoTrack, Collections.singletonList(videoTrack.getId()));
+        }
+
+        if(audioTrack != null)
+        {
+            peerConnection.addTrack(audioTrack, Collections.singletonList(audioTrack.getId()));
+        }
+        
+        
         peerConnection.createAnswer(new RTCAnswerOptions(), new CreateSessionDescriptionObserver() {
 
             @Override
@@ -100,8 +106,10 @@ public class SFU implements PeerConnectionObserver {
             
         });
      
-        JSONObject payload = new JSONObject().put("sdp", peerConnection.getLocalDescription());
-        return payload;
+        HashMap<String, String> map = new HashMap<>();
+        map.put("type",peerConnection.getLocalDescription().sdpType.name().toLowerCase());
+        map.put("sdp",peerConnection.getLocalDescription().sdp);
+        return map;
     }
 
     @PostMapping(value="/broadcast",consumes ="application/json")
@@ -161,13 +169,26 @@ public class SFU implements PeerConnectionObserver {
         return map;
     }
 
+    private final Object lock = new Object();
+
     @Override
     public void onAddTrack(RTCRtpReceiver receiver, MediaStream[] mediaStreams) {
-        broadcaster = mediaStreams[0];
+        synchronized (lock) {
+        System.out.println("track add");
+        if(receiver.getTrack().getKind().equals("video"))
+        {
+            videoTrack = receiver.getTrack();
+        }
+        /* 
+        else if(receiver.getTrack().getKind().equals("audio"))
+        {
+            audioTrack = receiver.getTrack();
+        }
+            */
+    }
     }
 
     @Override
     public void onIceCandidate(RTCIceCandidate candidate) {
-        // throw new UnsupportedOperationException("Unimplemented method 'onIceCandidate'");
     }
 }
