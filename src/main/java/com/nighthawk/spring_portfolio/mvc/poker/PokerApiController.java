@@ -11,28 +11,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nighthawk.spring_portfolio.mvc.user.User;
-import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 @RestController
 @RequestMapping("/api/casino/poker")
 public class PokerApiController {
 
     @Autowired
-    private UserJpaRepository userJpaRepository;
+    private PersonJpaRepository personJpaRepository;
 
     private PokerBoard pokerBoard;
 
-    // Request class to receive bet and username from client
+    // Request class to receive bet and email from the client
     public static class PokerRequest {
         private double bet;
-        private String username;
+        private String email;
 
         public double getBet() { return bet; }
         public void setBet(double bet) { this.bet = bet; }
 
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
     }
 
     // Response class to send game results back to the client
@@ -64,26 +64,26 @@ public class PokerApiController {
             pokerBoard = new PokerBoard();  // Initialize if not done
         }
 
-        Optional<User> optionalUser = userJpaRepository.findByUsername(pokerRequest.getUsername());
-        if (optionalUser.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // User not found
+        // Fetch person by email
+        Person person = personJpaRepository.findByEmail(pokerRequest.getEmail());
+        if (person == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Person not found
         }
 
-        User user = optionalUser.get();
-        double currentBalance = user.getBalance();
+        double currentBalance = person.getBalance();
 
         // Deal hands for the game
         pokerBoard.dealHands();
 
-        // Calculate win/loss and update user balance
+        // Calculate win/loss and update person balance
         GameResult result = new GameResult(pokerBoard.getPlayerHand(), pokerBoard.getDealerHand(), pokerRequest.getBet());
         boolean playerWin = result.isPlayerWin();
         double winnings = playerWin ? pokerRequest.getBet() : -pokerRequest.getBet();
         double updatedBalance = currentBalance + winnings;
 
-        // Update the user's balance in the database
-        user.setBalance(updatedBalance);
-        userJpaRepository.save(user);
+        // Update the person's balance in the database
+        person.setBalance(updatedBalance);
+        personJpaRepository.save(person);
 
         // Create and return the response object with game results and updated balance
         PokerResponse response = new PokerResponse(
