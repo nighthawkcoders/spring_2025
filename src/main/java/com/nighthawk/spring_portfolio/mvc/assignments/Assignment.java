@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -57,7 +58,7 @@ public class Assignment {
     private String timestamp;
 
     @OneToMany(mappedBy = "assignment")
-    @JsonIgnore
+    @JsonIgnore 
     private List<AssignmentSubmission> submissions;
 
     @OneToMany(mappedBy="assignment")
@@ -66,8 +67,8 @@ public class Assignment {
     @NotNull
     private Double points;
 
-    @Convert(converter = AssignmentQueueConverter.class)
-    private AssignmentQueue assignmentQueue;
+    @Convert(converter = QueueConverter.class)
+    private Queue assignmentQueue;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -76,22 +77,22 @@ public class Assignment {
     }
 
     public void initQueue(List<String> people) {
-        assignmentQueue.getWorking().addAll(people);
+        assignmentQueue.getHaventGone().addAll(people);
     }
 
-    public void queueToWaiting(String person) {
-        assignmentQueue.getWorking().remove(person);
-        assignmentQueue.getWaiting().add(person);
+    public void addQueue(String person) {
+        assignmentQueue.getHaventGone().remove(person);
+        assignmentQueue.getQueue().add(person);
     }
 
-    public void queueToWorking(String person) {
-        assignmentQueue.getWaiting().remove(person);
-        assignmentQueue.getWorking().add(person);
+    public void removeQueue(String person) {
+        assignmentQueue.getQueue().remove(person);
+        assignmentQueue.getHaventGone().add(person);
     }
 
-    public void queueToComplete(String person) {
-        assignmentQueue.getWaiting().remove(person);
-        assignmentQueue.getComplete().add(person);
+    public void doneQueue(String person) {
+        assignmentQueue.getQueue().remove(person);
+        assignmentQueue.getDone().add(person);
     }
 
     public Assignment(String name, String type, String description, Double points, String dueDate) {
@@ -101,8 +102,7 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        // not necessary, if initialized as null converter will not insert empty queue but null, need to check and initialize in converter
-        // this.assignmentQueue = new AssignmentQueue();
+        this.assignmentQueue = new Queue();
     }
 
     public static Assignment[] init() {

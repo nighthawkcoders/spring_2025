@@ -63,10 +63,10 @@
 
     <h2>View Grades</h2>
 
-    <button class="save-btn" type="submit" form="grade-form">Save Grades</button>
+    <button class="save-btn" type="button" id="save-btn">Save Grades</button>
 
     <div class="scrollable-table">
-        <form id="grade-form" action="/api/synergy/update-all-grades" method="post">
+        <form id="grade-form">
             <table>
                 <thead>
                     <tr>
@@ -132,5 +132,3 @@
     });
 </script>
 </th:block>
-
-</html>

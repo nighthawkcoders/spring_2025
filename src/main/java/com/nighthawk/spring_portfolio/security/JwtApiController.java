@@ -59,8 +59,8 @@ public class JwtApiController {
 		}
 
 		final ResponseCookie tokenCookie = ResponseCookie.from("jwt_java_spring", token)
-			.httpOnly(false)
-			.secure(false)
+			.httpOnly(true)
+			.secure(true)
 			.path("/")
 			.maxAge(3600)
 			.sameSite("None; Secure")
@@ -92,8 +92,8 @@ public class JwtApiController {
 	
 			// Expire the JWT token immediately by setting a past expiration date
 			ResponseCookie cookie = ResponseCookie.from("jwt_java_spring", "")
-				.httpOnly(false)
-				.secure(false)
+				.httpOnly(true)
+				.secure(true)
 				.path("/")
 				.maxAge(0)  // Set maxAge to 0 to expire the cookie immediately
 				.sameSite("None; Secure")

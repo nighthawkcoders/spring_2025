@@ -63,32 +63,6 @@ public class StudentInfoApiController {
         }
     }
 
-    @Getter
-    public static class UpdateDto {
-        private String username;
-        private String course;
-        private int trimester;
-        private int period; 
-        private int change_period;
-    }
-
-    @PostMapping("/update")
-    public ResponseEntity<StudentInfo> createStudent(@RequestBody UpdateDto updateDto) {
-        // Find student
-        List<StudentInfo> students = studentJPARepository.findByUsernameCourseTrimesterPeriod(updateDto.getUsername(), updateDto.getCourse(), updateDto.getTrimester(), updateDto.getPeriod());
-
-        // Create a student copy
-        StudentInfo student = students.get(0);
-        StudentInfo createdStudent = studentJPARepository.save(student);
-
-        // Update student copy to match new info
-        createdStudent.setPeriod(updateDto.getChange_period());
-        createdStudent.setTrimester(updateDto.getTrimester()+1);
-
-        // Return new (updated) student
-        return ResponseEntity.ok(createdStudent);
-    } 
-
     @PostMapping("/delete")
     public ResponseEntity<String> deleteStudentByUsername(@RequestParam String username) {
         Optional<StudentInfo> student = studentJPARepository.findByUsername(username);
