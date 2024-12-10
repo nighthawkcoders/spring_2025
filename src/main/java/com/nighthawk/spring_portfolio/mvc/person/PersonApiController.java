@@ -67,7 +67,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);
+        Person person = repository.findByEmail(email);  
 
         // Return the person if found
         if (person != null) {

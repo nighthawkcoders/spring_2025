@@ -65,12 +65,19 @@ public class AssignmentsApiController {
     @Transactional
     @GetMapping("/")
     public ResponseEntity<?> getAllAssignments() {
-        System.out.println("here");
         List<Assignment> assignments = assignmentRepo.findAll();
-        System.out.println("here");
-        System.out.println(assignments);
-        System.out.println(new ResponseEntity<>(assignments, HttpStatus.OK));
-        return new ResponseEntity<>(assignments, HttpStatus.OK);
+        List<Map<String, String>> simple = new ArrayList<>();
+        for (Assignment a : assignments) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", String.valueOf(a.getId()));
+            map.put("name", a.getName());
+            map.put("description", a.getDescription());
+            map.put("dueDate", a.getDueDate());
+            map.put("points", String.valueOf(a.getPoints()));
+            map.put("type", a.getType());
+            simple.add(map);
+        }
+        return new ResponseEntity<>(simple, HttpStatus.OK);
     }
 
     /**
@@ -144,7 +151,7 @@ public class AssignmentsApiController {
     @PostMapping("/submit/{assignmentId}")
     public ResponseEntity<?> submitAssignment(
             @PathVariable Long assignmentId,
-            @PathVariable Long studentId,
+            @RequestParam Long studentId,
             @RequestParam String content) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
