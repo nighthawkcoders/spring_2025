@@ -11,17 +11,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface GradeJpaRepository extends JpaRepository<Grade, Long> {
+public interface SynergyGradeJpaRepository extends JpaRepository<SynergyGrade, Long> {
     
-    Grade findByAssignmentAndStudent(Assignment assignment, Person student);
+    SynergyGrade findByAssignmentAndStudent(Assignment assignment, Person student);
 
-    List<Grade> findByStudent(Person student);
+    List<SynergyGrade> findByStudent(Person student);
 
-    List<Grade> findByAssignment(Assignment assignment);
+    List<SynergyGrade> findByAssignment(Assignment assignment);
 
-    List<Grade> findByAssignmentId(Long assignmentId);
+    List<SynergyGrade> findByAssignmentId(Long assignmentId);
 
-    Optional<Grade> findByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
+    Optional<SynergyGrade> findByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
 
     @Query("SELECT DISTINCT g.assignment.id FROM Grade g")
     List<Integer> findAllAssignmentIds();

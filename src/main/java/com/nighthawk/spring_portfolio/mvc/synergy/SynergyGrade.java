@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Grade {
+public class SynergyGrade {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -27,13 +27,13 @@ public class Grade {
     @JoinColumn(name="student_id", nullable=false)
     private Person student;
 
-    public Grade(Double grade, Assignment assignment, Person student) {
+    public SynergyGrade(Double grade, Assignment assignment, Person student) {
         this.grade = grade;
         this.assignment = assignment;
         this.student = student;
     }
 
-    public static Grade createFromRequest(GradeRequest request) {
-        return new Grade(request.getGradeSuggestion(), request.getAssignment(), request.getStudent());
+    public static SynergyGrade createFromRequest(SynergyGradeRequest request) {
+        return new SynergyGrade(request.getGradeSuggestion(), request.getAssignment(), request.getStudent());
     }
 }

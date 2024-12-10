@@ -21,10 +21,10 @@ import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/api/submissions")
-public class SubmissionAPIController {
+public class AssignmentSubmissionAPIController {
 
     @Autowired
-    private SubmissionJPA submissionRepo;
+    private AssignmentSubmissionJPA submissionRepo;
 
     @Autowired
     private AssignmentJpaRepository assignmentRepo;
@@ -45,9 +45,9 @@ public class SubmissionAPIController {
      */
     @Transactional
     @GetMapping("/getSubmissions/{studentId}")
-    public ResponseEntity<List<Submission>> getSubmissions(@PathVariable Long studentId) {
-        List<Submission> submissions = submissionRepo.findByStudentId(studentId);
-        ResponseEntity<List<Submission>> responseEntity = new ResponseEntity<>(submissions, HttpStatus.OK);
+    public ResponseEntity<List<AssignmentSubmission>> getSubmissions(@PathVariable Long studentId) {
+        List<AssignmentSubmission> submissions = submissionRepo.findByStudentId(studentId);
+        ResponseEntity<List<AssignmentSubmission>> responseEntity = new ResponseEntity<>(submissions, HttpStatus.OK);
         return responseEntity;
     }
 
@@ -60,7 +60,7 @@ public class SubmissionAPIController {
             @RequestParam Double grade,
             @RequestParam(required = false) String feedback) {
         
-        Submission submission = submissionRepo.findById(submissionId).orElse(null);
+        AssignmentSubmission submission = submissionRepo.findById(submissionId).orElse(null);
         submission.setGrade(grade);
         submission.setFeedback(feedback);
         System.out.println(submission.getContent());
@@ -102,11 +102,11 @@ public class SubmissionAPIController {
         }
 
         // Find submissions for this assignment
-        List<Submission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
         
         System.out.println("Found " + submissions.size() + " submissions");
 
-        ResponseEntity<List<Submission>> response = new ResponseEntity<>(submissions, HttpStatus.OK);
+        ResponseEntity<List<AssignmentSubmission>> response = new ResponseEntity<>(submissions, HttpStatus.OK);
         System.out.println(response);
         
         return new ResponseEntity<>(submissions, HttpStatus.OK);

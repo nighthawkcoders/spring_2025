@@ -17,8 +17,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.Submission;
-import com.nighthawk.spring_portfolio.mvc.assignments.SubmissionJPA;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
 
@@ -37,7 +37,7 @@ public class ModelInit {
     @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
-    @Autowired SubmissionJPA submissionJPA;
+    @Autowired AssignmentSubmissionJPA submissionJPA;
 
     @Bean
     @Transactional
@@ -103,7 +103,7 @@ public class ModelInit {
                     assignmentJpaRepository.save(newAssignment);
 
                     // create sample submission
-                    submissionJPA.save(new Submission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
                 }
             }
         };

@@ -29,7 +29,7 @@ public class AssignmentsApiController {
     private AssignmentJpaRepository assignmentRepo;
 
     @Autowired
-    private SubmissionJPA submissionRepo;
+    private AssignmentSubmissionJPA submissionRepo;
 
     @Autowired
     private PersonJpaRepository personRepo;
@@ -142,8 +142,8 @@ public class AssignmentsApiController {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
-            Submission submission = new Submission(assignment, student, content);
-            Submission savedSubmission = submissionRepo.save(submission);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content);
+            AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
         Map<String, String> error = new HashMap<>();
@@ -158,7 +158,7 @@ public class AssignmentsApiController {
      */
     @GetMapping("/{assignmentId}/submissions")
     public ResponseEntity<?> getSubmissions(@PathVariable Long assignmentId) {
-        List<Submission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
 

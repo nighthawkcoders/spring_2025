@@ -32,7 +32,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.nighthawk.spring_portfolio.mvc.synergy.Grade;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
 import lombok.AllArgsConstructor;
@@ -71,7 +71,7 @@ public class Person implements Comparable<Person> {
     private Long id;
 
     @OneToMany(mappedBy="student")
-    private List<Grade> grades;
+    private List<SynergyGrade> grades;
     
     @ManyToMany(fetch = EAGER)
     @JoinTable(

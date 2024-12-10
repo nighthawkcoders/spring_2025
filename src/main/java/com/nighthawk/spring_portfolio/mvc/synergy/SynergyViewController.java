@@ -24,10 +24,10 @@ import java.util.HashMap;
 @RequestMapping("/mvc/synergy")
 public class SynergyViewController {
     @Autowired
-    private GradeJpaRepository gradeRepository;
+    private SynergyGradeJpaRepository gradeRepository;
     
     @Autowired
-    private GradeRequestJpaRepository gradeRequestRepository;
+    private SynergyGradeRequestJpaRepository gradeRequestRepository;
 
     @Autowired
     private AssignmentJpaRepository assignmentRepository;
@@ -55,10 +55,10 @@ public class SynergyViewController {
 
         // students can't edit grades, teachers can edit
         if (user.hasRoleWithName("ROLE_STUDENT")) {
-            List<Grade> studentGrades = gradeRepository.findByStudent(user);
+            List<SynergyGrade> studentGrades = gradeRepository.findByStudent(user);
         
-            Map<Long, Grade> assignmentGrades = new HashMap<>();
-            for (Grade grade : studentGrades) {
+            Map<Long, SynergyGrade> assignmentGrades = new HashMap<>();
+            for (SynergyGrade grade : studentGrades) {
                 assignmentGrades.put(grade.getAssignment().getId(), grade);
             }
         
@@ -67,7 +67,7 @@ public class SynergyViewController {
             return "synergy/view_student_grades";
         } else if (user.hasRoleWithName("ROLE_TEACHER") || user.hasRoleWithName("ROLE_ADMIN")) {
             List<Person> students = personRepository.findPeopleWithRole("ROLE_STUDENT");
-            List<Grade> gradesList = gradeRepository.findAll();
+            List<SynergyGrade> gradesList = gradeRepository.findAll();
 
             Map<Long, Map<Long, Double>> grades = createGradesMap(gradesList, assignments, students);
 
@@ -90,7 +90,7 @@ public class SynergyViewController {
      * @param students A list of students
      * @return A map of format Map[ASSIGNMENT_ID: Map[STUDENT_ID: Grade]]
      */
-    private Map<Long, Map<Long, Double>> createGradesMap(List<Grade> gradesList, List<Assignment> assignments, List<Person> students) {
+    private Map<Long, Map<Long, Double>> createGradesMap(List<SynergyGrade> gradesList, List<Assignment> assignments, List<Person> students) {
         Map<Long, Map<Long, Double>> gradesMap = new HashMap<>();
 
         // Ok so these are the default vals
@@ -101,7 +101,7 @@ public class SynergyViewController {
             }
         }
 
-        for (Grade grade : gradesList) {
+        for (SynergyGrade grade : gradesList) {
             if (gradesMap.containsKey(grade.getAssignment().getId())) {
                 gradesMap.get(grade.getAssignment().getId()).put(grade.getStudent().getId(), grade.getGrade());
             }
@@ -117,7 +117,7 @@ public class SynergyViewController {
      */
     @GetMapping("/view-grade-requests")
     public String viewRequests(Model model) {
-        List<GradeRequest> requests = gradeRequestRepository.findAll();
+        List<SynergyGradeRequest> requests = gradeRequestRepository.findAll();
         model.addAttribute("requests", requests);
         return "synergy/view_grade_requests";
     }

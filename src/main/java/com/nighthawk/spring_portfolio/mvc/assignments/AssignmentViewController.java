@@ -27,7 +27,7 @@ public class AssignmentViewController {
     private PersonJpaRepository personRepository;
 
     @Autowired
-    private SubmissionJPA submissionRepo;
+    private AssignmentSubmissionJPA submissionRepo;
 
     @GetMapping("/tracker")
     public String assignmentTracker(Model model, @AuthenticationPrincipal UserDetails userDetails) {
@@ -141,7 +141,7 @@ public class AssignmentViewController {
                 HttpStatus.NOT_FOUND, "Assignment not found"
             ));
 
-        List<Submission> submissions = submissionRepo.findByAssignmentId(id);
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(id);
         model.addAttribute("assignment", assignment);
         model.addAttribute("submissions", submissions);
         return "assignments/assignment_submissions";
