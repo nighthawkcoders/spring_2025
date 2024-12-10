@@ -236,18 +236,14 @@ public class AnswerApiController {
         return 0L; // return zero if the api call fails
     }
 
-    /* 
     @GetMapping("/leaderboard")
     public List<LeaderboardDto> getLeaderboard() {
-        List<LeaderboardDto> leaderboardEntries = answerJpaRepository.findTop10UsersByTotalScore();
-
-        for (LeaderboardDto entry : leaderboardEntries) {
-            Optional<User> user = userJpaRepository.findById(entry.getId());
-            String userName = user.isPresent() ? user.get().getUsername() : "Unknown";
-            entry.setuserName(userName);
-        }
-
-        return leaderboardEntries;
-    }  
-    */
+    List<LeaderboardDto> leaderboardEntries = answerJpaRepository.findTop10PersonsByTotalScore();
+    for (LeaderboardDto entry : leaderboardEntries) {
+        Optional<Person> person = personJpaRepository.findById(entry.getId());
+        String Name = person.isPresent() ? person.get().getName() : "Unknown";
+        entry.setuserName(Name);
+    }
+    return leaderboardEntries;
+    }
 }
