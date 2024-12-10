@@ -138,7 +138,7 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("/addQueue/{id}")
+    @PutMapping("/queueToWaiting/{id}")
     public ResponseEntity<Assignment> addQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
@@ -150,7 +150,7 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("/removeQueue/{id}")
+    @PutMapping("/queueToWorking/{id}")
     public ResponseEntity<Assignment> removeQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
@@ -162,7 +162,7 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("/doneQueue/{id}")
+    @PutMapping("/queueToComplete/{id}")
     public ResponseEntity<Assignment> doneQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
