@@ -54,7 +54,7 @@ public class Assignment {
 
     @OneToMany(mappedBy = "assignment")
     @JsonIgnore
-    private List<Submission> submissions;
+    private List<AssignmentSubmission> submissions;
 
     @OneToMany(mappedBy="assignment")
     private List<Grade> grades;
@@ -62,8 +62,8 @@ public class Assignment {
     @NotNull
     private Double points;
 
-    @Convert(converter = QueueConverter.class)
-    private Queue assignmentQueue;
+    @Convert(converter = AssignmentQueueConverter.class)
+    private AssignmentQueue assignmentQueue;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -97,7 +97,8 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        this.assignmentQueue = new Queue();
+        // not necessary, if initialized as null converter will not insert empty queue but null, need to check and initialize in converter
+        // this.assignmentQueue = new AssignmentQueue();
     }
 
     public static Assignment[] init() {

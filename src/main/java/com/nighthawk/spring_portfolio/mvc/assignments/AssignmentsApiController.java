@@ -26,7 +26,7 @@ public class AssignmentsApiController {
     private AssignmentJpaRepository assignmentRepo;
 
     @Autowired
-    private SubmissionJPA submissionRepo;
+    private AssignmentSubmissionJPA submissionRepo;
 
     @PostMapping("/create") 
     public ResponseEntity<?> createAssignment(
@@ -82,8 +82,8 @@ public class AssignmentsApiController {
             @RequestParam String content) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         if (assignment != null) {
-            Submission submission = new Submission(assignment, content);
-            Submission savedSubmission = submissionRepo.save(submission);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, content);
+            AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
         Map<String, String> error = new HashMap<>();
@@ -93,7 +93,7 @@ public class AssignmentsApiController {
 
     @GetMapping("/{assignmentId}/submissions")
     public ResponseEntity<?> getSubmissions(@PathVariable Long assignmentId) {
-        List<Submission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
 
@@ -115,7 +115,7 @@ public class AssignmentsApiController {
     }
 
     @GetMapping("/getQueue/{id}")
-    public ResponseEntity<Queue> getQueue(@PathVariable long id) {
+    public ResponseEntity<AssignmentQueue> getQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
