@@ -3,7 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/targe/
 !**/src/test/**/target/
-
+volumes/sqlite.db
 
 
 ### STS ###
