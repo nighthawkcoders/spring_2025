@@ -6,103 +6,190 @@
     <title>View Grades</title>
 
     <style>
-        table {
+        .edit-container {
+            margin-left: 1vw;
+            margin-right: 1vw;
+        }
+
+        /* table {
             width: 100%;
             border-collapse: collapse;
             overflow-x: auto;
             display: block;
-        }
+        } */
+
         th, td {
             border: 1px solid #ccc;
             padding: 1em;
             text-align: center;
-            min-width: 8em;
+            width: 10em;
         }
+
         th {
             background-color: #f2f2f2;
         }
-        .container {
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        .grade-cell {
+
+        /* .grade-cell {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5em;
-        }
+        } */
+
         .grade-input {
             width: 4em;
             text-align: right;
             padding: 0.25em;
         }
+
         .points-separator {
             margin: 0 0.25em;
         }
+
         .total-points {
             color: #666;
         }
+
         .assignment-header {
             display: flex;
             flex-direction: column;
             gap: 0.5em;
         }
+
         .assignment-name {
             font-weight: bold;
         }
+
         .assignment-points {
             font-size: 0.9em;
             color: #666;
         }
+
+        /* .dataTables_length,
+        .dataTables_filter {
+            margin-bottom: 1em;
+        }
+        
+        .dataTables_length label,
+        .dataTables_filter label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            padding: 0.4em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .dataTables_paginate {
+            margin: 1em;
+        }
+
+        .dataTables_paginate .paginate_button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25em;
+            font-size: 0.9em;
+        }
+
+        .dataTables_paginate .paginate_button:hover {
+            background-color: #0056b3;
+        }
+
+        .dataTables_paginate .paginate_button.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .dataTables_info {
+            margin-top: 1em;
+            color: #555;
+        }
+
+        table.dataTable tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .scrollable-table {
+            margin-bottom: 1em;
+        } */
+
+        .save-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 0.6em 1.2em;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-bottom: 1em;
+        }
+
+        .save-btn:hover {
+            background-color: #218838;
+        }
+
     </style>
 </head>
 
 <body>
 <th:block layout:fragment="body" th:remove="tag">
+    <div class="edit-container">
 
-    <h2>View Grades</h2>
+        <h2>View Grades</h2>
 
-    <button class="save-btn" type="button" id="save-btn">Save Grades</button>
+        <button class="save-btn" type="button" id="save-btn">Save Grades</button>
 
-    <div class="scrollable-table">
-        <form id="grade-form">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th:block th:each="assignment : ${assignments}">
-                            <th>
-                                <div class="assignment-header">
-                                    <span class="assignment-name" th:text="${assignment.name}">Assignment Name</span>
-                                    <span class="assignment-points" th:text="'out of ' + ${assignment.points}">out of X</span>
+        <div class="scrollable-table">
+            <form id="grade-form">
+                <table id="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th:block th:each="assignment : ${assignments}">
+                                <th>
+                                    <div class="assignment-header">
+                                        <span class="assignment-name" th:text="${assignment.name}">Assignment Name</span>
+                                        <span class="assignment-points" th:text="'out of ' + ${assignment.points}">out of X</span>
+                                    </div>
+                                </th>
+                            </th:block>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="student : ${students}">
+                            <td th:text="${student.name}">Student Name</td>
+                            <td th:each="assignment : ${assignments}">
+                                <div class="grade-cell">
+                                    <input 
+                                        type="number"
+                                        min="0"
+                                        step="any"
+                                        class="grade-input"
+                                        th:name="'grades[' + ${assignment.id} + '][' + ${student.id} + ']'" 
+                                        th:value="${grades[assignment.id][student.id] != null ? grades[assignment.id][student.id] : ''}" 
+                                        th:placeholder="${grades[assignment.id][student.id] != null ? '' : 'N/A'}"
+                                    />
+                                    <span class="points-separator">/</span>
+                                    <span class="total-points" th:text="${assignment.points}">100</span>
                                 </div>
-                            </th>
-                        </th:block>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="student : ${students}">
-                        <td th:text="${student.name}">Student Name</td>
-                        <td th:each="assignment : ${assignments}">
-                            <div class="grade-cell">
-                                <input 
-                                    type="number"
-                                    min="0"
-                                    step="any"
-                                    class="grade-input"
-                                    th:name="'grades[' + ${assignment.id} + '][' + ${student.id} + ']'" 
-                                    th:value="${grades[assignment.id][student.id] != null ? grades[assignment.id][student.id] : ''}" 
-                                    th:placeholder="${grades[assignment.id][student.id] != null ? '' : 'N/A'}"
-                                />
-                                <span class="points-separator">/</span>
-                                <span class="total-points" th:text="${assignment.points}">100</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
     </div>
 
 </th:block>
@@ -110,25 +197,30 @@
 
 <th:block layout:fragment="script" th:remove="tag">
 <script>
-    document.getElementById('save-btn').addEventListener('click', async function () {
-        const form = document.getElementById('grade-form');
-        const formData = new FormData(form);
+    $(document).ready(function() {
+        // Initialize the User Table using jQuery DataTables
+        $("#grades-table").DataTable();
 
-        try {
-            const response = await fetch('/api/synergy/grades', {
-                method: 'POST',
-                body: formData
-            });
+        $('#save-btn').on('click', async function () {
+            const form = document.getElementById('grade-form');
+            const formData = new FormData(form);
 
-            if (response.ok) {
-                alert('Grades saved successfully!');
-            } else {
-                alert('Failed to save grades. Please try again.');
+            try {
+                const response = await fetch('/api/synergy/grades', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Grades saved successfully!');
+                } else {
+                    alert('Failed to save grades. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('An error occurred. Please try again.');
             }
-        } catch (error) {
-            console.error('Error submitting form:', error);
-            alert('An error occurred. Please try again.');
-        }
+        });
     });
 </script>
 </th:block>
