@@ -115,7 +115,7 @@
         const formData = new FormData(form);
 
         try {
-            const response = await fetch('/api/synergy/update-all-grades', {
+            const response = await fetch('/api/synergy/grades', {
                 method: 'POST',
                 body: formData
             });

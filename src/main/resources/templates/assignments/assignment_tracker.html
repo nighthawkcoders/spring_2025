@@ -27,6 +27,9 @@
         .btn-delete {
             background-color: #f44336;
         }
+        .btn-view-submissions {
+            background-color: #007bff;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -43,6 +46,35 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+        #submissionsModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
     </style>
 </head>
 
@@ -52,6 +84,7 @@
         <h1>Assignment Tracker</h1>
         <button class="btn" onclick="showAddAssignmentModal()">Add Assignment</button>
         
+        <!-- Add Assignment Modal -->
         <div id="addAssignmentModal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
             <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%;">
                 <h2>Add New Assignment</h2>
@@ -62,6 +95,28 @@
                 <label>Due Date: <input type="text" id="assignmentDueDate" placeholder="MM/DD/YYYY"></label><br>
                 <button onclick="createAssignment()">Submit</button>
                 <button onclick="closeAddAssignmentModal()">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Submissions Modal -->
+        <div id="submissionsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeSubmissionsModal()">&times;</span>
+                <h2>Submissions</h2>
+                <table id="submissionsTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submission</th>
+                            <th>Timestamp</th>
+                            <th>Grade</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsList">
+                        <!-- Submissions will be dynamically inserted here -->
+                    </tbody>
+                </table>
             </div>
         </div>
         
@@ -103,6 +158,7 @@
                         <td>${assignment.points}</td>
                         <td>${assignment.dueDate}</td>
                         <td>
+                            <button class="btn btn-view-submissions" onclick="viewSubmissions(${assignment.id})">View Submissions</button>
                             <button class="btn btn-delete" onclick="deleteAssignment('${assignment.id}')">Delete</button>
                         </td>
                     `;
@@ -141,7 +197,79 @@
             method: 'POST'
         }).then(fetchAssignments);
     }
+
+    function viewSubmissions(id) {
+    console.log(`Fetching submissions for assignment ID: ${id}`);
+    fetch(`/api/submissions/assignment/${id}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); // Only call response.json() once here
+        })
+        .then(submissions => {
+            console.log('Submissions received:', submissions);
+            const submissionsList = document.getElementById('submissionsList');
+            submissionsList.innerHTML = ''; 
+
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<tr><td colspan="5">No submissions found</td></tr>';
+            } else {
+                submissions.forEach(submission => {
+                    console.log('Processing submission:', submission);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${submission.student ? submission.student.name : 'Unknown Student'}</td>
+                        <td>${submission.content || 'No content'}</td>
+                        <td>N/A</td>
+                        <td>${submission.grade || 'Not graded'}</td>
+                        <td>
+                            <button onclick="gradeSubmission(${submission.id})">Grade</button>
+                        </td>
+                    `;
+                    submissionsList.appendChild(row);
+                });
+            }
+
+            document.getElementById('submissionsModal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching submissions:', error);
+            alert('Failed to fetch submissions: ' + error.message);
+        });
+}
+
+
+    function closeSubmissionsModal() {
+        document.getElementById('submissionsModal').style.display = 'none';
+    }
+
+    function gradeSubmission(submissionId) {
+        const grade = prompt('Enter grade:');
+        const feedback = prompt('Enter feedback (optional):');
+
+        if (grade !== null) {
+            const params = new URLSearchParams({
+                grade,
+                feedback: feedback || ''
+            });
+
+            fetch(`/api/submissions/grade/${submissionId}`, {
+                method: 'POST',
+                body: params
+            })
+            .then(response => response.text())
+            .then(updatedSubmission => {
+                alert('Submission graded successfully');
+                // Optionally, refresh the submissions list
+            })
+            .catch(error => {
+                console.error('Error grading submission:', error);
+                alert('Failed to grade submission');
+            });
+        }
+    }
 </script>
 </th:block>
-
 </html>

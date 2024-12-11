@@ -1,9 +1,9 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,26 +19,31 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Submission {
+public class AssignmentSubmission {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "assignment_id")
-    @JsonBackReference  // Add this annotation
+    @JsonBackReference
     private Assignment assignment;
 
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Person student;
+
     private String content;
-    private String timestamp;
+    private Double grade;
+    private String feedback;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public Submission(Assignment assignment, String content) {
+    public AssignmentSubmission(Assignment assignment, Person student, String content) {
         this.assignment = assignment;
+        this.student = student;
         this.content = content;
-        this.timestamp = LocalDateTime.now().format(formatter);
+        this.grade = null;
+        this.feedback = null;
     }
-
-    // submission is a seperate class bc i couldnt integrate into one
 }
