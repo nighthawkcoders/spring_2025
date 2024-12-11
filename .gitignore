@@ -35,6 +35,3 @@ build/
 ### Java build ###
 *.class
 .java-version
-
-
-./volumes/sqlite.db
