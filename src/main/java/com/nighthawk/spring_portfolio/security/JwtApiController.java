@@ -31,56 +31,44 @@ import jakarta.servlet.http.HttpServletResponse;
 @CrossOrigin
 public class JwtApiController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
 
-    @Autowired
-    private PersonDetailsService personDetailsService;
-
-    // @Autowired
-    // private ProfileJpaRepository profileJpaRepository;
+	@Autowired
+	private PersonDetailsService personDetailsService;
 
     @CrossOrigin(origins = "http://127.0.0.1:4100")
-    @PostMapping("/authenticate")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
-        authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
-        final UserDetails userDetails = personDetailsService
-                .loadUserByUsername(authenticationRequest.getEmail());
+	@PostMapping("/authenticate")
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
+		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+		final UserDetails userDetails = personDetailsService
+				.loadUserByUsername(authenticationRequest.getEmail());
 
-        // Get the roles of the user
-        List<String> roles = userDetails.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .collect(Collectors.toList());
+		// Get the roles of the user
+		List<String> roles = userDetails.getAuthorities().stream()
+			.map(GrantedAuthority::getAuthority)
+			.collect(Collectors.toList());
 
-        // Generate the token with the roles
-        final String token = jwtTokenUtil.generateToken(userDetails, roles);
+		// Generate the token with the roles
+		final String token = jwtTokenUtil.generateToken(userDetails, roles);
 
-        if (token == null) {
-            return new ResponseEntity<>("Token generation failed", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+		if (token == null) {
+			return new ResponseEntity<>("Token generation failed", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-        // // Update login date and timeIn
-        // profileJpaRepository.findByEmail(authenticationRequest.getEmail()).ifPresent(user -> {
-        //     user.setDate(LocalDate.now());          // Save the current date
-        //     user.setTimeIn(LocalTime.now());     // Save the current time as timeIn
-        //     profileJpaRepository.save(user);         // Save updated profile with new date and timeIn
-        // });
+		final ResponseCookie tokenCookie = ResponseCookie.from("jwt_java_spring", token)
+			.httpOnly(false)
+			.secure(true)
+			.path("/")
+			.maxAge(3600)
+			.sameSite("None; Secure")
+			.build();
 
-        final ResponseCookie tokenCookie = ResponseCookie.from("jwt_java_spring", token)
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(3600)
-            .sameSite("None; Secure")
-            .build();
-
-        return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, tokenCookie.toString())
-            .body(authenticationRequest.getEmail() + " was authenticated successfully");
-        }
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getEmail() + " was authenticated successfully");
+	}
 
 	private void authenticate(String username, String password) throws Exception {
 		try {
@@ -105,7 +93,7 @@ public class JwtApiController {
 	
 			// Expire the JWT token immediately by setting a past expiration date
 			ResponseCookie cookie = ResponseCookie.from("jwt_java_spring", "")
-				.httpOnly(true)
+				.httpOnly(false)
 				.secure(true)
 				.path("/")
 				.maxAge(0)  // Set maxAge to 0 to expire the cookie immediately

@@ -329,8 +329,7 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
      *         a NOT_FOUND status if not found.
      */
     @PostMapping(value = "/person/setStats", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Person> personStats(Authentication authentication,
-            @RequestBody final Map<String, Object> stat_map) {
+    public ResponseEntity<Person> personStats(Authentication authentication, @RequestBody final Map<String,Object> stat_map) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 

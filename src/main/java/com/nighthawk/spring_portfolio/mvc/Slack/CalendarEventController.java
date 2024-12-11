@@ -26,6 +26,7 @@ public class CalendarEventController {
         LocalDateTime now = LocalDateTime.now();
         String formattedDate = String.format("%d-%02d-%02d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
         LocalDate weekStartDate = LocalDate.parse(formattedDate);
+        //Gets the current day including the month, and parses it through the parseSlackMessage method
         calendarEventService.parseSlackMessage(jsonMap, weekStartDate);
     }
     

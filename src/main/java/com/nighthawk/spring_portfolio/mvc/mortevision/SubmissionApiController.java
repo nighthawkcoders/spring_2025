@@ -44,21 +44,24 @@ public class SubmissionApiController {
 
 
         // GET all submissions
-    @GetMapping("/all")
-    public ResponseEntity<List<Submission>> getAllSubmissions() {
-        List<Submission> submissions = repository_sub.findAll();
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+    @GetMapping("/getSubmissions")
+    public ResponseEntity<List<Submission>> getPeople() {
+        List<Submission> submissions = repository_sub.findAllByOrderByNameAsc();
+        ResponseEntity<List<Submission>> responseEntity = new ResponseEntity<>(submissions, HttpStatus.OK);
+        return responseEntity;
     }
 
-    // GET a specific submission by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Submission> getSubmissionById(@PathVariable long id) {
-        Optional<Submission> optional = repository_sub.findById(id);
-        if (optional.isPresent()) {
-            return new ResponseEntity<>(optional.get(), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    // // GET a specific submission by ID
+    // @GetMapping("/{id}")
+    // public ResponseEntity<Submission> getSubmissionById(@PathVariable long id) {
+    //     Optional<Submission> optional = repository_sub.findById(id);
+    //     if (optional.isPresent()) {
+    //         return new ResponseEntity<>(optional.get(), HttpStatus.OK);
+    //     }
+    //     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // }
+
+
 
     // DELETE a submission
     @DeleteMapping("/{id}")

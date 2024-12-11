@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.springframework.expression.spel.ast.Assign;
 
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+
 import groovy.cli.Option;
 
 import java.util.ArrayList;
@@ -33,7 +35,10 @@ public class Submission {
 
     private long assignment_id;
     
+    private String name; 
+    
     @ManyToOne
     @JoinColumn(name = "assignment")
     private Assignment assignment;
+    
 }

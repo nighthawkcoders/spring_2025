@@ -9,7 +9,6 @@ public class MessageService {
 
     @Autowired
     private SlackMessageRepository messageRepository;
-
     public void saveMessage(String messageContent) {
         // Create a new SlackMessage entity with the current timestamp and the message content as a blob
         SlackMessage message = new SlackMessage(LocalDateTime.now(), messageContent);

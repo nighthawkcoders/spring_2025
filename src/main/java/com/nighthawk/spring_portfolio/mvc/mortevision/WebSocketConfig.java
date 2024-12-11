@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.config;  
+package com.nighthawk.spring_portfolio.mvc.mortevision;  
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

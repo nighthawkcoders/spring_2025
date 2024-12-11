@@ -32,7 +32,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
 import lombok.AllArgsConstructor;
@@ -70,6 +69,9 @@ public class Person implements Comparable<Person> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // @OneToMany(mappedBy="student")
+    // private List<SynergyGrade> grades;
+    
     @ManyToMany(fetch = EAGER)
     @JoinTable(
         name = "person_person_sections",  // unique name to avoid conflicts
@@ -78,16 +80,6 @@ public class Person implements Comparable<Person> {
     )
     private Collection<PersonSections> sections = new ArrayList<>();
 
-    @OneToMany(mappedBy = "person")
-    private List<Tinkle> time_entries;
-    // @ManyToMany(fetch = EAGER)
-    // @JoinTable(
-    //     name = "person_bathroom",
-    //     joinColumns=@JoinColumn(name = "person_name"),
-    //     inverseJoinColumns = @JoinColumn(name = "tinkle_time")
-    // )
-    // private Collection<Tinkle> time_entries = new ArrayList<>();
-    
     /**
      * Many to Many relationship with PersonRole
      * --- @ManyToMany annotation is used to specify a many-to-many relationship
@@ -180,6 +172,18 @@ public class Person implements Comparable<Person> {
         this.roles.add(role);
     }
 
+    public boolean hasRoleWithName(String roleName) {
+        for (PersonRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Custom getter to return age from dob attribute
+     */
     /** Custom getter to return age from dob attribute
      * @return int, the age of the person
     */
@@ -211,7 +215,7 @@ public class Person implements Comparable<Person> {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
         return createPerson(name, email, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
-
+    
     /**
      * 2nd telescoping method to create a Person object with parameterized roles
      * 
@@ -250,10 +254,10 @@ public class Person implements Comparable<Person> {
     public static Person[] init() {
         ArrayList<Person> people = new ArrayList<>();
         people.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, "01-01-1847", Arrays.asList("ROLE_USER")));
-        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER")));
-        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER")));
-        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER")));
+        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         
         Collections.sort(people);

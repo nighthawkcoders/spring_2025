@@ -1,14 +1,18 @@
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
 import java.util.ArrayList;
-import com.nighthawk.spring_portfolio.mvc.person.Person;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +29,7 @@ public class Tinkle {
 
     @ManyToOne
     @JoinColumn(name = "person_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Person person;
     private String timeIn;
 
@@ -85,7 +90,7 @@ public class Tinkle {
         ArrayList<Tinkle> tinkles = new ArrayList<>();
         for(Person person: persons)
         {
-            tinkles.add(new Tinkle(person,""));
+            tinkles.add(new Tinkle(person,"11:12:05-11:13:06,12:15:10-12:19:12"));
         }
         return tinkles.toArray(new Tinkle[0]);
     }

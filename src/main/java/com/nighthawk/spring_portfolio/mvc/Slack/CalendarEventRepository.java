@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
+// Registering JPA Repository and table contents
 public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Long> {
-    List<CalendarEvent> findByDate(LocalDate date);
-    List<CalendarEvent> findByDateBetween(LocalDate startDate, LocalDate endDate);
+    List<CalendarEvent> findByDate(LocalDate date); // Method to find calendar events by date
+    List<CalendarEvent> findByDateBetween(LocalDate startDate, LocalDate endDate); // Method to find all calendar events between dates
     List<CalendarEvent> findByType(String type);
 }

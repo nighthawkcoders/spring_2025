@@ -1,7 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.Slack;
 
 public class SlackEvent {
-
+    // POJO
     private String challenge;
     private Event event;
 
