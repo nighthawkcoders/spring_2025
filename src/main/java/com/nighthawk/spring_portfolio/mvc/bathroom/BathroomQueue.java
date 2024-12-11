@@ -21,13 +21,13 @@ public class BathroomQueue {
     private Long id;
 
     @Column
-    private String teacherName;
+    private String teacherEmail;
     private String peopleQueue;
     private int away;
 
     // Custom constructor
-    public BathroomQueue(String teacherName, String peopleQueue) {
-        this.teacherName = teacherName;
+    public BathroomQueue(String teacherEmail, String peopleQueue) {
+        this.teacherEmail = teacherEmail;
         this.peopleQueue = peopleQueue;
         this.away = 0;
     }
@@ -79,7 +79,7 @@ public class BathroomQueue {
 
     public static BathroomQueue[] init() {
         ArrayList<BathroomQueue> queues = new ArrayList<>();
-        queues.add(new BathroomQueue("Mortensen", ""));
+        queues.add(new BathroomQueue("jm1021@gmail.com", ""));
         return queues.toArray(new BathroomQueue[0]);
     }
 }
