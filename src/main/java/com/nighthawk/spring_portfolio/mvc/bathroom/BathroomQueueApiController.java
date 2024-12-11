@@ -18,56 +18,56 @@ import lombok.Getter;
 
 @RestController
 @RequestMapping("/api/queue")
-public class QueueApiController {
+public class BathroomQueueApiController {
 
     @Autowired
-    private QueueJPARepository repository;
+    private BathroomQueueJPARepository repository;
 
     // DTO class for queue entries
     @Getter
     public static class QueueDto {
-        private String teacherName;
+        private String teacherEmail;
         private String studentName;
     }
 
     @PostMapping("/add")
     public ResponseEntity<Object> addToQueue(@RequestBody QueueDto queueDto) {
         // Check if a queue entry for the teacher already exists
-        Optional<BathroomQueue> existingQueue = repository.findByTeacherName(queueDto.getTeacherName());
+        Optional<BathroomQueue> existingQueue = repository.findByTeacherEmail(queueDto.getTeacherEmail());
         if (existingQueue.isPresent()) {
             existingQueue.get().addStudent(queueDto.getStudentName());
             repository.save(existingQueue.get());
         }
         else {
-            BathroomQueue newQueue = new BathroomQueue(queueDto.getTeacherName(), queueDto.getStudentName());
+            BathroomQueue newQueue = new BathroomQueue(queueDto.getTeacherEmail(), queueDto.getStudentName());
             repository.save(newQueue);
         }
-        return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherName(), HttpStatus.CREATED);
+        return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherEmail(), HttpStatus.CREATED);
     }
 
     @CrossOrigin(origins = "http://127.0.0.1:4100")
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
-        Optional<BathroomQueue> queueEntry = repository.findByTeacherName(queueDto.getTeacherName());
+        Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
         if (queueEntry.isPresent()) {
             BathroomQueue bathroomQueue = queueEntry.get();
             try {
                 bathroomQueue.removeStudent(queueDto.getStudentName());
                 repository.save(bathroomQueue);
-                return new ResponseEntity<>("Removed " + queueDto.getStudentName() + " from " + queueDto.getTeacherName() + "'s queue", HttpStatus.OK);
+                return new ResponseEntity<>("Removed " + queueDto.getStudentName() + " from " + queueDto.getTeacherEmail() + "'s queue", HttpStatus.OK);
             } 
             catch (IllegalArgumentException e) {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
             }
         }
         
-        return new ResponseEntity<>("Queue for " + queueDto.getTeacherName() + " not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
     @CrossOrigin(origins = "http://127.0.0.1:4100")
     @PostMapping("/approve")
     public ResponseEntity<Object> approveStudent(@RequestBody QueueDto queueDto) {
-        Optional<BathroomQueue> queueEntry = repository.findByTeacherName(queueDto.getTeacherName());
+        Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
         if (queueEntry.isPresent()) {
             BathroomQueue bathroomQueue = queueEntry.get();
             String frontStudent = bathroomQueue.getFrontStudent();
@@ -80,7 +80,7 @@ public class QueueApiController {
                 return new ResponseEntity<>("Student is not at the front of the queue", HttpStatus.BAD_REQUEST);
             }
         }
-        return new ResponseEntity<>("Queue for " + queueDto.getTeacherName() + " not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/all")
