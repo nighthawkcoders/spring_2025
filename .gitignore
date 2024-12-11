@@ -37,6 +37,3 @@ build/
 ### Java build ###
 *.class
 .env
-
-### Database ###
-volumes/sqlite.db
