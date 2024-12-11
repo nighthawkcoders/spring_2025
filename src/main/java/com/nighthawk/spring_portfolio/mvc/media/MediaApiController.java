@@ -30,25 +30,5 @@ public class MediaApiController {
 
     // Get all analytics records
     // Get all analytics records
-    @GetMapping("/")
-    public ResponseEntity<List<Scores>> getAllAnalytics() {
-        List<SynergyGrade> gradeList = gradeJpaRepository.findAll();  // Fetch all grade records from database
-        if (gradeList.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // No records found
-        }
-        return new ResponseEntity<>(gradeList, HttpStatus.OK); // Return found records
-    }
-
-    
-    @GetMapping("/leaderboard")
-    public List<Integer> getLeaderboard() {
-        List<Integer> scores = mediaJpaRepository.findAll(); // Fetch leaderboard
-        return scores;  // Return list of assignment IDs
-    }
-
-    @GetMapping("/score/{person_id}")
-    public List<Integer> getLeaderboard() {
-        List<Integer> scores = mediaJpaRepository.findAll(); // Fetch leaderboard
-        return scores;  // Return list of assignment IDs
-    }
+ 
 }
