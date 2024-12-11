@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Random;
 
 public class PokerBoard {
-    private List<Card> deck;
-    private List<Card> playerHand;
-    private List<Card> dealerHand;
+    private List<PokerCard> deck;
+    private List<PokerCard> playerHand;
+    private List<PokerCard> dealerHand;
 
     public PokerBoard() {
         deck = new ArrayList<>();
@@ -24,7 +24,7 @@ public class PokerBoard {
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
         for (String suit : suits) {
             for (String rank : ranks) {
-                deck.add(new Card(rank, suit));
+                deck.add(new PokerCard(rank, suit));
             }
         }
     }
@@ -45,11 +45,11 @@ public class PokerBoard {
         }
     }
 
-    public List<Card> getPlayerHand() {
+    public List<PokerCard> getPlayerHand() {
         return playerHand;
     }
 
-    public List<Card> getDealerHand() {
+    public List<PokerCard> getDealerHand() {
         return dealerHand;
     }
 }

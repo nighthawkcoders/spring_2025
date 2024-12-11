@@ -1,6 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.poker;
 
-public class BetRequest {
+public class PokerBetRequest {
     private int bet;
 
     public int getBet() {
