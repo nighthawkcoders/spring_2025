@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nighthawk.spring_portfolio.mvc.person.Person;
 import lombok.Getter;
 
 @RestController
@@ -47,4 +47,31 @@ public class TinkleApiController {
     public List<Tinkle> getAll() {
         return repository.findAll();
     }
+
+    @GetMapping("/{person}")
+    public ResponseEntity<Object> getTinkle(@PathVariable String name)
+    {
+        Optional<Tinkle> tinkle = repository.findByPersonName(name);
+        if (tinkle.isPresent())
+        {
+            Tinkle tinklePerson = tinkle.get();
+            return new ResponseEntity<>(tinklePerson, HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
+        }
+        }
+    
 }
+//        @GetMapping("/person/{id}")
+//     public ResponseEntity<Person> getPerson(@PathVariable long id) {
+//         Optional<Person> optional = repository.findById(id);
+//         if (optional.isPresent()) { // Good ID
+//             Person person = optional.get(); // value from findByID
+//             return new ResponseEntity<>(person, HttpStatus.OK); // OK HTTP response: status code, headers, and body
+//         }
+//         // Bad ID
+//         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//     }
+
+// }
