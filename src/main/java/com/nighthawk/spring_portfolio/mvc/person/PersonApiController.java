@@ -68,8 +68,8 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);  
-        System.out.println(person.getId()+"--------------");
+
+        Person person = repository.findByGhid(email);
 
         // Return the person if found
         if (person != null) {
@@ -183,13 +183,13 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
     String email = userDetails.getUsername(); // Assuming email is used as the username in Spring Security
 
     // Find the person by email
-    Optional<Person> optionalPerson = Optional.ofNullable(repository.findByEmail(email));
+    Optional<Person> optionalPerson = Optional.ofNullable(repository.findByGhid(email));
     if (optionalPerson.isPresent()) {
         Person existingPerson = optionalPerson.get();
 
         // Update fields only if they're provided in personDto
         if (personDto.getEmail() != null) {
-            existingPerson.setEmail(personDto.getEmail());
+            existingPerson.setGhid(personDto.getEmail());
         }
         if (personDto.getPassword() != null) {
             existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
@@ -232,59 +232,12 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
         String term = (String) map.get("term");
 
         // JPA query to filter on term
-        List<Person> list = repository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(term, term);
+        List<Person> list = repository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(term, term);
 
         // return resulting list and status, error checking should be added
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-    // @PostMapping(value = "/person/setSections", produces = MediaType.APPLICATION_JSON_VALUE)
-    // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final List<SectionDTO> sections) {
-    //     // Check if the authentication object is null
-    //     if (userDetails == null) {
-    //         return ResponseEntity
-    //                 .status(HttpStatus.UNAUTHORIZED)
-    //                 .body("Error: Authentication object is null. User is not authenticated.");
-    //     }
-        
-    //     String email = userDetails.getUsername();
-        
-    //     // Manually wrap the result in Optional.ofNullable
-    //     Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
-    //     if (optional.isPresent()) {
-    //         Person person = optional.get();
-
-    //         // Get existing sections and ensure it is not null
-    //         Collection<PersonSections> existingSections = person.getSections();
-    //         if (existingSections == null) {
-    //             existingSections = new ArrayList<>();
-    //         }
-
-    //         // Add  sections
-    //         for (SectionDTO sectionDTO : sections) {
-    //             if (!existingSections.stream().anyMatch(s -> s.getName().equals(sectionDTO.getName()))) {
-    //                 PersonSections newSection = new PersonSections(sectionDTO.getName(), sectionDTO.getAbbreviation(), sectionDTO.getYear());
-    //                 existingSections.add(newSection);
-    //             } else {
-    //                 return ResponseEntity
-    //                         .status(HttpStatus.CONFLICT)
-    //                         .body("Error: Section with name '" + sectionDTO.getName() + "' already exists.");
-    //             }
-    //         }
-
-    //         // Persist updated sections
-    //         person.setSections(existingSections);
-    //         repository.save(person);
-
-    //         // Return updated Person
-    //         return ResponseEntity.ok(person);
-    //     }
-
-    //     // Person not found
-    //     return ResponseEntity
-    //             .status(HttpStatus.NOT_FOUND)
-    //             .body("Error: Person not found with email: " + email);
-    // }
 
 
     @PutMapping("/person/{id}")
@@ -294,7 +247,7 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
             Person existingPerson = optional.get();
 
             // Update the existing person's details
-            existingPerson.setEmail(personDto.getEmail());
+            existingPerson.setGhid(personDto.getEmail());
             existingPerson.setPassword(personDto.getPassword());
             existingPerson.setName(personDto.getName());
             
@@ -336,7 +289,7 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
+        Optional<Person> optional = Optional.ofNullable(repository.findByGhid(email));
         if (optional.isPresent()) { // Good ID
             Person person = optional.get(); // value from findByID
 

@@ -1,14 +1,11 @@
-<!-- This page is illustrative and contains ideas about HTML formatting -->
 <!DOCTYPE HTML>
-<!-- Signals to the Layout Dialect which layout should be used to decorate this View -->
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/base}" lang="en">
 
-<head>    <!-- Page specific head additions -->
+<head>
     <title>Person List</title>
 </head>
 
-<!-- <body> -->
 <body>
 <th:block layout:fragment="body" th:remove="tag">
     <div class="container py-4 bg-primary">
@@ -20,9 +17,9 @@
         </header>
 
         <div class="container py-4 text-light bg-success">
-
             <h2>Person Viewer</h2>
-            <a th:href="@{/mvc/person/create}">Create Person</a>
+            <a th:href="@{/mvc/person/create}" class="btn btn-light mb-3">Create Person</a>
+
             <div class="row align-items-md-stretch">
                 <table class="table">
                     <thead>
@@ -30,21 +27,30 @@
                         <th>ID</th>
                         <th>User ID</th>
                         <th>Person</th>
-                        <th>Age</th>
+                        <th>KSM</th>
+                        <th>Profile Picture</th>
                         <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="person : ${list}">
                         <td th:text="${person.id}">Person ID</td>
-                        <td th:text="${person.email}">Birth Date</td>
-                        <td th:text="${person.name}">Name</td>
-                        <td th:if="${person.getAge() != -1}" th:text="${person.getAge()}">Age</td>
-                        <td th:unless="${person.getAge() != -1}" th:text="Unknown">Unknown Age</td>
                         <td>
-                            <!--- <a th:href="@{/mvc/notes/{id}(id = ${person.id})}">Notes</a> -->
-                            <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}">Update</a>
-                            <a th:href="@{/mvc/person/delete/{id}(id = ${person.id})}">Delete</a>
+                            <a th:href="'https://github.com/' + ${person.ghid}" target="_blank" th:text="${person.ghid}">User ghid</a>
+                        </td>
+                        <td th:text="${person.name}">Name</td>
+                        <td th:text="${person.kasmServerNeeded}">Kasm Server Needed</td>
+                        <!-- Profile Picture Column -->
+                        <td>
+                            <div th:if="${person.pfp != null}">
+                                <img th:src="${person.pfp}" alt="Profile Picture" style="width: 64px; height: 64px; border-radius: 50%;" />
+                            </div>
+                        </td>
+
+                        <!-- Actions Column -->
+                        <td>
+                            <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}" class="btn btn-warning btn-sm">Update</a>
+                            <a th:href="@{/mvc/person/delete/{id}(id = ${person.id})}" class="btn btn-danger btn-sm">Delete</a>
                         </td>
                     </tr>
                     </tbody>
