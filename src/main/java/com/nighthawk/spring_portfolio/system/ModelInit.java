@@ -1,17 +1,11 @@
 package com.nighthawk.spring_portfolio.system;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
-import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
 import com.nighthawk.spring_portfolio.mvc.jokes.Jokes;
 import com.nighthawk.spring_portfolio.mvc.jokes.JokesJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.note.Note;
@@ -21,14 +15,17 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.user.User;
-import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
+import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
+import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -39,8 +36,6 @@ public class ModelInit {
     @Autowired PersonDetailsService personDetailsService;
     @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
-    @Autowired QuestionJpaRepository questionJpaRepository;
-    @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
 
@@ -58,21 +53,6 @@ public class ModelInit {
                 }
             }
 
-            Question[] questionArray = Question.init();
-            for (Question question : questionArray) {
-                Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
-                if (questionFound == null) {
-                    questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
-                }
-            }
-
-            User[] userArray = User.init();
-            for (User user : userArray) {
-                List<User> userFound = userJpaRepository.findByUsernameIgnoreCase(user.getUsername()); 
-                if (userFound.size() == 0) {
-                    userJpaRepository.save(new User(user.getUsername(), user.getPassword(), user.getRole(), user.isEnabled(), user.getBalance(), user.getStonks()));
-                }
-            }
 
             // Joke database is populated with starting jokes
             String[] jokesArray = Jokes.init();
