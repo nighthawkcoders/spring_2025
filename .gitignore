@@ -39,3 +39,4 @@ build/
 .env
 
 ### Database ###
+volumes/sqlite.db
