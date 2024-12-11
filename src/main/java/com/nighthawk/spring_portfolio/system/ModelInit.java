@@ -15,6 +15,8 @@ import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
+import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TeacherJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
@@ -48,7 +50,7 @@ public class ModelInit {
     @Autowired TinkleJPARepository tinkleJPA;
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
-    // @Autowired IssueJPARepository issueJPARepository;
+    @Autowired IssueJPARepository issueJPARepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
 
@@ -135,13 +137,13 @@ public class ModelInit {
                 teacherJPARepository.save(teacher); // JPA save
             }
             // Issue database initialization
-            // Issue[] issueArray = Issue.init();
-            // for (Issue issue : issueArray) {
-            //     List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
-            //     if (issueFound.isEmpty()) {
-            //         issueJPARepository.save(issue);
-            //     }
-            // }
+            Issue[] issueArray = Issue.init();
+            for (Issue issue : issueArray) {
+                List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
+                if (issueFound.isEmpty()) {
+                    issueJPARepository.save(issue);
+                }
+            }
             // ArrayList<Tinkle> tinkles = new ArrayList<>();
             // for(Person person: personArray)
             // {
