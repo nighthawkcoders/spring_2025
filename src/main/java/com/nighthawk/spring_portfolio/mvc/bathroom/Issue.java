@@ -43,18 +43,25 @@ public class Issue {
     public static Issue[] init()
     {
         ArrayList<Issue> issues = new ArrayList<>();
-        issues.add(new Issue("Bathroom 1", "No Door Lock", 0, 0.81,0.31));
-        issues.add(new Issue("Bathroom 1", "No Toilet Paper", 0, 0.81, 0.31));
-        issues.add(new Issue("Bathroom 1", "No Stall Doors", 0, 0.81, 0.31));
+        issues.add(new Issue("D Building Bathroom", "No Door Lock", 0, 0.81f, 0.51f));
+        issues.add(new Issue("D Building Bathroom", "No Toilet Paper", 0,0.81f, 0.51f));
+        issues.add(new Issue("D Building Bathroom", "No Stall Doors", 0,0.81f, 0.51f));
 
-        issues.add(new Issue("Bathroom 2", "No Door Lock", 0, 0.31, 0.71));
-        issues.add(new Issue("Bathroom 2", "No Toilet Paper", 0, 0.31, 0.71));
-        issues.add(new Issue("Bathroom 2", "No Stall Doors", 0, 0.31, 0.71));
+        issues.add(new Issue("L Building", "No Door Lock", 0,0.81f, 0.51f));
+        issues.add(new Issue("L Building", "No Toilet Paper", 0,0.81f, 0.51f));
+        issues.add(new Issue("L Building", "No Stall Doors", 0,0.81f, 0.51f));
 
-        issues.add(new Issue("Bathroom 3", "No Door Lock", 0, 0.51, 0.61));
-        issues.add(new Issue("Bathroom 3", "No Toilet Paper", 0, 0.51, 0.61));
-        issues.add(new Issue("Bathroom 3", "No Stall Doors", 0, 0.51, 0.61));
+        issues.add(new Issue("A Building", "No Door Lock", 0,0.81f, 0.51f));
+        issues.add(new Issue("A Building", "No Toilet Paper", 0,0.81f, 0.51f));
+        issues.add(new Issue("A Building", "No Stall Doors", 0,0.81f, 0.51f));
 
+        issues.add(new Issue("Football Field", "No Door Lock", 0,0.81f, 0.51f));
+        issues.add(new Issue("Football Field", "No Toilet Paper", 0,0.81f, 0.51f));
+        issues.add(new Issue("Football Field", "No Stall Doors", 0,0.81f, 0.51f));
+
+        issues.add(new Issue("Locker Room Bathrooms", "No Door Lock", 0,0.81f, 0.51f));
+        issues.add(new Issue("Locker Room Bathrooms", "No Toilet Paper", 0,0.81f, 0.51f));
+        issues.add(new Issue("Locker Room Bathroom", "No Stall Doors", 0,0.81f, 0.51f));
         return issues.toArray(new Issue[0]);
     }
 }
