@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 volumes/sqlite.db
 
-
 ### STS ###
 .apt_generated
 .classpath
@@ -36,3 +35,4 @@ build/
 
 ### Java build ###
 *.class
+.java-version

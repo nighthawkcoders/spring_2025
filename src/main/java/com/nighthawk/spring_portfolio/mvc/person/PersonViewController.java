@@ -60,14 +60,12 @@ public class PersonViewController {
     @param - Person object with @Valid
     @param - BindingResult object
      */
-
     @PostMapping("/create")
-    public String personSave(@Valid Person person, BindingResult bindingResult, Model model) {
+    public String personSave(@Valid Person person, BindingResult bindingResult) {
         // Validation of Decorated PersonForm attributes
         if (bindingResult.hasErrors()) {
             return "person/create";
         }
-
         // Check if ghid already exists in the database
         if (repository.existsByGhid(person.getGhid())) {
             model.addAttribute("ghidError", "This Github Id is already in use. Please use a different Github Id.");
@@ -81,6 +79,9 @@ public class PersonViewController {
         repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
 
         // Redirect to the person list page
+        repository.save(person);
+        repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
+        // Redirect to next step
         return "redirect:/mvc/person/read";
     }
 
@@ -112,7 +113,6 @@ public String personUpdateSave(@Valid Person person, BindingResult bindingResult
     if (personToUpdate == null) {
         return "redirect:/e#email_does_not_exist";
     }
-
     boolean updated = false; // Track if any attribute was updated
 
     // Update fields only if they are provided (non-null)

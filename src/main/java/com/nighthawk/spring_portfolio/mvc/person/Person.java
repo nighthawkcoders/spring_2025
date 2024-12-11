@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.NotEmpty;
@@ -30,6 +32,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
 import lombok.AllArgsConstructor;
@@ -54,7 +57,7 @@ import com.nighthawk.spring_portfolio.mvc.person.ImageStrings.*;;
 @NoArgsConstructor
 @Entity
 @Convert(attributeName = "person", converter = JsonType.class)
-public class Person {
+public class Person implements Comparable<Person> {
 
     /** Automatic unique identifier for Person record 
      * --- Id annotation is used to specify the identifier property of the entity.
@@ -69,6 +72,9 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // @OneToMany(mappedBy="student")
+    // private List<SynergyGrade> grades;
+    
     @ManyToMany(fetch = EAGER)
     @JoinTable(
         name = "person_person_sections",  // unique name to avoid conflicts
@@ -153,6 +159,7 @@ public class Person {
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
 
+
     /**
      * balance, is an attribute to describe the currency a person has
      * --- @NonNull annotation is used to generate a constructor with
@@ -165,6 +172,13 @@ public class Person {
     /**
      * Custom constructor for Person when building a new Person object from an API
      * call
+
+    /** Custom constructor for Person when building a new Person object from an API call
+     * @param email, a String
+     * @param password, a String
+     * @param name, a String
+     * @param dob, a Date
+
      */
     public Person(String ghid, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
         this.ghid = ghid;
@@ -177,9 +191,21 @@ public class Person {
         this.roles.add(role);
     }
 
+    public boolean hasRoleWithName(String roleName) {
+        for (PersonRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Custom getter to return age from dob attribute
      */
+    /** Custom getter to return age from dob attribute
+     * @return int, the age of the person
+    */
     public int getAge() {
         if (this.dob != null) {
             LocalDate birthDay = this.dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -188,9 +214,16 @@ public class Person {
         return -1;
     }
 
-    /**
-     * 1st telescoping method to create a Person object with USER role
-     * 
+    /** Custom compareTo method to compare Person objects by name
+     * @param other, a Person object
+     * @return int, the result of the comparison
+     */
+    @Override
+    public int compareTo(Person other) {
+        return this.name.compareTo(other.name);
+    }
+
+    /** 1st telescoping method to create a Person object with USER role
      * @param name
      * @param ghid
      * @param password
@@ -201,7 +234,7 @@ public class Person {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
         return createPerson(name, ghid, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
-
+    
     /**
      * 2nd telescoping method to create a Person object with parameterized roles
      * 
@@ -234,7 +267,8 @@ public class Person {
     
     /**
      * Static method to initialize an array list of Person objects
-     * 
+     * Uses createPerson method to create Person objects
+     * Sorts the list of Person objects using Collections.sort which uses the compareTo method 
      * @return Person[], an array of Person objects
      */
     public static Person[] init() {
@@ -246,6 +280,7 @@ public class Person {
         persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
 
         return persons.toArray(new Person[0]);
+
     }
 
     /**
@@ -259,7 +294,8 @@ public class Person {
 
         // iterate using "enhanced for loop"
         for (Person person : persons) {
-            System.out.println(person); // print object
+            System.out.println(person);  // print object
+            System.out.println();
         }
     }
 }
