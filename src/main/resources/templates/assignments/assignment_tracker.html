@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+    <title>Assignment Tracker</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-delete {
+            background-color: #f44336;
+        }
+        .btn-view-submissions {
+            background-color: #007bff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #submissionsModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+<th:block layout:fragment="body" th:remove="tag">
+    <div class="container">
+        <h1>Assignment Tracker</h1>
+        <button class="btn" onclick="showAddAssignmentModal()">Add Assignment</button>
+        
+        <!-- Add Assignment Modal -->
+        <div id="addAssignmentModal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+            <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%;">
+                <h2>Add New Assignment</h2>
+                <label>Name: <input type="text" id="assignmentName"></label><br>
+                <label>Type: <input type="text" id="assignmentType"></label><br>
+                <label>Description: <input type="text" id="assignmentDescription"></label><br>
+                <label>Points: <input type="number" id="assignmentPoints"></label><br>
+                <label>Due Date: <input type="text" id="assignmentDueDate" placeholder="MM/DD/YYYY"></label><br>
+                <button onclick="createAssignment()">Submit</button>
+                <button onclick="closeAddAssignmentModal()">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Submissions Modal -->
+        <div id="submissionsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeSubmissionsModal()">&times;</span>
+                <h2>Submissions</h2>
+                <table id="submissionsTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submission</th>
+                            <th>Timestamp</th>
+                            <th>Grade</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsList">
+                        <!-- Submissions will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <table id="assignmentTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Points</th>
+                    <th>Due Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="assignmentList">
+            </tbody>
+        </table>
+    </div>
+</th:block>
+</body>
+
+<th:block layout:fragment="script" th:remove="tag">
+<script>
+    document.addEventListener('DOMContentLoaded', fetchAssignments);
+
+    function fetchAssignments() {
+        fetch('/api/assignments/debug')
+            .then(response => response.json())
+            .then(assignments => {
+                const tableBody = document.getElementById('assignmentList');
+                tableBody.innerHTML = ''; 
+
+                assignments.forEach(assignment => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${assignment.name}</td>
+                        <td>${assignment.type}</td>
+                        <td>${assignment.description || ''}</td>
+                        <td>${assignment.points}</td>
+                        <td>${assignment.dueDate}</td>
+                        <td>
+                            <button class="btn btn-view-submissions" onclick="viewSubmissions(${assignment.id})">View Submissions</button>
+                            <button class="btn btn-delete" onclick="deleteAssignment('${assignment.id}')">Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+    }
+
+    function showAddAssignmentModal() {
+        document.getElementById('addAssignmentModal').style.display = 'block';
+    }
+
+    function closeAddAssignmentModal() {
+        document.getElementById('addAssignmentModal').style.display = 'none';
+    }
+
+    function createAssignment() {
+        const name = document.getElementById('assignmentName').value;
+        const type = document.getElementById('assignmentType').value;
+        const description = document.getElementById('assignmentDescription').value;
+        const points = document.getElementById('assignmentPoints').value;
+        const dueDate = document.getElementById('assignmentDueDate').value;
+
+        const params = new URLSearchParams({
+            name, type, description, points, dueDate
+        });
+
+        fetch('/api/assignments/create', {
+            method: 'POST',
+            body: params
+        }).then(fetchAssignments).finally(closeAddAssignmentModal);
+    }
+
+    function deleteAssignment(id) {
+        fetch(`/api/assignments/delete/${id}`, {
+            method: 'POST'
+        }).then(fetchAssignments);
+    }
+
+    function viewSubmissions(id) {
+    console.log(`Fetching submissions for assignment ID: ${id}`);
+    fetch(`/api/submissions/assignment/${id}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); // Only call response.json() once here
+        })
+        .then(submissions => {
+            console.log('Submissions received:', submissions);
+            const submissionsList = document.getElementById('submissionsList');
+            submissionsList.innerHTML = ''; 
+
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<tr><td colspan="5">No submissions found</td></tr>';
+            } else {
+                submissions.forEach(submission => {
+                    console.log('Processing submission:', submission);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${submission.student ? submission.student.name : 'Unknown Student'}</td>
+                        <td>${submission.content || 'No content'}</td>
+                        <td>N/A</td>
+                        <td>${submission.grade || 'Not graded'}</td>
+                        <td>
+                            <button onclick="gradeSubmission(${submission.id})">Grade</button>
+                        </td>
+                    `;
+                    submissionsList.appendChild(row);
+                });
+            }
+
+            document.getElementById('submissionsModal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching submissions:', error);
+            alert('Failed to fetch submissions: ' + error.message);
+        });
+}
+
+
+    function closeSubmissionsModal() {
+        document.getElementById('submissionsModal').style.display = 'none';
+    }
+
+    function gradeSubmission(submissionId) {
+        const grade = prompt('Enter grade:');
+        const feedback = prompt('Enter feedback (optional):');
+
+        if (grade !== null) {
+            const params = new URLSearchParams({
+                grade,
+                feedback: feedback || ''
+            });
+
+            fetch(`/api/submissions/grade/${submissionId}`, {
+                method: 'POST',
+                body: params
+            })
+            .then(response => response.text())
+            .then(updatedSubmission => {
+                alert('Submission graded successfully');
+                // Optionally, refresh the submissions list
+            })
+            .catch(error => {
+                console.error('Error grading submission:', error);
+                alert('Failed to grade submission');
+            });
+        }
+    }
+</script>
+</th:block>
+</html>

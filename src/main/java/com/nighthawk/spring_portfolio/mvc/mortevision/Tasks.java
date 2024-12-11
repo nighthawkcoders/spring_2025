@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 
 import java.util.Date;
 
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
