@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.Getter;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/tinkle")
 public class TinkleApiController {
 
     @Autowired
