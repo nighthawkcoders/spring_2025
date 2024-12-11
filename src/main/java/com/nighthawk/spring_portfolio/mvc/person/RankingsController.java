@@ -1,9 +1,6 @@
 // package com.nighthawk.spring_portfolio.mvc.person;
 
-// import java.util.Comparator;
-// import java.util.HashMap;
-// import java.util.List;
-// import java.util.Map;
+// import java.util.*;
 // import java.util.stream.Collectors;
 
 // import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,7 @@
 
 //     /**
 //      * Get top 10 users by balance and teams ranked by total balance.
+//      * 
 //      * @return Rankings of users and teams.
 //      */
 //     @GetMapping("/leaderboard")
@@ -53,7 +51,7 @@
 
 //         // Sort teams by total balance (descending)
 //         List<Map<String, Object>> rankedTeams = teamBalances.entrySet().stream()
-//                 .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))  // Explicit comparator
+//                 .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
 //                 .map(entry -> {
 //                     Map<String, Object> teamMap = new HashMap<>();
 //                     teamMap.put("team", entry.getKey());
