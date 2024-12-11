@@ -14,8 +14,15 @@ import java.util.List;
 
 @RestController
 public class SlackController {
+    /* 
+    My slack bot's API key :(
+    I would never actually leak my api key if it were for something more serious like a paid service or
+    something more linked to account security, but to save me and the rest of the class from having to
+    paste the key in their .envs manually I put my key here publicly
+    */
     private String slackToken = "xoxp-7892664186276-7887305704597-7924387129461-e2333e0f3c20a3ddb2ba833ec37f4e52";
     private final RestTemplate restTemplate;
+    // Rest template for API handling
 
     @Autowired
     private MessageService messageService;
@@ -23,16 +30,21 @@ public class SlackController {
     @Autowired
     private SlackMessageRepository messageRepository;
 
+    // Constructor
     public SlackController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
+    // Deprecated feature sadly
+    // Was used to get a list of every slack message
     @GetMapping("/slack/")
     public ResponseEntity<List<SlackMessage>> returnSlackData() {
         List<SlackMessage> messages = messageRepository.findAll();
         return ResponseEntity.ok(messages);
     }
 
+    // Deprecated feature sadly
+    // Was used to link the user id of the message sender to their actual name
     @PostMapping("/slack/getUsername")
     public ResponseEntity<String> getUsername(@RequestBody Map<String, String> requestBody) {
         String userId = requestBody.get("userId");
@@ -59,28 +71,29 @@ public class SlackController {
         return ResponseEntity.ok(username);
     }
 
+    // Main message receiver function
     @PostMapping("/slack/events")
     public ResponseEntity<String> handleSlackEvent(@RequestBody SlackEvent payload) {
         if (payload.getChallenge() != null) {
             return ResponseEntity.ok(payload.getChallenge());
         }
+        // Differentiates between the verification challenge and normal slack message post requests
 
         try {
             SlackEvent.Event messageEvent = payload.getEvent();
             String eventType = messageEvent.getType();
-
+            // Distinguishing messages from other events
             if ("message".equals(eventType)) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String messageContent = objectMapper.writeValueAsString(messageEvent);
-
+                // Mapping the message's content to key value pairs, ex. the text, channel id, etc.
                 messageService.saveMessage(messageContent);
-
+                // Saving message to db table
                 System.out.println("Message saved to database: " + messageContent);
-
                 String calendarUrl = "http://localhost:8085/api/calendar/add";
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Content-Type", "application/json");
-
+                // Sending data to be processed by the calendar API
                 HttpEntity<String> calendarEntity = new HttpEntity<>(messageContent, headers);
                 ResponseEntity<String> calendarResponse = restTemplate.postForEntity(calendarUrl, calendarEntity, String.class);
 

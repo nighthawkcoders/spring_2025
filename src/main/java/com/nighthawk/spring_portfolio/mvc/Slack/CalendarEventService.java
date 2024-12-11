@@ -48,6 +48,7 @@ public class CalendarEventService {
     // Extract events and calculate date for each day of the week
     private List<CalendarEvent> extractEventsFromText(String text, LocalDate weekStartDate) {
         List<CalendarEvent> events = new ArrayList<>();
+        // Regex pattern filtering for keywords that mark the days of the week
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
         Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*-\\s*(.+)");
 

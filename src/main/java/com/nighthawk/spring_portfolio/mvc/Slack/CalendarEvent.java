@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "calendar_events")
 public class CalendarEvent {
+    // POJO
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
