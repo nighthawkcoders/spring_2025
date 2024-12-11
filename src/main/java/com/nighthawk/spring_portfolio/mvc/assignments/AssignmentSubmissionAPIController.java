@@ -11,10 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import jakarta.transaction.Transactional;
@@ -51,6 +53,28 @@ public class AssignmentSubmissionAPIController {
         return responseEntity;
     }
 
+     @PostMapping("/Submit")
+    public ResponseEntity<AssignmentSubmission> createAssignment(@RequestBody AssignmentSubmission submission) {
+        submissionRepo.save(submission);
+        return new ResponseEntity<>(submission, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/submit/{assignmentId}")
+    public ResponseEntity<?> submitAssignment(
+            @PathVariable Long assignmentId,
+            @RequestParam Long studentId,
+            @RequestParam String content) {
+        Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
+        Person student = personRepo.findById(studentId).orElse(null);
+        if (assignment != null) {
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content);
+            AssignmentSubmission savedSubmission = submissionRepo.save(submission);
+            return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
+        }
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Assignment not found");
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
     
 
     @Transactional

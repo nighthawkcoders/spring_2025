@@ -1,5 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.synergy;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,9 +55,22 @@ public class SynergyApiController {
     }
     
     /**
+     * A GET endpoint to retrieve all the grades.
+     * @return A JSON object containing all the grades.
+     */
+    @GetMapping("/grades")
+    public ResponseEntity<?> getGrades() {
+        List<SynergyGradeDTO> grades = new ArrayList<>();
+        for (SynergyGrade grade : gradeRepository.findAll()) {
+            grades.add(new SynergyGradeDTO(grade));
+        }
+        return ResponseEntity.ok(grades);
+    }
+    
+    /**
      * A POST endpoint to update many grades in bulk.
      * @param grades A formdata which is a map of strings of format grades[ASSIGNMENT_ID][STUDENT_ID] to numerical grades (or empty strings if there is no grade yet)
-     * @return A redirect to the gradebook page
+     * @return A JSON object confirming that the grades were updated
      */
     @PostMapping("/grades")
     public ResponseEntity<Map<String, String>> updateAllGrades(@RequestParam Map<String, String> grades) throws ResponseStatusException {

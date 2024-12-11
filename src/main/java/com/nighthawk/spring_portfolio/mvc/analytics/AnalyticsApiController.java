@@ -84,6 +84,23 @@ public ResponseEntity<GradeStatistics> getGradesByAssignment(@PathVariable("assi
     return new ResponseEntity<>(stats, HttpStatus.OK);
 }
 
+@GetMapping("/assignment/{assignment_id}/student/{student_id}/grade")
+public ResponseEntity<Double> getStudentGradeForAssignment(@PathVariable("assignment_id") Long assignmentId,
+                                                            @PathVariable("student_id") Long studentId) {
+    // Ensure the assignment exists
+    Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
+    if (assignment.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
+    }
+
+    // Find the grade using the repository instance
+    Optional<SynergyGrade> synergyGrade = gradeJpaRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
+    if (synergyGrade.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No grade found for this student on this assignment.");
+    }
+
+    return new ResponseEntity<>(synergyGrade.get().getGrade(), HttpStatus.OK);
+}
 
     // Helper method to calculate mean
     private double calculateMean(double[] grades) {

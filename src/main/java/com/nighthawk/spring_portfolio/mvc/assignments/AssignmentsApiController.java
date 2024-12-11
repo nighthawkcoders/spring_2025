@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 @RequestMapping("/api/assignments")
 public class AssignmentsApiController {
@@ -60,10 +62,22 @@ public class AssignmentsApiController {
      * A GET endpoint to retrieve all the assignments.
      * @return A list of all the assignments.
      */
+    @Transactional
     @GetMapping("/")
     public ResponseEntity<?> getAllAssignments() {
         List<Assignment> assignments = assignmentRepo.findAll();
-        return new ResponseEntity<>(assignments, HttpStatus.OK);
+        List<Map<String, String>> simple = new ArrayList<>();
+        for (Assignment a : assignments) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", String.valueOf(a.getId()));
+            map.put("name", a.getName());
+            map.put("description", a.getDescription());
+            map.put("dueDate", a.getDueDate());
+            map.put("points", String.valueOf(a.getPoints()));
+            map.put("type", a.getType());
+            simple.add(map);
+        }
+        return new ResponseEntity<>(simple, HttpStatus.OK);
     }
 
     /**
@@ -137,7 +151,7 @@ public class AssignmentsApiController {
     @PostMapping("/submit/{assignmentId}")
     public ResponseEntity<?> submitAssignment(
             @PathVariable Long assignmentId,
-            @PathVariable Long studentId,
+            @RequestParam Long studentId,
             @RequestParam String content) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
