@@ -65,8 +65,8 @@ public class ModelInit {
             // Person database is populated with starting people
             Person[] personArray = Person.init();
             for (Person person : personArray) {
-                // Name and ghid are used to lookup the person
-                List<Person> personFound = personDetailsService.list(person.getName(), person.getGhid());  // lookup
+                // Name and email are used to lookup the person
+                List<Person> personFound = personDetailsService.list(person.getName(), person.getEmail());  // lookup
                 if (personFound.size() == 0) { // add if not found
                     // Roles are added to the database if they do not exist
                     List<PersonRole> updatedRoles = new ArrayList<>();
@@ -88,7 +88,7 @@ public class ModelInit {
                     personDetailsService.save(person); // JPA save
 
                     // Add a "test note" for each new person
-                    String text = "Test " + person.getGhid();
+                    String text = "Test " + person.getEmail();
                     Note n = new Note(text, person);  // constructor uses new person as Many-to-One association
                     noteRepo.save(n);  // JPA Save                  
                 }

@@ -12,15 +12,8 @@
         <h3 class="display-5 fw-bold">HTTP Status 404 – Endpoint Error</h3>
 
         <div class="jumbotron jumbotron-fluid" style="text-align: center; ">
-            <h4 id="errorMessage">Engineering is on the case!</h4>
+            <h4>Engineering is on the case!</h4>
             <a href="/">Go Home</a>
-            <script>
-                window.addEventListener("DOMContentLoaded", (event) => {
-                    if (window.location.hash != ""){
-                        document.getElementById("errorMessage").innerText = "Error Message: "+window.location.hash.substring(1);
-                    }
-                });
-            </script>
         </div>
     </div>
 </th:block>>

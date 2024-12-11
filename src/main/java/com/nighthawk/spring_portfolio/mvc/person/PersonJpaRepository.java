@@ -40,26 +40,26 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
      * Query methods defined by Spring Data JPA naming conventions.
      * Spring Data JPA will automatically generate a query using the method name.
      */
-    Person findByGhid(String ghid);
+    Person findByEmail(String email);
 
     List<Person> findAllByOrderByNameAsc();
 
-    List<Person> findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(String name, String ghid);
+    List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
 
-    Person findByGhidAndPassword(String ghid, String password);
+    Person findByEmailAndPassword(String email, String password);
 
-    boolean existsByGhid(String ghid);
+    boolean existsByEmail(String email);
 
     /**
      * Custom JPA query using the @Query annotation.
      * This allows for more complex queries that can't be expressed through the
      * method name.
-     * The query will find all Person entities where the name or ghid contains the
+     * The query will find all Person entities where the name or email contains the
      * given term.
      * The 'nativeQuery = true' parameter indicates that the query is a native SQL
      * query, not a JPQL query.
      */
-    @Query(value = "SELECT * FROM Person p WHERE p.name LIKE ?1 or p.ghid LIKE ?1", nativeQuery = true)
+    @Query(value = "SELECT * FROM Person p WHERE p.name LIKE ?1 or p.email LIKE ?1", nativeQuery = true)
     List<Person> findByLikeTermNative(String term);
 
     @Query("SELECT p FROM Person p JOIN p.roles r WHERE r.name = :roleName")
