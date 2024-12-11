@@ -4,15 +4,22 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.nighthawk.spring_portfolio.mvc.person.PersonViewController.PersonRoleDto;
+
 import jakarta.validation.Valid;
+import lombok.Data;
+import lombok.Getter;
 
 // Built using article: https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/mvc.html
 // or similar: https://asbnotebook.com/2020/04/11/spring-boot-thymeleaf-form-validation-example/
@@ -113,10 +120,9 @@ public String personUpdateSave(@Valid Person person, BindingResult bindingResult
         return "redirect:/e#email_does_not_exist";
     }
 
-    boolean updated = false; // Track if any attribute was updated
+    boolean updated = false;
 
-    // Update fields only if they are provided (non-null)
-    if (person.getPassword() != null) {
+    if(person.getPassword() != null){
         personToUpdate.setPassword(person.getPassword());
         updated = true;
     }
@@ -150,10 +156,29 @@ public String personUpdateSave(@Valid Person person, BindingResult bindingResult
     repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
 
 
-    // Redirect to a confirmation or next step
-    return "redirect:/mvc/person/read";
-}
+        // Redirect to next step
+        return "redirect:/mvc/person/read";
+    }
 
+    @Getter
+    public static class PersonRoleDto{
+        private String ghid;
+        private String roleName;
+    }
+
+    @PostMapping("/update/role")
+    public ResponseEntity<Object> personRoleUpdateSave(@RequestBody PersonRoleDto roleDto) {
+        // Validation of Decorated PersonForm attributes
+
+        Person personToUpdate = repository.getByGhid(roleDto.getGhid());
+        if(personToUpdate == null){
+            return new ResponseEntity<>(personToUpdate, HttpStatus.CONFLICT);
+        }
+
+        repository.addRoleToPerson(roleDto.getGhid(), roleDto.getRoleName());
+
+        return new ResponseEntity<>(personToUpdate, HttpStatus.OK);
+    }
 
     /*
         @param - Id
