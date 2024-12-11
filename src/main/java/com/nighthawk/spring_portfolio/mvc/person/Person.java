@@ -160,7 +160,7 @@ public class Person implements Comparable<Person> {
     private userStocksTable user_stocks;
 
     @Column
-    private double balance;
+    private double balance = 100000;
     
     /**
      * stats is used to store JSON for daily stats
