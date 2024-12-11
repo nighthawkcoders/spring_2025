@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * The PersonJpaRepository interface is automatically implemented by Spring Data JPA at runtime.
@@ -45,4 +46,7 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
             value = "SELECT * FROM Person p WHERE p.name LIKE ?1 or p.email LIKE ?1",
             nativeQuery = true)
     List<Person> findByLikeTermNative(String term);
+
+    @Query("SELECT p FROM Person p JOIN p.roles r WHERE r.name = :roleName")
+    List<Person> findPeopleWithRole(@Param("roleName") String roleName);
 }
