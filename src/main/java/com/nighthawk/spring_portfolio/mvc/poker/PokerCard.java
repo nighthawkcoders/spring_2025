@@ -1,11 +1,11 @@
 package com.nighthawk.spring_portfolio.mvc.poker;
 
-public class Card implements Comparable<Card> {
+public class PokerCard implements Comparable<PokerCard> {
     private String rank;
     private String suit;
 
     // Constructor
-    public Card(String rank, String suit) {
+    public PokerCard(String rank, String suit) {
         this.rank = rank;
         this.suit = suit;
     }
@@ -21,7 +21,7 @@ public class Card implements Comparable<Card> {
 
     // Implement compareTo for sorting based on rank value
     @Override
-    public int compareTo(Card other) {
+    public int compareTo(PokerCard other) {
         return Integer.compare(getCardRankValue(), other.getCardRankValue());
     }
 

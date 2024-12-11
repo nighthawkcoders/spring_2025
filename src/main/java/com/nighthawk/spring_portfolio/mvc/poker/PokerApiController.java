@@ -37,13 +37,13 @@ public class PokerApiController {
 
     // Response class to send game results back to the client
     public static class PokerResponse {
-        private List<Card> playerHand;
-        private List<Card> dealerHand;
+        private List<PokerCard> playerHand;
+        private List<PokerCard> dealerHand;
         private double updatedBalance;
         private boolean playerWin;
         private double bet;
 
-        public PokerResponse(List<Card> playerHand, List<Card> dealerHand, double updatedBalance, boolean playerWin, double bet) {
+        public PokerResponse(List<PokerCard> playerHand, List<PokerCard> dealerHand, double updatedBalance, boolean playerWin, double bet) {
             this.playerHand = playerHand;
             this.dealerHand = dealerHand;
             this.updatedBalance = updatedBalance;
@@ -51,8 +51,8 @@ public class PokerApiController {
             this.bet = bet;
         }
 
-        public List<Card> getPlayerHand() { return playerHand; }
-        public List<Card> getDealerHand() { return dealerHand; }
+        public List<PokerCard> getPlayerHand() { return playerHand; }
+        public List<PokerCard> getDealerHand() { return dealerHand; }
         public double getUpdatedBalance() { return updatedBalance; }
         public boolean isPlayerWin() { return playerWin; }
         public double getBet() { return bet; }
@@ -76,7 +76,7 @@ public class PokerApiController {
         pokerBoard.dealHands();
 
         // Calculate win/loss and update person balance
-        GameResult result = new GameResult(pokerBoard.getPlayerHand(), pokerBoard.getDealerHand(), pokerRequest.getBet());
+        PokerGameResult result = new PokerGameResult(pokerBoard.getPlayerHand(), pokerBoard.getDealerHand(), pokerRequest.getBet());
         boolean playerWin = result.isPlayerWin();
         double winnings = playerWin ? pokerRequest.getBet() : -pokerRequest.getBet();
         double updatedBalance = currentBalance + winnings;
