@@ -3,7 +3,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+volumes/sqlite.db
+.env
 ### STS ###
 .apt_generated
 .classpath
@@ -35,6 +36,3 @@ build/
 ### Java build ###
 *.class
 .java-version
-
-
-./volumes/sqlite.db
