@@ -78,10 +78,8 @@ public class IssueApiController {
     }
 
     @GetMapping("/issues")
-    
-        public ResponseEntity<List<Issue>> getCurrentIssues()
-        {
-            return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
-        }
-    
+    public ResponseEntity<List<Issue>> getCurrentIssues()
+    {
+        return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
+    }
 }
