@@ -39,15 +39,12 @@ public class AssignmentSubmission {
 
     private String comment;
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     public AssignmentSubmission(Assignment assignment, Person student, String content, String comment) {
         this.assignment = assignment;
         this.student = student;
         this.content = content;
         this.grade = null;
         this.feedback = null;
-        this.comment=comment;
-
+        this.comment = comment;
     }
 }
