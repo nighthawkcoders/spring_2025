@@ -87,10 +87,16 @@ public class CalendarEventService {
                         type = "grade";
                     }
 
-                    // Update the last event
-                    CalendarEvent lastEvent = events.get(events.size() - 1);
-                    lastEvent.setDescription(description);
-                    lastEvent.setType(type);
+                    // Update all events of the current day range with the description and type
+                    for (int i = events.size() - 1; i >= 0; i--) {
+                        CalendarEvent event = events.get(i);
+                        if (event.getDescription().isEmpty()) {
+                            event.setDescription(description);
+                            event.setType(type);
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
         }

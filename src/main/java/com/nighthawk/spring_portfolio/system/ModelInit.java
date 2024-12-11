@@ -17,6 +17,8 @@ import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
+import com.nighthawk.spring_portfolio.mvc.bathroom.TeacherJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TinkleJPARepository;
 import com.nighthawk.spring_portfolio.mvc.comment.Comment;
@@ -43,6 +45,7 @@ public class ModelInit {
     @Autowired CommentJPA CommentJPA;
     @Autowired TinkleJPARepository tinkleJPA;
     @Autowired BathroomQueueJPARepository queueJPA;
+    @Autowired TeacherJpaRepository teacherJPARepository;
 
     @Autowired IssueJPARepository issueJPARepository;
 
@@ -127,6 +130,14 @@ public class ModelInit {
                 {
                     queueJPA.save(queue);
                 }
+            }
+
+            // Teacher API is populated with starting announcements
+            List<Teacher> teachers = Teacher.init();
+            for (Teacher teacher : teachers) {
+                List<Teacher> existTeachers = teacherJPARepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase(teacher.getFirstname(), teacher.getLastname());
+                if(existTeachers.isEmpty())
+                teacherJPARepository.save(teacher); // JPA save
             }
             // Issue database initialization
             Issue[] issueArray = Issue.init();
