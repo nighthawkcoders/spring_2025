@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
+import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
+import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TinkleJPARepository;
 import com.nighthawk.spring_portfolio.mvc.comment.Comment;
@@ -38,6 +40,7 @@ public class ModelInit {
     @Autowired AssignmentJpaRepository assignmentJpa;
     @Autowired CommentJPA CommentJPA;
     @Autowired TinkleJPARepository tinkleJPA;
+    @Autowired BathroomQueueJPARepository queueJPA;
 
     // @Autowired IssueJPARepository issueJPARepository;
 
@@ -110,6 +113,17 @@ public class ModelInit {
                 if(tinkleFound.isEmpty())
                 {
                     tinkleJPA.save(tinkle);
+                }
+            }
+
+            BathroomQueue[] queueArray = BathroomQueue.init();
+            for(BathroomQueue queue: queueArray)
+            {
+                // List<Tinkle> tinkleFound = 
+                Optional<BathroomQueue> queueFound = queueJPA.findByTeacherEmail(queue.getTeacherEmail());
+                if(queueFound.isEmpty())
+                {
+                    queueJPA.save(queue);
                 }
             }
             // Issue database initialization
