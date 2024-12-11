@@ -1,6 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,27 +22,10 @@ public class PersonViewController {
     @Autowired
     private PersonDetailsService repository;
 
-    /*
-        @return - template for person read page for all ids
-    */
-
     @GetMapping("/read")
-    public String person(Model model) { //read all ids
+    public String person(Model model) {
         List<Person> list = repository.listAll();
         model.addAttribute("list", list);
-        return "person/read";
-    }
-
-      /*
-        @return - template for person read page for the specific id
-        @param - Id
-    */
-
-    @GetMapping("/read/{id}") //read a specific id
-    public String person(@PathVariable("id") int id, Model model) {
-        Person person = repository.get(id);
-        List<Person> list = Arrays.asList(person);
-        model.addAttribute("list",list);
         return "person/read";
     }
 
@@ -66,29 +48,11 @@ public class PersonViewController {
         if (bindingResult.hasErrors()) {
             return "person/create";
         }
-        // Check if ghid already exists in the database
-        if (repository.existsByGhid(person.getGhid())) {
-            model.addAttribute("ghidError", "This Github Id is already in use. Please use a different Github Id.");
-            return "person/create"; // Return to form with error message
-        }
-
-        // Save new person to the database
-        person.setBalance(Float.valueOf(0)); //default balance to 0;
-        repository.save(person);
-        repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
-        repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
-
-        // Redirect to the person list page
         repository.save(person);
         repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
         // Redirect to next step
         return "redirect:/mvc/person/read";
     }
-
-    /*  The HTML template Forms and PersonForm attributes are bound
-        @return - template for person update form for the specific id
-        @param - Id
-    */
 
     @GetMapping("/update/{id}")
     public String personUpdate(@PathVariable("id") int id, Model model) {
@@ -96,78 +60,25 @@ public class PersonViewController {
         return "person/update";
     }
 
-    /* Gathers the attributes filled out in the form, tests for and retrieves validation error
-        @param - Person object with @Valid
-        @param - BindingResult object
-        @return - Redirects to error page if errors, or read page if successful
-     */
     @PostMapping("/update")
-public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
-    // Handle validation errors
-    // if (bindingResult.hasErrors()) {
-    //     return "redirect:/e#there_were_errors_with_updating";
-    // }
+    public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
+        // Validation of Decorated PersonForm attributes
+        if (bindingResult.hasErrors()) {
+            return "person/update";
+        }
+        repository.save(person);
+        repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
 
-    // Retrieve the person by email
-    Person personToUpdate = repository.getByGhid(person.getGhid());
-    if (personToUpdate == null) {
-        return "redirect:/e#email_does_not_exist";
-    }
-    boolean updated = false; // Track if any attribute was updated
-
-    // Update fields only if they are provided (non-null)
-    if (person.getPassword() != null) {
-        personToUpdate.setPassword(person.getPassword());
-        updated = true;
-    }
-    if (person.getName() != null) {
-        personToUpdate.setName(person.getName());
-        updated = true;
-    }
-    if (person.getDob() != null) {
-        personToUpdate.setDob(person.getDob());
-        updated = true;
-    }
-    if (person.getPfp() != null) {
-        personToUpdate.setPfp(person.getPfp());
-        updated = true;
-    }
-    if (person.getKasmServerNeeded() != null) {
-        personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
-        updated = true;
-    }
-
-    // If no attributes were updated, inform the user
-    if (!updated) {
-        return "redirect:/e#no_changes_detected";
-    }
-
-    // Save the updated person
-    repository.save(personToUpdate);
-
-    // Ensure the user role is assigned (if required by logic)
-    repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
-    repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
-
-
-    // Redirect to a confirmation or next step
-    return "redirect:/mvc/person/read";
-}
-
-
-    /*
-        @param - Id
-        @return - Redirect to read page
-    */
-    @GetMapping("/delete/{id}")
-    public String personDelete(@PathVariable("id") long id) {
-        repository.delete(id); //delete user with given id
+        // Redirect to next step
         return "redirect:/mvc/person/read";
     }
 
-    /*
-        @return - Search page
-    */
+    @GetMapping("/delete/{id}")
+    public String personDelete(@PathVariable("id") long id) {
+        repository.delete(id);
+        return "redirect:/mvc/person/read";
+    }
+
     @GetMapping("/search")
     public String person() {
         return "person/search";

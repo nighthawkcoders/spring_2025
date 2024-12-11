@@ -3,11 +3,9 @@ package com.nighthawk.spring_portfolio.security;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,9 +42,9 @@ public class JwtApiController {
 
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
-		authenticate(authenticationRequest.getGhid(), authenticationRequest.getPassword());
+		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
 		final UserDetails userDetails = personDetailsService
-				.loadUserByUsername(authenticationRequest.getGhid());
+				.loadUserByUsername(authenticationRequest.getEmail());
 
 		// Get the roles of the user
 		List<String> roles = userDetails.getAuthorities().stream()
@@ -68,21 +66,7 @@ public class JwtApiController {
 			.sameSite("None; Secure")
 			.build();
 
-		HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        responseHeaders.set(HttpHeaders.SET_COOKIE,tokenCookie.toString());
-
-        JSONObject responseObject = new JSONObject();
-		//success message
-        responseObject.put("response",authenticationRequest.getGhid() + " was authenticated successfully");
-		//pass through cookies just in case
-		responseObject.put("cookie",tokenCookie.toString());
-
-        String reponseString = responseObject.toString();
-
-        return new ResponseEntity<>(reponseString,responseHeaders, HttpStatus.OK);
-
-		//return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getGhid() + " was authenticated successfully");
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getEmail() + " was authenticated successfully");
 	}
 
 	private void authenticate(String username, String password) throws Exception {
@@ -127,3 +111,9 @@ public class JwtApiController {
 }
 
 }
+
+
+
+
+	
+

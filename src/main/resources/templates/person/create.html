@@ -1,174 +1,75 @@
 <!DOCTYPE HTML>
-<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/base}" lang="en">
 
-<div class="container py-4">
-    <header class="pb-3 mb-4 border-bottom border-primary text-dark">
-        <span class="fs-4">Create Account</span>
-    </header>
-</div>
-<th:block layout:fragment="body" th:remove="tag">
-
-    <div class="container py-4">
-        <header class="pb-3 mb-4 border-bottom border-primary text-dark">
-            <span class="fs-4">Create Account</span>
-        </header>
-    </div>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http;//www.w3.org/1999/xhtml" layout:decorate="~{layouts/base}" lang="en">
+<html lang="en">
 <head>
-    <title>Create Account</title>
+    <title>Person Form</title>
     <script>
-        // @Boolean validatedGithub, false until user validates their github username
-        var validatedGithub = false;
-
-        /**
-         * @Function encodeImageFileAsURL(); //Function to encode image files into Base64 String and set pfp field
-         * @Param @File || @Blob fileToConvert, image file to convert into base64
-        **/
-
-        function encodeImageFileAsURL(fileToConvert) {
-            const file = fileToConvert;
-            var reader = new FileReader();
-            reader.onloadend = function() {
-                console.log('RESULT', reader.result)
-                document.getElementById("pfp").value = reader.result;
-            }
-            reader.readAsDataURL(file);
-        }
-
-        /**
-         * @Function validateForm(); // Function to validate the form (password and github username confirmation)
-         * @Param @Event event, form Submission event
-        **/
         function validateForm(event) {
-            //check if github account has been checked
-            if(!validatedGithub){
-                alert("You must validate your Github Username!");
-                event.preventDefault(); //Prevent form submission
-                return;
-            }
-
             const password = document.getElementById("password").value;
             const confirmPassword = document.getElementById("confirm_password").value;
-            
-            // Check if passwords match
+
             if (password !== confirmPassword) {
                 alert("Passwords do not match!");
-                event.preventDefault(); // Prevent form submission
-                return;
+                event.preventDefault(); // Prevent form submission.
             }
-        }
-
-        /**
-         * @Function checkGitHubUsername(); // Function to check if the GitHub username exists
-         *      @Fetch
-         *      @Param url, github api for inputed github username
-         *      @Repsonse
-         *          @Ok => @Json data, public data returned by github about given username
-         *          @Else => @Error error, error Message
-        **/
-        
-        function checkGitHubUsername() {
-            const githubUsername = document.getElementById("ghid").value;
-            const url = `https://api.github.com/users/${githubUsername}`;
-
-            // Check if the GitHub username is valid and fetch profile picture
-            fetch(url)
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error('Invalid GitHub username.');
-                    }
-                })
-                .then(data => {
-                    // Display the GitHub user's profile picture
-                    const pfpImage = document.getElementById("github_pfp");
-                    pfpImage.src = data.avatar_url;
-                    pfpImage.style.display = "block"; // Show the profile picture
-
-                    fetch(data.avatar_url)
-                        .then(res => res.blob()) // Gets the response and returns it as a blob
-                        .then(blob => {
-                          encodeImageFileAsURL(blob);
-                    });
-
-                    validatedGithub = true; //set vailidated check as true.
-                    
-                })
-                .catch(error => {
-                    alert(error.message);
-                });
         }
     </script>
 </head>
-
 <body>
-        <div class="container py-4 text-light bg-success">
-
-            <div class="container bg-secondary py-4">
-                <div class="p-5 mb-4 bg-light text-dark rounded-3">
-
+    <th:block layout:fragment="body" th:remove="tag"> <!-- Page specific body additions -->
         <div class="container">
             <div class="row justify-content-md-center">
+                <h2>Welcome, Enter the new Person's details</h2>
+            </div>
+
+            <div class="row justify-content-md-center">
                 <div class="col8">
-                    
                     <div class="jumbotron">
-                        <h3>Create New Account</h3>
-                        <!-- Form submits the data to the backend for account creation -->
+                        <h3>Create Person</h3>
+
+                        <!-- Display email error alert if it exists -->
+                        <div th:if="${emailError}" class="alert alert-danger" role="alert" th:text="${emailError}"></div>
+
                         <form class="form-inline" action="#" th:action="@{/mvc/person/create}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
-                            
-                            <!-- GitHub Username Input -->
+                            <!-- Your form fields -->
+
                             <div class="input-group mb-2 mr-sm-2">
-                                <input type="text" th:field="*{ghid}" id="ghid" placeholder="Enter GitHub ID">
-                                <small th:if="${#fields.hasErrors('ghid')}" th:errors="*{ghid}">GitHub ID Error</small>
+                                <label for="name">Name:</label>
+                                <input type="text" th:field="*{name}" id="name">
+                                <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</small>
                             </div>
-
-                            <!-- GitHub Profile Picture -->
-                            <div id="github_pfp_container" style="margin-top: 10px;">
-                                <img id="github_pfp" src="" alt="GitHub Profile Picture" style="max-width: 100px; display: none;">
-                                <input  th:field="*{pfp}" id="pfp" hidden>
-                                <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Pfp Error</small>
-                            </div>
-
-                            <!-- GitHub Username Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <input type="text" th:field="*{name}" id="name" placeholder="Display Name">
-                                <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Username Error</small>
-                            </div>
-
-                            <!-- Password Input -->
                             <div class="form-group mb-2 mr-sm-2">
-                                <input type="password" th:field="*{password}" id="password" placeholder="Password">
+                                <label for="email">Email:</label>
+                                <input type="email" th:field="*{email}" id="email">
+                                <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</small>
+                            </div>
+
+                            <!-- Password and Confirm Password Fields -->
+                            <div class="form-group mb-2 mr-sm-2 password-container">
+                                <label for="password">Password:</label>
+                                <input type="password" th:field="*{password}" id="password">
+                                <i class="fas fa-eye-slash" id="eye-icon-password" onclick="togglePasswordVisibility('password', 'eye-icon-password')"></i>
                                 <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</small>
                             </div>
 
-                            <!-- Confirm Password Input -->
-                            <div class="form-group mb-2 mr-sm-2">
-                                <input type="password" id="confirm_password" placeholder="Confirm Password">
+                            <div class="form-group mb-2 mr-sm-2 password-container confirm-password-container">
+                                <label for="confirm_password">Confirm Password:</label>
+                                <input type="password" id="confirm_password">
+                                <i class="fas fa-eye-slash" id="eye-icon-confirm-password" onclick="togglePasswordVisibility('confirm_password', 'eye-icon-confirm-password')"></i>
                             </div>
 
-                            <!-- Checkbox: Kasm Server Needed -->
                             <div class="input-group mb-2 mr-sm-2">
-                                <label for="kasmServerNeeded"> Request Kasm Server: </label>
-                                <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
-                                <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
+                                <label for="dob">Birth Date:</label>
+                                <input type="date" th:field="*{dob}" id="dob">
+                                <small th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}">Birth Date Error</small>
                             </div>
-
-                            <!-- Button to Check GitHub Username -->
-                            <button type="button" class="btn btn-secondary" onclick="checkGitHubUsername()">Verify Github ID</button>
-
-                            <!-- Submit Button -->
-                            <button type="submit" class="btn btn-primary">Create Account</button>
+                            <button type="submit" class="btn btn-primary">Add</button>
                         </form>
-                        <tr><td><a th:href="@{/login}">Log In</a></td></tr>
-
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-</div>
     </th:block>
 </body>
-
 </html>

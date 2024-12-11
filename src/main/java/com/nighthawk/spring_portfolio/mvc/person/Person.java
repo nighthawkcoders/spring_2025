@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,6 +24,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
@@ -39,8 +39,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import com.nighthawk.spring_portfolio.mvc.person.ImageStrings.*;;
 
 /**
  * Person is a POJO, Plain Old Java Object.
@@ -99,18 +97,21 @@ public class Person implements Comparable<Person> {
     private Collection<PersonRole> roles = new ArrayList<>();
 
     /**
-     * ghid, password, roles are key attributes to login and authentication
+     * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
      * null or empty, meaning it has to have a value.
      * --- @Size annotation is used to validate that the annotated field is between
      * the specified boundaries, in this case greater than 5.
+     * --- @Email annotation is used to validate that the annotated field is a valid
+     * email address.
      * --- @Column annotation is used to specify the mapped column for a persistent
-     * property or field, in this case unique and ghid.
+     * property or field, in this case unique and email.
      */
     @NotEmpty
     @Size(min = 5)
     @Column(unique = true)
-    private String ghid;
+    @Email
+    private String email;
 
     @NotEmpty
     private String password;
@@ -132,12 +133,9 @@ public class Person implements Comparable<Person> {
     private Date dob;
 
     /** Profile picture (pfp) in base64 */
-    @Lob
-    @Column(nullable = true)
+    @Column(length = 255, nullable = true)
     private String pfp;
-    
 
-    /** Kasm Server Needed (ksns) in True/false */
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
     
@@ -159,35 +157,19 @@ public class Person implements Comparable<Person> {
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
 
-
-    /**
-     * balance, is an attribute to describe the currency a person has
-     * --- @NonNull annotation is used to generate a constructor with
-     * AllArgsConstructor Lombox annotation.
-     */
-    @NonNull
-    private Float balance;
-
-
-    /**
-     * Custom constructor for Person when building a new Person object from an API
-     * call
-
     /** Custom constructor for Person when building a new Person object from an API call
      * @param email, a String
      * @param password, a String
      * @param name, a String
      * @param dob, a Date
-
      */
-    public Person(String ghid, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
-        this.ghid = ghid;
+    public Person(String email, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
+        this.email = email;
         this.password = password;
         this.name = name;
         this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
         this.pfp = pfp;
-        this.balance = Float.valueOf(0);
         this.roles.add(role);
     }
 
@@ -225,14 +207,14 @@ public class Person implements Comparable<Person> {
 
     /** 1st telescoping method to create a Person object with USER role
      * @param name
-     * @param ghid
+     * @param email
      * @param password
      * @param dob
      * @return Person
      */
-    public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded, String dob) {
+    public static Person createPerson(String name, String email, String password, Boolean kasmServerNeeded, String dob) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, ghid, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
+        return createPerson(name, email, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
     
     /**
@@ -240,14 +222,13 @@ public class Person implements Comparable<Person> {
      * 
      * @param roles
      */
-    public static Person createPerson(String name, String ghid, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
+    public static Person createPerson(String name, String email, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
         Person person = new Person();
         person.setName(name);
-        person.setGhid(ghid);
+        person.setEmail(email);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
         person.setPfp(pfp);
-        person.setBalance(Float.valueOf(0));
         try {
             Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
             person.setDob(date);
@@ -272,15 +253,17 @@ public class Person implements Comparable<Person> {
      * @return Person[], an array of Person objects
      */
     public static Person[] init() {
-        ArrayList<Person> persons = new ArrayList<>();
-        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", TobyImage.imageString, true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", "undefined", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
-        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        ArrayList<Person> people = new ArrayList<>();
+        people.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
+        
+        Collections.sort(people);
 
-        return persons.toArray(new Person[0]);
-
+        return people.toArray(new Person[0]);
     }
 
     /**
