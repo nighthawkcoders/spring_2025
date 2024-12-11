@@ -177,47 +177,51 @@ public ResponseEntity<String> completeTask(@RequestBody TasksDto tasksDto) {
         }
     }
     @Getter
-    public static class ProgressDto {
-    private int table; // The table number to calculate progress for
-}
+        public static class ProgressDto {
+        private int table;
+        private int period; // The table number to calculate progress for
+    }
 
-@GetMapping("/progress")
-public ResponseEntity<Integer> getProgress(@RequestBody ProgressDto progressDto) {
-    int table = progressDto.getTable();
-    List<StudentInfo> allStudents = studentJPARepository.findAll();
-    List<StudentInfo> studentsAtTable = new ArrayList<>();
-    System.out.println("Received table number: " + progressDto.getTable());
+    @PostMapping("/progress")
+    public ResponseEntity<Integer> getProgress(@RequestBody ProgressDto progressDto) {
+        System.out.println(progressDto);
+        int table = progressDto.getTable();
+        int period = progressDto.getPeriod();
+        List<StudentInfo> allStudents = studentJPARepository.findAll();
+        List<StudentInfo> studentsAtTable = new ArrayList<>();
+        System.out.println("Received table number: " + progressDto.getTable());
+        System.out.println("Received period: " + progressDto.getPeriod());
 
-    for (StudentInfo student : allStudents) {
-        if (student.getTableNumber() == table) {
-            studentsAtTable.add(student);
+        for (StudentInfo student : allStudents) {
+            if (student.getTableNumber() == table && student.getPeriod() == period) {
+                studentsAtTable.add(student);
+            }
         }
-    }
-    if (studentsAtTable.isEmpty()) {
-        System.out.println("No students found for table " + table);
-        return ResponseEntity.status(404).body(0); 
-    }
-    int totalPossibleTasks = 0;
-    int totalCompletedTasks = 0;
-
-    for (StudentInfo student : studentsAtTable) {
-        if (student.getTasks() != null) {
-            totalPossibleTasks += student.getTasks().size(); // Count all pending tasks for this student
+        if (studentsAtTable.isEmpty()) {
+            System.out.println("No students found for table " + table);
+            return ResponseEntity.status(404).body(0); 
         }
-        if (student.getCompleted() != null) {
-            totalCompletedTasks += student.getCompleted().size(); // Count all completed tasks for this student
+        int totalPossibleTasks = 0;
+        int totalCompletedTasks = 0;
+
+        for (StudentInfo student : studentsAtTable) {
+            if (student.getTasks() != null) {
+                totalPossibleTasks += student.getTasks().size(); // Count all pending tasks for this student
+            }
+            if (student.getCompleted() != null) {
+                totalCompletedTasks += student.getCompleted().size(); // Count all completed tasks for this student
+            }
         }
-    }
 
-    // Step 5: Handle edge case where no tasks exist at all
-    if (totalPossibleTasks == 0 && totalCompletedTasks == 0) {
-        return ResponseEntity.ok(0); // No tasks exist, so progress is 0%
-    }
+        // Step 5: Handle edge case where no tasks exist at all
+        if (totalPossibleTasks == 0 && totalCompletedTasks == 0) {
+            return ResponseEntity.ok(0); // No tasks exist, so progress is 0%
+        }
 
-    int totalTasks = totalPossibleTasks + totalCompletedTasks;
-    int progress = (int) Math.round(((double) totalCompletedTasks / totalTasks) * 100);
-    return ResponseEntity.ok(progress);
-}
+        int totalTasks = totalPossibleTasks + totalCompletedTasks;
+        int progress = (int) Math.round(((double) totalCompletedTasks / totalTasks) * 100);
+        return ResponseEntity.ok(progress);
+    }
 
 
 
