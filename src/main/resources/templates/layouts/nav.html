@@ -22,7 +22,7 @@
                     </ul>
                 </div>
 
-                <!-- Secured: Visible only to authenticated users -->
+                <!-- Secured: Visible only to authenticated users (only show nav bar when logged in)-->
                 <th:block sec:authorize="isAuthenticated()">
                     <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0">
                         <ul class="navbar-nav">
