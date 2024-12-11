@@ -15,6 +15,8 @@ import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
+import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TinkleJPARepository;
 import com.nighthawk.spring_portfolio.mvc.comment.Comment;
@@ -42,7 +44,7 @@ public class ModelInit {
     @Autowired TinkleJPARepository tinkleJPA;
     @Autowired BathroomQueueJPARepository queueJPA;
 
-    // @Autowired IssueJPARepository issueJPARepository;
+    @Autowired IssueJPARepository issueJPARepository;
 
     @Bean
     @Transactional
@@ -127,13 +129,13 @@ public class ModelInit {
                 }
             }
             // Issue database initialization
-            // Issue[] issueArray = Issue.init();
-            // for (Issue issue : issueArray) {
-            //     List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
-            //     if (issueFound.isEmpty()) {
-            //         issueJPARepository.save(issue);
-            //     }
-            // }
+            Issue[] issueArray = Issue.init();
+            for (Issue issue : issueArray) {
+                List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
+                if (issueFound.isEmpty()) {
+                    issueJPARepository.save(issue);
+                }
+            }
             // ArrayList<Tinkle> tinkles = new ArrayList<>();
             // for(Person person: personArray)
             // {
