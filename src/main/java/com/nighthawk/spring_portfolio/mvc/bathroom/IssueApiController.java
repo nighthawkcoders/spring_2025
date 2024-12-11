@@ -28,11 +28,13 @@ public class IssueApiController {
     // }
     @Getter
     public static class IssueDto
-{
-    private String bathroomName;
-    private int count;
-    private String issue;
-}
+    {
+        private String bathroomName;
+        private int count;
+        private String issue;
+        private float positionX;
+        private float positionY;
+    }
     @CrossOrigin(origins = "http://127.0.0.1:4100")
     @PostMapping("/add")
     public ResponseEntity<Object> addIssue(@RequestBody IssueDto issueDto)
@@ -40,7 +42,7 @@ public class IssueApiController {
         List<Issue> issues = repository.findByIssueAndBathroomIgnoreCase(issueDto.getIssue(), issueDto.getBathroomName());
         if(issues.size()==0)
         {
-            Issue issue = new Issue(issueDto.getBathroomName(), issueDto.getIssue(), issueDto.getCount());
+            Issue issue = new Issue(issueDto.getBathroomName(), issueDto.getIssue(), issueDto.getCount(), issueDto.getPositionX(), issueDto.getPositionY());
             repository.save(issue);
             return new ResponseEntity<>("Issue at: " + issueDto.getBathroomName() + " for " + issueDto.getIssue() + "has been successfully created", HttpStatus.CREATED);
         }
