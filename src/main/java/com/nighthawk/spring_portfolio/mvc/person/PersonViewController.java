@@ -74,13 +74,50 @@ public class PersonViewController {
             return "person/create"; // Return to form with error message
         }
 
-        // Save new person to the database
-        person.setBalance(Float.valueOf(0)); //default balance to 0;
-        repository.save(person);
-        repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
+        Person personToUpdate = repository.getByGhid(person.getGhid());
+        if (personToUpdate == null) {
+        return "redirect:/e#email_does_not_exist";
+    }
 
-        // Redirect to the person list page
-        return "redirect:/mvc/person/read";
+         boolean updated = false; // Track if any attribute was updated
+
+    // Update fields only if they are provided (non-null)
+    if (person.getPassword() != null) {
+        personToUpdate.setPassword(person.getPassword());
+        updated = true;
+    }
+    if (person.getName() != null) {
+        personToUpdate.setName(person.getName());
+        updated = true;
+    }
+    if (person.getDob() != null) {
+        personToUpdate.setDob(person.getDob());
+        updated = true;
+    }
+    if (person.getPfp() != null) {
+        personToUpdate.setPfp(person.getPfp());
+        updated = true;
+    }
+    if (person.getKasmServerNeeded() != null) {
+        personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
+        updated = true;
+    }
+
+    // If no attributes were updated, inform the user
+    if (!updated) {
+        return "redirect:/e#no_changes_detected";
+    }
+
+    // Save the updated person
+    person.setBalance(Float.valueOf(0)); //default balance to 0;
+    repository.save(personToUpdate);
+
+    // Ensure the user role is assigned (if required by logic)
+    repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
+
+    // Redirect to a confirmation or next step
+    return "redirect:/mvc/person/read";
+
     }
 
     /*  The HTML template Forms and PersonForm attributes are bound
