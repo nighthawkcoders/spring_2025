@@ -1,19 +1,18 @@
 package com.nighthawk.spring_portfolio.mvc.generator;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import com.nighthawk.spring_portfolio.mvc.generator.GeneratedQuestion;
-import com.nighthawk.spring_portfolio.mvc.generator.GeneratedQuestionRepository;
+import org.springframework.beans.factory.annotation.Autowired; // Enables dependency injection
+import org.springframework.web.bind.annotation.*; // REST API annotations
 
-@RestController
-@RequestMapping("/save-question")
+@RestController // Defines this class as a RESTful controller
+@RequestMapping("/save-question") // Base URL path for this controller
 public class SaveQuestionController {
 
-    @Autowired
+    @Autowired // Automatically injects an instance of the repository
     private GeneratedQuestionRepository questionRepository;
 
-    @PostMapping
+    @PostMapping // Maps POST requests to this method
     public void saveQuestion(@RequestBody GeneratedQuestion question) {
+        // Save the received question entity into the database
         questionRepository.save(question);
     }
 }
