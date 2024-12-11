@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @RestController
 @RequestMapping("/api/calendar")
-public class CalendarApiController {
+public class HackCalendarApiController {
 
     /** GET isLeapYear endpoint
      * ObjectMapper throws exceptions on bad JSON
