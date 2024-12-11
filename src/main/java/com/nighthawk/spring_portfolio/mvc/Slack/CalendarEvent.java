@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.Slack;
+package com.nighthawk.spring_portfolio.mvc.Slack;
 
 import java.time.LocalDate;
 
