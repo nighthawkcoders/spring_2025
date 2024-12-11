@@ -74,12 +74,46 @@ public class PersonViewController {
             return "person/create"; // Return to form with error message
         }
 
-        Person personToUpdate = repository.getByGhid(person.getGhid());
-        if (personToUpdate == null) {
+        // Save new person to the database
+        person.setBalance(Float.valueOf(0)); //default balance to 0;
+        repository.save(person);
+        repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
+        repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
+
+        // Redirect to the person list page
+        return "redirect:/mvc/person/read";
+    }
+
+    /*  The HTML template Forms and PersonForm attributes are bound
+        @return - template for person update form for the specific id
+        @param - Id
+    */
+
+    @GetMapping("/update/{id}")
+    public String personUpdate(@PathVariable("id") int id, Model model) {
+        model.addAttribute("person", repository.get(id));
+        return "person/update";
+    }
+
+    /* Gathers the attributes filled out in the form, tests for and retrieves validation error
+        @param - Person object with @Valid
+        @param - BindingResult object
+        @return - Redirects to error page if errors, or read page if successful
+     */
+    @PostMapping("/update")
+public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
+    // Handle validation errors
+    // if (bindingResult.hasErrors()) {
+    //     return "redirect:/e#there_were_errors_with_updating";
+    // }
+
+    // Retrieve the person by email
+    Person personToUpdate = repository.getByGhid(person.getGhid());
+    if (personToUpdate == null) {
         return "redirect:/e#email_does_not_exist";
     }
 
-         boolean updated = false; // Track if any attribute was updated
+    boolean updated = false; // Track if any attribute was updated
 
     // Update fields only if they are provided (non-null)
     if (person.getPassword() != null) {
@@ -109,58 +143,17 @@ public class PersonViewController {
     }
 
     // Save the updated person
-    person.setBalance(Float.valueOf(0)); //default balance to 0;
     repository.save(personToUpdate);
 
     // Ensure the user role is assigned (if required by logic)
     repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
+    repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
+
 
     // Redirect to a confirmation or next step
     return "redirect:/mvc/person/read";
+}
 
-    }
-
-    /*  The HTML template Forms and PersonForm attributes are bound
-        @return - template for person update form for the specific id
-        @param - Id
-    */
-
-    @GetMapping("/update/{id}")
-    public String personUpdate(@PathVariable("id") int id, Model model) {
-        model.addAttribute("person", repository.get(id));
-        return "person/update";
-    }
-
-    /* Gathers the attributes filled out in the form, tests for and retrieves validation error
-        @param - Person object with @Valid
-        @param - BindingResult object
-        @return - Redirects to error page if errors, or read page if successful
-     */
-
-    @PostMapping("/update")
-    public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
-        // Validation of Decorated PersonForm attributes
-        if (bindingResult.hasErrors()) {
-            return "redirect:/e#there_were_errors_with_updating";
-        }
-
-        Person personToUpdate = repository.getByGhid(person.getGhid());
-        if(personToUpdate == null){
-            return "redirect:/e#ghid_doesn't_exist";
-        }
-
-        personToUpdate.setPassword(person.getPassword());
-        personToUpdate.setName(person.getName());
-        personToUpdate.setDob(person.getDob());
-        personToUpdate.setPfp(person.getPfp());
-        personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
-        repository.save(personToUpdate);
-
-        repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
-
-        // Redirect to next step
-        return "redirect:/mvc/person/read";
-    }
 
     /*
         @param - Id

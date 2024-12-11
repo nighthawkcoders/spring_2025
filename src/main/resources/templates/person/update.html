@@ -4,6 +4,20 @@
 <head>
     <title>Update Account</title>
     <script>
+        // Function to handle image file input
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                document.getElementById("pfp_preview").src = base64Image; // Set the preview image
+                document.getElementById("pfp").value = base64Image; // Set the base64 string in the hidden field
+            };
+            if (file) {
+                reader.readAsDataURL(file); // Read the image file as base64
+            }
+        }
         /**
          * @Function encodeImageFileAsURL(); //Function to encode image files into Base64 String and set pfp field
          * @Param @File || @Blob fileToConvert, image file to convert into base64
@@ -113,6 +127,14 @@
                                 <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
                             </div>
 
+                            <input type="file" id="pfp_input" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
+                                <input type="hidden" th:field="*{pfp}" id="pfp">
+                                <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Profile Picture Error</small>
+                            </div>
+                            <!-- Preview area -->
+                            <div>
+                                <h4>Profile Picture Preview:</h4>
+                                <img id="pfp_preview" src="" alt="Profile Preview" style="max-width: 200px; max-height: 200px;"/>
                             <!-- Submit Button -->
                             <button type="submit" class="btn btn-primary">Update Account</button>
                         </form>
