@@ -96,7 +96,7 @@ public class PokerApiController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
+    // to reset the board
     @PostMapping("/reset")
     public ResponseEntity<String> resetGame() {
         pokerBoard = new PokerBoard();
