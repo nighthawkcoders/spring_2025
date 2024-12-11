@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -125,8 +126,10 @@ public class Person {
     private Date dob;
 
     /** Profile picture (pfp) in base64 */
-    @Column(length = 255, nullable = true)
+    @Lob
+    @Column(nullable = true)
     private String pfp;
+    
 
     /** Kasm Server Needed (ksns) in True/false */
     @Column(nullable = false, columnDefinition = "boolean default false")
@@ -237,7 +240,11 @@ public class Person {
     public static Person[] init() {
         ArrayList<Person> persons = new ArrayList<>();
         persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", TobyImage.imageString, true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", MortImage.imageString, false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
+        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", "undefined", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
+        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+
         return persons.toArray(new Person[0]);
     }
 
