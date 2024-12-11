@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.Slack;
+package com.nighthawk.spring_portfolio.mvc.Slack;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public class CalendarEventController {
         LocalDate weekStartDate = LocalDate.parse(formattedDate);
         calendarEventService.parseSlackMessage(jsonMap, weekStartDate);
     }
-    
+
     @PostMapping("/add_event")
     public void addEvents(@RequestBody Map<String, String> jsonMap) {
         if (jsonMap.containsKey("text")) {
@@ -66,5 +66,11 @@ public class CalendarEventController {
         LocalDate startDate = LocalDate.parse(start);
         LocalDate endDate = LocalDate.parse(end);
         return calendarEventService.getEventsWithinDateRange(startDate, endDate);
+    }
+
+    @GetMapping("/events/next-day")
+    public List<CalendarEvent> getNextDayEvents() {
+        LocalDate nextDay = LocalDate.now().plusDays(1);
+        return calendarEventService.getEventsByDate(nextDay);
     }
 }

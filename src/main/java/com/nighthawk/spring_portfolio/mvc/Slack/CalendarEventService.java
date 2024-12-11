@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.Slack;
+package com.nighthawk.spring_portfolio.mvc.Slack;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 public class CalendarEventService {
@@ -30,6 +31,13 @@ public class CalendarEventService {
     public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {
         return calendarEventRepository.findByDateBetween(startDate, endDate);
     }
+
+    @GetMapping("/events/next-day")
+    public List<CalendarEvent> getNextDayEvents() {
+        LocalDate nextDay = LocalDate.now().plusDays(1);
+        return calendarEventRepository.findByDate(nextDay);
+    }
+
 
     // Retrieve all events
     public List<CalendarEvent> getAllEvents() {
