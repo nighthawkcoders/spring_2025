@@ -1,6 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.Slack;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 public class SlackController {
+
     /* 
     My slack bot's API key :(
     I would never actually leak my api key if it were for something more serious like a paid service or
@@ -21,8 +23,10 @@ public class SlackController {
     paste the key in their .envs manually I put my key here publicly
     */
     private String slackToken = "xoxp-7892664186276-7887305704597-7924387129461-e2333e0f3c20a3ddb2ba833ec37f4e52";
-    private final RestTemplate restTemplate;
+    
     // Rest template for API handling
+    @Autowired
+    private final RestTemplate restTemplate;
 
     @Autowired
     private MessageService messageService;

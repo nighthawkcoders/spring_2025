@@ -10,7 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
-import org.springframework.web.client.RestTemplate;
 /*
 * To enable HTTP Security in Spring
 */
@@ -29,10 +28,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class SecurityConfig {
-    @Bean
-    public RestTemplate getRestTemplate() {
-        return new RestTemplate();
-    }
+
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
@@ -50,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/authenticate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/person/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/person/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/people/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/people/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/person/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/person/**").hasAuthority("ROLE_ADMIN"))
                 .cors(Customizer.withDefaults())
@@ -76,6 +72,7 @@ public class SecurityConfig {
                         .requestMatchers("/mvc/person/read/**").authenticated()
                         .requestMatchers("/mvc/person/update/**").authenticated()
                         .requestMatchers("/mvc/person/delete/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/mvc/bathroom/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/authenticateForm").permitAll()
                         .requestMatchers("/**").permitAll())
