@@ -63,13 +63,11 @@ public class PersonApiController {
      */
     @GetMapping("/person/get")
     public ResponseEntity<Person> getPerson(Authentication authentication) {
-        System.out.println("help me");
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
         Person person = repository.findByEmail(email);  
-        System.out.println(person.getId()+"--------------");
 
         // Return the person if found
         if (person != null) {
