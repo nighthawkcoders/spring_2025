@@ -21,12 +21,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.persistence.CascadeType;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -34,7 +35,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.vladmihalcea.hibernate.type.json.JsonType;
-
+import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import jakarta.persistence.CascadeType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -96,6 +98,8 @@ public class Person implements Comparable<Person> {
     @ManyToMany(fetch = EAGER)
     private Collection<PersonRole> roles = new ArrayList<>();
 
+    @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
+    private Tinkle timeEntries;
     /**
      * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
