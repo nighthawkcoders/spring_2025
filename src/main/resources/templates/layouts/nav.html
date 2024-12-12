@@ -69,12 +69,6 @@
                     </ul>
                 </div>
 
-                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0" sec:authorize="isAuthenticated()">
-                    <ul class="navbar-nav">
-                        <a id="awayStudents" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')"></a>
-                    </ul>
-                </div>
-
             </div>
 
             <div class="btn-group">
@@ -183,37 +177,9 @@
                 }
                 // End Dark Mode Control
 
-                function appendStatus(data) {
-                    awayStudents = document.getElementById('awayStudents');
 
-                    if (data) {
-                        awayStudents.innerHTML = data + ' is currently in the bathroom';
-                    } else {
-                        awayStudents.innerHTML = "Nobody is in the bathroom as of right now"
-                    }
 
-                }
-                function fetchStatus() {
-                    fetch('http://localhost:8085/api/queue/getActive')
-                        .then(function (response) {
-                            return response.json();
-                        })
-                        .then(function (data) {
-                            console.log("Data received:", JSON.stringify(data[0], null, 2));  // Pretty print the object
-                            appendStatus(data[0].frontStudent);
-                        })
-                        .catch(function (err) {
-                            console.log('error: ' + err);
-                    });
-                }
 
-                window.addEventListener('load', function () {
-                    // Your document is loaded.
-                    var fetchInterval = 5000; // 5 seconds.
-
-                    // Invoke the request every 5 seconds.
-                    setInterval(fetchStatus, fetchInterval);
-                });
             </script>
 
         </div>

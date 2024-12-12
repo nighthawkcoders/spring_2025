@@ -3,9 +3,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.env
 volumes/sqlite.db
-
+.env
 ### STS ###
 .apt_generated
 .classpath
@@ -14,10 +13,6 @@ volumes/sqlite.db
 .settings
 .springBeans
 .sts4-cache
-
-volumes
-
-*.db
 
 ### IntelliJ IDEA ###
 .idea
