@@ -37,7 +37,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import com.nighthawk.spring_portfolio.mvc.person.ImageStrings.*;;
+import com.nighthawk.spring_portfolio.mvc.person.ImageStrings.*;
 
 /**
  * Person is a POJO, Plain Old Java Object.
