@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Tinkle View</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Bathroom Usage Data</h1>
-    
-    <!-- Main Table for User Data -->
+
+    <!-- Main Table for User Entries -->
     <h2>User Entries</h2>
     <table border="1">
         <thead>
@@ -24,11 +24,8 @@
             </tr>
         </tbody>
     </table>
-    
 
-
-
-    <!-- New Table for Average Weekly Duration -->
+    <!-- Average Weekly Duration per User Table -->
     <h2>Average Weekly Duration per User</h2>
     <table border="1">
         <thead>
@@ -45,5 +42,58 @@
         </tbody>
     </table>
 
+    <!-- Visualization Section -->
+    <h2>Average Weekly Duration Visualization</h2>
+    <canvas id="weeklyDurationChart" width="400" height="200"></canvas>
+
+    <script th:inline="javascript">
+        // Thymeleaf variables converted into JavaScript arrays
+        const labels = /*[[${chartLabels}]]*/ [];
+        const data = /*[[${chartData}]]*/ [];
+    
+        console.log("Labels:", labels); // Debugging
+        console.log("Data (in seconds):", data); // Debugging
+    
+        // Convert durations from seconds to minutes
+        const formattedData = data.map(seconds => (seconds / 60).toFixed(2)); // Convert to minutes and format
+    
+        console.log("Formatted Data (Minutes):", formattedData); // Debugging
+    
+        // Chart.js configuration
+        const ctx = document.getElementById('weeklyDurationChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels, // User names on the x-axis
+                datasets: [{
+                    label: 'Average Weekly Duration (Minutes)',
+                    data: formattedData, // Durations in minutes
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Duration (Minutes)' // Label for y-axis
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Users' // Label for x-axis
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    
+    
 </body>
 </html>

@@ -20,7 +20,8 @@ public class TinkleViewController {
     private TinkleStatisticsService tinkleStatisticsService;
 
     @GetMapping("/admin/tinkle-view")
-    public String showTinkleViewWithDurations(Model model) {
+    public String showTinkleViewWithVisualizations(Model model) {
+        // Fetch all Tinkle records from the database
         List<Tinkle> tinkleList = tinkleRepository.findAll();
 
         // Add durations for each entry
@@ -31,18 +32,19 @@ public class TinkleViewController {
             row.put("duration", tinkleStatisticsService.calculateDurationFormatted(tinkle.getTimeIn()));
             return row;
         }).collect(Collectors.toList());
-        
-        tinkleDataWithDurations.forEach(row -> {
-            System.out.println("Row: " + row);
-        });
-        
+
         // Calculate average weekly durations
         Map<String, String> averageWeeklyDurations = tinkleStatisticsService.calculateAverageWeeklyDurationsFormatted(tinkleList);
 
+        // Prepare data for chart (weekly durations per user)
+        Map<String, Long> rawWeeklyDurations = tinkleStatisticsService.calculateAverageWeeklyDurations(tinkleList);
+        model.addAttribute("chartLabels", rawWeeklyDurations.keySet()); // User names
+        model.addAttribute("chartData", rawWeeklyDurations.values()); // Durations in seconds
+
+        // Pass data for tables
         model.addAttribute("tinkleList", tinkleDataWithDurations); // Updated list with durations
         model.addAttribute("averageWeeklyDurations", averageWeeklyDurations);
 
-        return "tinkle-view";
+        return "tinkle-view"; // Corresponds to the Thymeleaf template
     }
-
 }
