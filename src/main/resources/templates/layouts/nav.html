@@ -62,12 +62,26 @@
                                 <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/assignments/tracker}">Assignment Tracker</a></li>
                                 <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/synergy/gradebook}">Edit Student Grades</a></li>
                                 <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_STUDENT')" th:href="@{/mvc/synergy/gradebook}">View Grades</a></li>
-                                <li><a class="dropdown-item" th:href="@{/mvc/synergy/create-grade-request}">Create Grade Request</a></li>
+                                <li><a class="dropdoxwn-item" th:href="@{/mvc/synergy/create-grade-request}">Create Grade Request</a></li>
                                 <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/synergy/view-grade-requests}">View Grade Requests</a></li>
                             </ul>
                         </li>
                     </ul>
                 </div>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown3" sec:authorize="isAuthenticated()">
+                    <ul class="navbar-nav">
+                        <!-- Admin-only link -->
+                        <li class="nav-item dropdown" sec:authorize="hasRole('ROLE_ADMIN')">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Admin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
+                                <li><a class="dropdown-item" th:href="@{/admin/tinkle-view}">Tinkle View</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                
 
                 <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0" sec:authorize="isAuthenticated()">
                     <ul class="navbar-nav">
