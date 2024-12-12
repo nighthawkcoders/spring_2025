@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tinkle View</title>
+</head>
+<body>
+    <h1>Bathroom Usage Data</h1>
+    
+    <!-- Main Table for User Data -->
+    <h2>User Entries</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Person Name</th>
+                <th>Time In</th>
+                <th>Duration (HH:MM:SS)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="entry : ${tinkleList}">
+                <td th:text="${entry.person_name}"></td>
+                <td th:text="${entry.timeIn}"></td>
+                <td th:text="${entry.duration}"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+
+
+
+    <!-- New Table for Average Weekly Duration -->
+    <h2>Average Weekly Duration per User</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Person Name</th>
+                <th>Average Weekly Duration (HH:MM:SS)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="entry : ${averageWeeklyDurations}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${entry.value}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
