@@ -165,7 +165,6 @@ public String personUpdateSave(@Valid Person person, BindingResult bindingResult
 
     @PostMapping("/update/role")
     public ResponseEntity<Object> personRoleUpdateSave(@RequestBody PersonRoleDto roleDto) {
-        // Validation of Decorated PersonForm attributes
 
         Person personToUpdate = repository.getByGhid(roleDto.getGhid());
         if(personToUpdate == null){

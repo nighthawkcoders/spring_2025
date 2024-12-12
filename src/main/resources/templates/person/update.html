@@ -49,6 +49,149 @@
             }, ()=>{
                 console.warn("Couldn't load profile picture"); //warning, this will exist after generated error when image failed
             })
+
+            document.getElementById("addRoleButton").addEventListener("click",()=>{
+                console.log(document.getElementById("addRole2").checked);
+                if(document.getElementById("addRole1").checked == true){
+                    var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleName:"ROLE_USER",
+                    }
+                    fetch("/mvc/person/update/role",{
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    }).then(function(response){
+                        if (response.status !== 200) {
+                            const errorMsg = 'Database response error: ' + response.status;
+                            alert(errorMsg);
+                            document.getElementById("footerInfo").style.color = "red";
+                            document.getElementById("footerInfo").innerText = "Failed to update roles";
+                            return;
+                        }
+                        else {
+                            document.getElementById("footerInfo").style.color = "green";
+                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                            return;
+                        }
+                    })
+                }
+                if(document.getElementById("addRole2").checked == true){
+                    var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleName:"ROLE_ADMIN",
+                    }
+                    fetch("/mvc/person/update/role",{
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    }).then(function(response){
+                        if (response.status !== 200) {
+                            const errorMsg = 'Database response error: ' + response.status;
+                            document.getElementById("footerInfo").style.color = "red";
+                            document.getElementById("footerInfo").innerText = "Failed to update roles";
+                            return;
+                        }
+                        else {
+                            document.getElementById("footerInfo").style.color = "green";
+                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                            return;
+                        }
+                    })
+                }
+                if(document.getElementById("addRole3").checked == true){
+                    var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleName:"ROLE_TESTER",
+                    }
+                    fetch("/mvc/person/update/role",{
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    }).then(function(response){
+                        if (response.status !== 200) {
+                            const errorMsg = 'Database response error: ' + response.status;
+                            alert(errorMsg);
+                            document.getElementById("footerInfo").style.color = "red";
+                            document.getElementById("footerInfo").innerText = "Failed to update roles";
+                            return;
+                        }
+                        else {
+                            document.getElementById("footerInfo").style.color = "green";
+                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                            return;
+                        }
+                    })
+                }
+                if(document.getElementById("addRole4").checked == true){
+                    var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleName:"ROLE_TEACHER",
+                    }
+                    fetch("/mvc/person/update/role",{
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    }).then(function(response){
+                        if (response.status !== 200) {
+                            const errorMsg = 'Database response error: ' + response.status;
+                            alert(errorMsg);
+                            document.getElementById("footerInfo").style.color = "red";
+                            document.getElementById("footerInfo").innerText = "Failed to update roles";
+                            return;
+                        }
+                        else {
+                            document.getElementById("footerInfo").style.color = "green";
+                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                            return;
+                        }
+                    })
+                }
+                if(document.getElementById("addRole5").checked == true){
+                    var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleName:"ROLE_STUDENT",
+                    }
+                    fetch("/mvc/person/update/role",{
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    }).then(function(response){
+                        if (response.status !== 200) {
+                            const errorMsg = 'Database response error: ' + response.status;
+                            alert(errorMsg);
+                            document.getElementById("footerInfo").style.color = "red";
+                            document.getElementById("footerInfo").innerText = "Failed to update roles";
+                            return;
+                        }
+                        else {
+                            document.getElementById("footerInfo").style.color = "green";
+                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                            return;
+                        }
+                    })
+                }
+            })
         })
 
         /**
@@ -126,18 +269,66 @@
                                 <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
                                 <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
                             </div>
-
-                            <input type="file" id="pfp_input" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
-                                <input type="hidden" th:field="*{pfp}" id="pfp">
-                                <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Profile Picture Error</small>
+                            <!-- I am hiding this file upload for changing pfp.
+                            <div class="input-group mb-2 mr-sm-2"></div>
+                                <input type="file" id="pfp_input" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
                             </div>
-                            <!-- Preview area -->
-                            <div>
-                                <h4>Profile Picture Preview:</h4>
-                                <img id="pfp_preview" src="" alt="Profile Preview" style="max-width: 200px; max-height: 200px;"/>
+                            -->
                             <!-- Submit Button -->
                             <button type="submit" class="btn btn-primary">Update Account</button>
                         </form>
+                    </div>
+                    <hr>
+                    <!-- Roles Input -->
+                    <div  class="jumbotron">
+                        <h3>Add Roles:</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th> Role </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td> User </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole1">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Admin </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole2">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Tester </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole3">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Teacher </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole4">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Student </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole5">
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th> 
+                                        <button type="button" id="addRoleButton">Add Roles</button>
+                                    </th> 
+                                    <th id="footerInfo"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
