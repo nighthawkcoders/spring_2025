@@ -72,7 +72,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/mvc/person/search/**").authenticated()
                         .requestMatchers("/mvc/person/create/**").permitAll()
-                        .requestMatchers("/mvc/person/read/**").authenticated()
+                        .requestMatchers("/mvc/person/read/**").permitAll()
                         .requestMatchers("/mvc/person/update/**").authenticated()
                         .requestMatchers("/mvc/person/delete/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/mvc/bathroom/**").authenticated()
