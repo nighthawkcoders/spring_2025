@@ -26,8 +26,8 @@ public class BathroomQueueApiController {
     // DTO (Data Transfer Object) class for queue entries
     @Getter
     public static class QueueDto {
-        private String teacherEmail;
-        private String studentName;
+        private String teacherEmail; // The email of the teacher associated with the queue
+        private String studentName;  // The name of the student to be added or removed
     }
 
     // Add a student to the queue for a specific teacher
@@ -35,9 +35,11 @@ public class BathroomQueueApiController {
     public ResponseEntity<Object> addToQueue(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> existingQueue = repository.findByTeacherEmail(queueDto.getTeacherEmail());
         if (existingQueue.isPresent()) {
+            // If a queue already exists for the teacher, add the student to it
             existingQueue.get().addStudent(queueDto.getStudentName());
             repository.save(existingQueue.get());
         } else {
+            // If no queue exists, create a new one and add the student
             BathroomQueue newQueue = new BathroomQueue(queueDto.getTeacherEmail(), queueDto.getStudentName());
             repository.save(newQueue);
         }
@@ -52,6 +54,7 @@ public class BathroomQueueApiController {
         if (queueEntry.isPresent()) {
             BathroomQueue bathroomQueue = queueEntry.get();
             try {
+                // Attempt to remove the student from the queue
                 bathroomQueue.removeStudent(queueDto.getStudentName());
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Removed " + queueDto.getStudentName() + " from " + queueDto.getTeacherEmail() + "'s queue", HttpStatus.OK);
@@ -71,6 +74,7 @@ public class BathroomQueueApiController {
             BathroomQueue bathroomQueue = queueEntry.get();
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(queueDto.getStudentName())) {
+                // Approve the student and update the queue status
                 bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + queueDto.getStudentName(), HttpStatus.OK);
