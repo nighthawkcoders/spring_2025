@@ -253,17 +253,16 @@ public class Person implements Comparable<Person> {
      * @return Person[], an array of Person objects
      */
     public static Person[] init() {
+        ArrayList<Person> persons = new ArrayList<>();
+        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", TobyImage.imageString, true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", MortImage.imageString, false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
+        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", NikoImage.imageString, true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", CurieImage.imageString, true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", HopperImage.imageString, true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         ArrayList<Person> people = new ArrayList<>();
-        people.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
-        
-        Collections.sort(people);
 
-        return people.toArray(new Person[0]);
+
+        return persons.toArray(new Person[0]);
     }
 
     /**
