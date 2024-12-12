@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -7,13 +8,13 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,8 +22,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
@@ -30,31 +33,37 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import com.nighthawk.spring_portfolio.mvc.person.ImageStrings.*;;
 
-/**
- * Person is a POJO, Plain Old Java Object.
- * --- @Data is Lombox annotation
- * for @Getter @Setter @ToString @EqualsAndHashCode @RequiredArgsConstructor
- * --- @AllArgsConstructor is Lombox annotation for a constructor with all
- * arguments
- * --- @NoArgsConstructor is Lombox annotation for a constructor with no
- * arguments
- * --- @Entity annotation is used to mark the class as a persistent Java class.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Convert(attributeName = "person", converter = JsonType.class)
-public class Person {
+public class Person implements Comparable<Person> {
 
     /** Automatic unique identifier for Person record 
      * --- Id annotation is used to specify the identifier property of the entity.
@@ -69,6 +78,9 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // @OneToMany(mappedBy="student")
+    // private List<SynergyGrade> grades;
+    
     @ManyToMany(fetch = EAGER)
     @JoinTable(
         name = "person_person_sections",  // unique name to avoid conflicts
@@ -89,22 +101,30 @@ public class Person {
      * allowing all elements to be accessed using an integer index.
      * --- PersonRole is a POJO, Plain Old Java Object.
      */
-    @ManyToMany(fetch = EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "person_person_sections",
+        joinColumns = @JoinColumn(name = "person_id"),
+        inverseJoinColumns = @JoinColumn(name = "section_id")
+    )
     private Collection<PersonRole> roles = new ArrayList<>();
 
     /**
-     * ghid, password, roles are key attributes to login and authentication
+     * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
      * null or empty, meaning it has to have a value.
      * --- @Size annotation is used to validate that the annotated field is between
      * the specified boundaries, in this case greater than 5.
+     * --- @Email annotation is used to validate that the annotated field is a valid
+     * email address.
      * --- @Column annotation is used to specify the mapped column for a persistent
-     * property or field, in this case unique and ghid.
+     * property or field, in this case unique and email.
      */
     @NotEmpty
     @Size(min = 5)
     @Column(unique = true)
-    private String ghid;
+    @Email
+    private String email;
 
     @NotEmpty
     private String password;
@@ -126,14 +146,21 @@ public class Person {
     private Date dob;
 
     /** Profile picture (pfp) in base64 */
-    @Lob
-    @Column(nullable = true)
+    @Column(length = 255, nullable = true)
     private String pfp;
-    
 
-    /** Kasm Server Needed (ksns) in True/false */
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
+
+    /**
+     * user_stocks and balance describe properties used by the gamify application
+     */
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private userStocksTable user_stocks;
+
+    @Column
+    private double balance = 100000;
     
     /**
      * stats is used to store JSON for daily stats
@@ -153,33 +180,37 @@ public class Person {
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
 
-    /**
-     * balance, is an attribute to describe the currency a person has
-     * --- @NonNull annotation is used to generate a constructor with
-     * AllArgsConstructor Lombox annotation.
+    /** Custom constructor for Person when building a new Person object from an API call
+     * @param email, a String
+     * @param password, a String
+     * @param name, a String
+     * @param dob, a Date
      */
-    @NonNull
-    private Float balance;
-
-
-    /**
-     * Custom constructor for Person when building a new Person object from an API
-     * call
-     */
-    public Person(String ghid, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
-        this.ghid = ghid;
+    public Person(String email, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
+        this.email = email;
         this.password = password;
         this.name = name;
         this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
         this.pfp = pfp;
-        this.balance = Float.valueOf(0);
         this.roles.add(role);
+    }
+
+    public boolean hasRoleWithName(String roleName) {
+        for (PersonRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * Custom getter to return age from dob attribute
      */
+    /** Custom getter to return age from dob attribute
+     * @return int, the age of the person
+    */
     public int getAge() {
         if (this.dob != null) {
             LocalDate birthDay = this.dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -188,53 +219,53 @@ public class Person {
         return -1;
     }
 
-    /**
-     * 1st telescoping method to create a Person object with USER role
-     * 
+    /** Custom compareTo method to compare Person objects by name
+     * @param other, a Person object
+     * @return int, the result of the comparison
+     */
+    @Override
+    public int compareTo(Person other) {
+        return this.name.compareTo(other.name);
+    }
+
+    /** 1st telescoping method to create a Person object with USER role
      * @param name
-     * @param ghid
+     * @param email
      * @param password
      * @param dob
      * @return Person
      */
-    public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded, String dob) {
+    public static Person createPerson(String name, String email, String password, Boolean kasmServerNeeded, String dob) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, ghid, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
+        return createPerson(name, email, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
-
+    
     /**
      * 2nd telescoping method to create a Person object with parameterized roles
      * 
      * @param roles
      */
-    public static Person createPerson(String name, String ghid, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
+    public static Person createPerson(String name, String email, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
         Person person = new Person();
         person.setName(name);
-        person.setGhid(ghid);
+        person.setEmail(email);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
         person.setPfp(pfp);
-        person.setBalance(Float.valueOf(0));
         try {
             Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
             person.setDob(date);
         } catch (Exception e) {
             // handle exception
         }
-
-        List<PersonRole> roles = new ArrayList<>();
-        for (String roleName : roleNames) {
-            PersonRole role = new PersonRole(roleName);
-            roles.add(role);
-        }
-        person.setRoles(roles);
-
+        
         return person;
     }
     
     /**
      * Static method to initialize an array list of Person objects
-     * 
+     * Uses createPerson method to create Person objects
+     * Sorts the list of Person objects using Collections.sort which uses the compareTo method 
      * @return Person[], an array of Person objects
      */
     public static Person[] init() {
@@ -243,8 +274,7 @@ public class Person {
         persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", MortImage.imageString, false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
         persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", NikoImage.imageString, true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", CurieImage.imageString, true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", HopperImage.imageString, true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-
+        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", HopperImage.imageString, true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT"))
         return persons.toArray(new Person[0]);
     }
 
@@ -259,7 +289,8 @@ public class Person {
 
         // iterate using "enhanced for loop"
         for (Person person : persons) {
-            System.out.println(person); // print object
+            System.out.println(person);  // print object
+            System.out.println();
         }
     }
 }

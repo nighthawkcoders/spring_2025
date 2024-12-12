@@ -1,3 +1,4 @@
+<!-- This page is illustrative and contains ideas about HTML formatting -->
 <!DOCTYPE HTML>
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/base}" lang="en">
@@ -14,10 +15,11 @@
             <span class="fs-4">Login</span>
         </header>
     </div>
+
     <div class="container py-4 text-light bg-success">
+
         <div class="container bg-secondary py-4">
-            <div class="p-5 mb-4 bg-light text-dark rounded-3"> <!-- Added left margin -->
-                <h3 style="margin-left: 10px;">Login To Account</h3> <!-- Added margin -->
+            <div class="p-5 mb-4 bg-light text-dark rounded-3">
                 <form name="f" th:action="@{/login}" method="POST">
                     <table>
                         <tr th:if="${param.error}" class="alert alert-error">
@@ -26,18 +28,20 @@
                         <tr th:if="${param.logout}" class="alert alert-success">
                             You have been logged out.
                         </tr>
-                        <!-- 'ghid' is mapped to 'username' for Spring Security -->
-                        <tr><td><input type="ghid" id='username' name="username" placeholder="GitHub ID" size="20" required style="margin-bottom: 10px; margin-left: 10px;"></td></tr> <!-- Added margin -->
-                        <div class="form-group mb-2 mr-sm-2">
-                            <tr><td><input type="password" id="password" name="password" placeholder="Password" size="20" required style="margin-bottom: 10px; margin-left: 10px;"></td></tr> <!-- Added margin -->
-                        </div>                     
-    
-                        <tr><th><input type="submit" value="Submit" style="margin-left: 10px;"></th></tr>
-                        <tr><td><a th:href="@{/mvc/person/create}" style="margin-left: 10px;">Sign Up</a></td></tr>
-    
+                        <!-- 'email' is mapped to 'username' for Spring Security -->
+                        <tr><th><label for="username">Email</label></th></tr>
+                        <tr><td><input type="email" id='username' name="username" size="20" required></td></tr>
+                        <tr><th><label for="password">Password</label></th></tr>
+                        <tr><td><input type="password" id="password" name="password" size="20" required></td></tr>
+                        <tr><th><input type="submit" value="Submit"></th></tr>
+                        <tr><td><a th:href="@{/mvc/person/create}">Sign Up</a></td></tr>
+
                     </table>
                 </form>
             </div>
         </div>
+
     </div>
-    
+
+</div>
+

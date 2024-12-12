@@ -41,25 +41,6 @@ inspiration from https://www.youtube.com/watch?v=QKcVjdLEX_s
     </div>
 
     <script>
-        /**
-         * @Function search_data(); // Function to check if the GitHub username exists
-         *      @Fetch
-         *      @Param url, "api/people/search" 
-         *      @Param data
-         *          @method: POST
-         *          @credentials: "include", I think this means we are passing through cookies
-         *          @cache: "no-cache"
-         *          @headers: Content-Type Json, we are passing through json
-         *          @body, table that holds info to pass through
-         *              @Content {
-         *                          term: term.value, //what we are searching for
-         *                          foo: "bar" //place holder, I think this holds further terms
-         *                        }
-         *      @Repsonse
-         *          @Ok (Status 200) => @Json data, information about the people that matches our search
-         *              @Element table, response data is formatted into a table for user readability, appended to resultContainer
-         *          @Else => Database error
-        **/
         function search_data() {
             // fetch standard requires database set to a name-value pair
             const term = document.getElementById("term");
@@ -98,55 +79,11 @@ inspiration from https://www.youtube.com/watch?v=QKcVjdLEX_s
                 // response contains valid result
                 response.json().then(function(data) {
                     // loop through JSON and build HTML output
-                    const table = document.createElement("table");
-                    const tableHead = document.createElement("thead");
-                    const tableBody = document.createElement("tbody");
-
-                    const thr = document.createElement("tr"); //row for table headers
-                    const th1 = document.createElement("th"); //first header: Name
-                    th1.innerText="Name";
-                    const th2 = document.createElement("th"); //second header: ghid (Github Username)
-                    th2.innerText="ghid";
-                    const th3 = document.createElement("th"); //third header: Details
-                    th3.innerText="Details";
-
-                    //append headers to header row
-                    thr.append(th1);
-                    thr.append(th2);
-                    thr.append(th3);
-
-                    //append header row to tableHead
-                    tableHead.append(thr);
-                    
-                    //append tableHead to table
-                    table.append(tableHead);
-
                     for (let i = 0; i < data.length; i++) {
-                        const tbr = document.createElement("tr"); //row for table bodies
-                        const td1 = document.createElement("td"); //first detail: Name
-                        td1.innerText = data[i].name;
-                        const td2 = document.createElement("td"); //second detail: ghid (Github Username)
-                        td2.innerText = data[i].ghid;
-                        const td3 = document.createElement("td"); //third detail: Details (link to "person/read/{id}"")
-                        const a = document.createElement("a");
-                        a.innerText = "View Details";
-                        a.href = "/mvc/person/read/"+data[i].id;
-                        td3.append(a); //append link to td3
-
-                        //append details to body row
-                        tbr.append(td1);
-                        tbr.append(td2);
-                        tbr.append(td3);
-
-                        //append body row to tableBody
-                        tableBody.append(tbr);
+                        const div = document.createElement("div");
+                        div.innerHTML = data[i].name + ' ' + data[i].email;
+                        resultContainer.appendChild(div);
                     }
-
-                    //append tableBody to table
-                    table.append(tableBody);
-
-                    //append table to resultContainer
-                    resultContainer.append(table);
                 })
             })
         }

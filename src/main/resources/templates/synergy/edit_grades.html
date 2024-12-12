@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+    <title>View Grades</title>
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 1em;
+            text-align: center;
+            min-width: 8em;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .container {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .grade-cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5em;
+        }
+        .grade-input {
+            width: 4em;
+            text-align: right;
+            padding: 0.25em;
+        }
+        .points-separator {
+            margin: 0 0.25em;
+        }
+        .total-points {
+            color: #666;
+        }
+        .assignment-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+        }
+        .assignment-name {
+            font-weight: bold;
+        }
+        .assignment-points {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+<th:block layout:fragment="body" th:remove="tag">
+
+    <h2>View Grades</h2>
+
+    <button class="save-btn" type="button" id="save-btn">Save Grades</button>
+
+    <div class="scrollable-table">
+        <form id="grade-form">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th:block th:each="assignment : ${assignments}">
+                            <th>
+                                <div class="assignment-header">
+                                    <span class="assignment-name" th:text="${assignment.name}">Assignment Name</span>
+                                    <span class="assignment-points" th:text="'out of ' + ${assignment.points}">out of X</span>
+                                </div>
+                            </th>
+                        </th:block>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="student : ${students}">
+                        <td th:text="${student.name}">Student Name</td>
+                        <td th:each="assignment : ${assignments}">
+                            <div class="grade-cell">
+                                <input 
+                                    type="number"
+                                    min="0"
+                                    step="any"
+                                    class="grade-input"
+                                    th:name="'grades[' + ${assignment.id} + '][' + ${student.id} + ']'" 
+                                    th:value="${grades[assignment.id][student.id] != null ? grades[assignment.id][student.id] : ''}" 
+                                    th:placeholder="${grades[assignment.id][student.id] != null ? '' : 'N/A'}"
+                                />
+                                <span class="points-separator">/</span>
+                                <span class="total-points" th:text="${assignment.points}">100</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+</th:block>
+</body>
+
+<th:block layout:fragment="script" th:remove="tag">
+<script>
+    document.getElementById('save-btn').addEventListener('click', async function () {
+        const form = document.getElementById('grade-form');
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/api/synergy/grades', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Grades saved successfully!');
+            } else {
+                alert('Failed to save grades. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('An error occurred. Please try again.');
+        }
+    });
+</script>
+</th:block>

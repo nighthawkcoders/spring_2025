@@ -117,8 +117,47 @@ public class Person extends Generics{
             // no actions as dob default is good enough
         }
 
+        Person p2 = new Person();
+        p2.setName("Alexander Graham Bell");
+        p2.setUid("lexb@gmail.com");
+        p2.setPassword("123LexB!");
+        try {
+            Date d = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-1845");
+            p2.setDob(d);
+        } catch (Exception e) {
+        }
+
+        Person p3 = new Person();
+        p3.setName("Nikola Tesla");
+        p3.setUid("niko@gmail.com");
+        p3.setPassword("123Niko!");
+        try {
+            Date d = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-1850");
+            p3.setDob(d);
+        } catch (Exception e) {
+        }
+
+        Person p4 = null;
+        Person p5 = null;
+        try {
+            p4 = new Person(
+                "madam@gmail.com",
+                "123Madam!",
+                "Madam Currie", 
+                new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2023")
+            );
+    
+            p5 = new Person(
+                "jm1021@gmail.com", 
+                "123Qwerty!",
+                "John Mortensen",
+                new SimpleDateFormat("MM-dd-yyyy").parse("10-21-1959")
+            );
+        } catch (Exception e) {
+        }
+
         // Array definition and data initialization
-        Person persons[] = {p1};
+        Person persons[] = {p1, p2, p3, p4, p5};
         return(persons);
     }
 

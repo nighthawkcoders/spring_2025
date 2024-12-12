@@ -1,10 +1,10 @@
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/targe/
+!**/src/main/**/target/
 !**/src/test/**/target/
+.env
 volumes/sqlite.db
-
 
 ### STS ###
 .apt_generated
@@ -36,3 +36,4 @@ build/
 
 ### Java build ###
 *.class
+.java-version

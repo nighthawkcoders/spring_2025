@@ -475,7 +475,7 @@ legend + * {
 /* rtl:raw:
 [type="tel"],
 [type="url"],
-[type="ghid"],
+[type="email"],
 [type="number"] {
   direction: ltr;
 }
@@ -11199,7 +11199,7 @@ html, body {
   /* rtl:raw:
   [type="tel"],
   [type="url"],
-  [type="ghid"],
+  [type="email"],
   [type="number"] {
     direction: ltr;
   }
