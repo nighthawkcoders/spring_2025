@@ -38,14 +38,14 @@ public class Blackjack {
     private String gameState;
 
     private transient Map<String, Object> gameStateMap = new HashMap<>();
-
+    /*Code segment below is initializing the deck. Without this, game won't hit or stand properly*/
     public void initializeDeck() {
         List<String> deck = generateDeck();
         Collections.shuffle(deck);
         gameStateMap.put("deck", deck);
         persistGameState(); // Save the deck into the gameState JSON
     }
-
+    /*Dealing the card hands */
     public void dealInitialHands() {
         List<String> deck = (List<String>) gameStateMap.get("deck");
         List<String> playerHand = new ArrayList<>();
@@ -62,7 +62,7 @@ public class Blackjack {
         gameStateMap.put("dealerScore", calculateScore(dealerHand));
         persistGameState();
     }
-
+    /*Math for dealing cards, removing one from deck. It's not as realistic becaus as long as it's below 21, cards will continue to be dealt. It's more simplistic  */
     public int calculateScore(List<String> hand) {
         int score = 0;
         int aces = 0;
@@ -85,7 +85,7 @@ public class Blackjack {
         return score;
     }
     
-
+    /*Generating Deck */
     private List<String> generateDeck() {
         String[] suits = {"H", "D", "C", "S"};
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
@@ -112,7 +112,7 @@ public class Blackjack {
         this.gameStateMap = gameStateMap;
         persistGameState();
     }
-
+    /*Error handling */
     private String toJsonString(Map<String, Object> map) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
