@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+    layout:decorate="~{layouts/base}" lang="en">
+<head>
+    <title>Person List</title>
+    <style>
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .table th {
+            background-color: #f4f4f4;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-4 bg-primary">
+        <header class="pb-3 mb-4 border-bottom">
+            <a href="#" class="d-flex align-items-center text-dark text-decoration-none">
+                <span class="fs-4">Database SQL Bathroom</span>
+            </a>
+        </header>
+
+        <div class="container py-4 text-dark bg-light">
+            <h2>Person Viewer</h2>
+            <div class="row align-items-md-stretch">
+                <table class="table" id="personTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Average Duration</th>
+                            <th>Student Email</th>
+                            <th>Time in Bathroom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const endpoint = '/api/admin/all';
+            const tableBody = document.getElementById('personTable').querySelector('tbody');
+
+            // Fetch data from the API
+            fetch(endpoint)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Clear existing rows
+                    tableBody.innerHTML = '';
+
+                    // Populate the table with data
+                    data.forEach(person => {
+                        const row = document.createElement('tr');
+                        console.log(person)
+                        row.innerHTML = `
+                            <td>${person.id}</td>
+                            <td>${person.averageDuration}</td>
+                            <td>${person.email}</td>
+                            <td>${person.timeInBathroom}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    tableBody.innerHTML = '<tr><td colspan="4">Failed to load data</td></tr>';
+                });
+        }); {% endcomment %}
+    {% comment %} </script> {% endcomment %}
+</body>
+</html>
