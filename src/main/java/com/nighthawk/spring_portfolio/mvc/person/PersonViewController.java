@@ -15,10 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.nighthawk.spring_portfolio.mvc.person.PersonViewController.PersonRoleDto;
-
 import jakarta.validation.Valid;
-import lombok.Data;
 import lombok.Getter;
 
 // Built using article: https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/mvc.html
