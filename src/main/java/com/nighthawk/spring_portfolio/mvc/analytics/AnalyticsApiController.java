@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 
