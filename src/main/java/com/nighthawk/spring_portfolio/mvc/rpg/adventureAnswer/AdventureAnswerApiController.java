@@ -1,5 +1,5 @@
 // define package and import necessary libraries
-package com.nighthawk.spring_portfolio.mvc.rpg.answer;
+package com.nighthawk.spring_portfolio.mvc.rpg.adventureAnswer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +25,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 // import custom entities and repositories for database access
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 
 // import dotenv for environment variable management
 import io.github.cdimascio.dotenv.Dotenv;
@@ -45,7 +45,7 @@ import okhttp3.Response;
 @RequestMapping("/rpg_answer")
 // enable cross-origin requests for the specified frontend
 @CrossOrigin(origins = "http://127.0.0.1:5501") 
-public class AnswerApiController {
+public class AdventureAnswerApiController {
 
     // load environment variables for api configuration
     private final Dotenv dotenv = Dotenv.load();
@@ -54,11 +54,11 @@ public class AnswerApiController {
 
     // autowire jpa repositories for database interactions
     @Autowired
-    private AnswerJpaRepository answerJpaRepository;
+    private AdventureAnswerJpaRepository answerJpaRepository;
     @Autowired
     private PersonJpaRepository personJpaRepository;
     @Autowired
-    private QuestionJpaRepository questionJpaRepository;
+    private AdventureQuestionJpaRepository questionJpaRepository;
 
     // define dto class to encapsulate answer data for api requests
     @Getter 
@@ -73,7 +73,7 @@ public class AnswerApiController {
     @GetMapping("/getQuestionsAnswered/{personid}")
     public ResponseEntity<Integer> getQuestionsAnswered(@PathVariable Integer personid) {
         // fetch all answers by the given person id
-        List<Answer> useranswers = answerJpaRepository.findByPersonId(personid);
+        List<AdventureAnswer> useranswers = answerJpaRepository.findByPersonId(personid);
 
         // count the total answers
         Integer questionsAnswered = useranswers.size();
@@ -84,9 +84,9 @@ public class AnswerApiController {
 
     // endpoint to get a list of all questions
     @GetMapping("getQuestions")
-    public ResponseEntity<List<Question>> getQuestions() {
+    public ResponseEntity<List<AdventureQuestion>> getQuestions() {
         // fetch all questions ordered alphabetically by title
-        List<Question> questions = questionJpaRepository.findAllByOrderByTitleAsc();
+        List<AdventureQuestion> questions = questionJpaRepository.findAllByOrderByTitleAsc();
 
         // return the list of questions with an ok status
         return new ResponseEntity<>(questions, HttpStatus.OK);
@@ -94,9 +94,9 @@ public class AnswerApiController {
 
     // endpoint to get a specific question by its id
     @GetMapping("getQuestion/{questionid}") 
-    public ResponseEntity<Question> getQuestion(@PathVariable Integer questionid) {
+    public ResponseEntity<AdventureQuestion> getQuestion(@PathVariable Integer questionid) {
         // fetch the question by its id
-        Question question = questionJpaRepository.findById(questionid);
+        AdventureQuestion question = questionJpaRepository.findById(questionid);
 
         // return the question with an ok status
         return new ResponseEntity<>(question, HttpStatus.OK);
@@ -106,11 +106,11 @@ public class AnswerApiController {
     @GetMapping("/getChatScore/{personid}")
     public ResponseEntity<Long> getChatScore(@PathVariable Integer personid) {
         // fetch all answers by the person id
-        List<Answer> personsanswers = answerJpaRepository.findByPersonId(personid);
+        List<AdventureAnswer> personsanswers = answerJpaRepository.findByPersonId(personid);
         Long totalChatScore = 0L; // initialize total chat score to zero
 
         // loop through each answer and sum the chat scores
-        for (Answer personanswer : personsanswers) {
+        for (AdventureAnswer personanswer : personsanswers) {
             Long questionChatScore = personanswer.getChatScore();
             totalChatScore += questionChatScore;
         }
@@ -135,9 +135,9 @@ public class AnswerApiController {
 
     // endpoint to submit a new answer
     @PostMapping("/submitAnswer")
-    public ResponseEntity<Answer> postAnswer(@RequestBody AnswerDto answerDto) {
+    public ResponseEntity<AdventureAnswer> postAnswer(@RequestBody AnswerDto answerDto) {
         // fetch the question and person associated with the answer
-        Optional<Question> questionOpt = questionJpaRepository.findById(answerDto.getQuestionId());
+        Optional<AdventureQuestion> questionOpt = questionJpaRepository.findById(answerDto.getQuestionId());
         Optional<Person> personOpt = personJpaRepository.findById(answerDto.getPersonId());
         
         // log the api key for debugging
@@ -149,7 +149,7 @@ public class AnswerApiController {
         }
 
         // extract question and person objects
-        Question question = questionOpt.get();
+        AdventureQuestion question = questionOpt.get();
         Person person = personOpt.get();
 
         // log the question for debugging
@@ -174,7 +174,7 @@ public class AnswerApiController {
         Long chatScore = getChatScore(answerDto.getContent(), rubric);
 
         // create a new answer object
-        Answer answer = new Answer(answerDto.getContent(), question, person, chatScore);
+        AdventureAnswer answer = new AdventureAnswer(answerDto.getContent(), question, person, chatScore);
         answerJpaRepository.save(answer); // save the answer to the database
 
         // update the person's balance by adding the question points
@@ -237,9 +237,9 @@ public class AnswerApiController {
     }
 
     @GetMapping("/leaderboard")
-    public List<LeaderboardDto> getLeaderboard() {
-    List<LeaderboardDto> leaderboardEntries = answerJpaRepository.findTop10PersonsByTotalScore();
-    for (LeaderboardDto entry : leaderboardEntries) {
+    public List<AdventureLeaderboardDto> getLeaderboard() {
+    List<AdventureLeaderboardDto> leaderboardEntries = answerJpaRepository.findTop10PersonsByTotalScore();
+    for (AdventureLeaderboardDto entry : leaderboardEntries) {
         Optional<Person> person = personJpaRepository.findById(entry.getId());
         String Name = person.isPresent() ? person.get().getName() : "Unknown";
         entry.setuserName(Name);

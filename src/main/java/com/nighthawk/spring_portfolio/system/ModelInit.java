@@ -21,8 +21,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
@@ -39,7 +39,7 @@ public class ModelInit {
     @Autowired PersonDetailsService personDetailsService;
     @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
-    @Autowired QuestionJpaRepository questionJpaRepository;
+    @Autowired AdventureQuestionJpaRepository questionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
@@ -58,11 +58,11 @@ public class ModelInit {
                 }
             }
 
-            Question[] questionArray = Question.init();
-            for (Question question : questionArray) {
-                Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
+            AdventureQuestion[] questionArray = AdventureQuestion.init();
+            for (AdventureQuestion question : questionArray) {
+                AdventureQuestion questionFound = questionJpaRepository.findByTitle(question.getTitle());
                 if (questionFound == null) {
-                    questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
+                    questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
 
