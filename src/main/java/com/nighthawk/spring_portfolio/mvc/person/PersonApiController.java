@@ -63,11 +63,13 @@ public class PersonApiController {
      */
     @GetMapping("/person/get")
     public ResponseEntity<Person> getPerson(Authentication authentication) {
+        System.out.println("help me");
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByGhid(email);
+        Person person = repository.findByEmail(email);  
+        System.out.println(person.getId()+"--------------");
 
         // Return the person if found
         if (person != null) {
@@ -180,13 +182,13 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
     String email = userDetails.getUsername(); // Assuming email is used as the username in Spring Security
 
     // Find the person by email
-    Optional<Person> optionalPerson = Optional.ofNullable(repository.findByGhid(email));
+    Optional<Person> optionalPerson = Optional.ofNullable(repository.findByEmail(email));
     if (optionalPerson.isPresent()) {
         Person existingPerson = optionalPerson.get();
 
         // Update fields only if they're provided in personDto
         if (personDto.getEmail() != null) {
-            existingPerson.setGhid(personDto.getEmail());
+            existingPerson.setEmail(personDto.getEmail());
         }
         if (personDto.getPassword() != null) {
             existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
@@ -229,7 +231,7 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
         String term = (String) map.get("term");
 
         // JPA query to filter on term
-        List<Person> list = repository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(term, term);
+        List<Person> list = repository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(term, term);
 
         // return resulting list and status, error checking should be added
         return new ResponseEntity<>(list, HttpStatus.OK);
@@ -291,7 +293,7 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
             Person existingPerson = optional.get();
 
             // Update the existing person's details
-            existingPerson.setGhid(personDto.getEmail());
+            existingPerson.setEmail(personDto.getEmail());
             existingPerson.setPassword(personDto.getPassword());
             existingPerson.setName(personDto.getName());
             
@@ -333,7 +335,7 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Optional<Person> optional = Optional.ofNullable(repository.findByGhid(email));
+        Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
         if (optional.isPresent()) { // Good ID
             Person person = optional.get(); // value from findByID
 

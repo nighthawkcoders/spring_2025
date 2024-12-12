@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @RestController
 @RequestMapping("/api/calendar")
-public class CalendarApiController {
+public class HackCalendarApiController {
 
     /** 
      * GET endpoint to check if a year is a leap year.

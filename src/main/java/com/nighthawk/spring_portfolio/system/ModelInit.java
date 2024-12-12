@@ -12,8 +12,13 @@ import com.nighthawk.spring_portfolio.mvc.note.Note;
 import com.nighthawk.spring_portfolio.mvc.note.NoteJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
 
@@ -29,7 +34,10 @@ public class ModelInit {
     @Autowired NoteJpaRepository noteRepo;
     @Autowired PersonRoleJpaRepository roleJpaRepository;
     @Autowired PersonDetailsService personDetailsService;
+    @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
+    @Autowired AssignmentJpaRepository assignmentJpaRepository;
+    @Autowired AssignmentSubmissionJPA submissionJPA;
 
     @Bean
     @Transactional
@@ -57,8 +65,8 @@ public class ModelInit {
             // Person database is populated with starting people
             Person[] personArray = Person.init();
             for (Person person : personArray) {
-                // Name and ghid are used to lookup the person
-                List<Person> personFound = personDetailsService.list(person.getName(), person.getGhid());  // lookup
+                // Name and email are used to lookup the person
+                List<Person> personFound = personDetailsService.list(person.getName(), person.getEmail());  // lookup
                 if (personFound.size() == 0) { // add if not found
                     // Roles are added to the database if they do not exist
                     List<PersonRole> updatedRoles = new ArrayList<>();
@@ -80,12 +88,24 @@ public class ModelInit {
                     personDetailsService.save(person); // JPA save
 
                     // Add a "test note" for each new person
-                    String text = "Test " + person.getGhid();
+                    String text = "Test " + person.getEmail();
                     Note n = new Note(text, person);  // constructor uses new person as Many-to-One association
                     noteRepo.save(n);  // JPA Save                  
                 }
             }
 
+            // Assignment database is populated with sample assignments
+            Assignment[] assignmentArray = Assignment.init();
+            for (Assignment assignment : assignmentArray) {
+                Assignment assignmentFound = assignmentJpaRepository.findByName(assignment.getName());
+                if (assignmentFound == null) { // if the assignment doesn't exist
+                    Assignment newAssignment = new Assignment(assignment.getName(), assignment.getType(), assignment.getDescription(), assignment.getPoints(), assignment.getDueDate());
+                    assignmentJpaRepository.save(newAssignment);
+
+                    // create sample submission
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
+                }
+            }
         };
     }
 }
