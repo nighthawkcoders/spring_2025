@@ -245,53 +245,6 @@ public class PersonApiController {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-    // @PostMapping(value = "/person/setSections", produces = MediaType.APPLICATION_JSON_VALUE)
-    // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final List<SectionDTO> sections) {
-    //     // Check if the authentication object is null
-    //     if (userDetails == null) {
-    //         return ResponseEntity
-    //                 .status(HttpStatus.UNAUTHORIZED)
-    //                 .body("Error: Authentication object is null. User is not authenticated.");
-    //     }
-        
-    //     String email = userDetails.getUsername();
-        
-    //     // Manually wrap the result in Optional.ofNullable
-    //     Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
-    //     if (optional.isPresent()) {
-    //         Person person = optional.get();
-
-    //         // Get existing sections and ensure it is not null
-    //         Collection<PersonSections> existingSections = person.getSections();
-    //         if (existingSections == null) {
-    //             existingSections = new ArrayList<>();
-    //         }
-
-    //         // Add  sections
-    //         for (SectionDTO sectionDTO : sections) {
-    //             if (!existingSections.stream().anyMatch(s -> s.getName().equals(sectionDTO.getName()))) {
-    //                 PersonSections newSection = new PersonSections(sectionDTO.getName(), sectionDTO.getAbbreviation(), sectionDTO.getYear());
-    //                 existingSections.add(newSection);
-    //             } else {
-    //                 return ResponseEntity
-    //                         .status(HttpStatus.CONFLICT)
-    //                         .body("Error: Section with name '" + sectionDTO.getName() + "' already exists.");
-    //             }
-    //         }
-
-    //         // Persist updated sections
-    //         person.setSections(existingSections);
-    //         repository.save(person);
-
-    //         // Return updated Person
-    //         return ResponseEntity.ok(person);
-    //     }
-
-    //     // Person not found
-    //     return ResponseEntity
-    //             .status(HttpStatus.NOT_FOUND)
-    //             .body("Error: Person not found with email: " + email);
-    // }
 
 
     @PutMapping("/person/{id}")
