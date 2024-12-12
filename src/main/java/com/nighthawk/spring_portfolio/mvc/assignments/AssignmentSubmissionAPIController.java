@@ -87,7 +87,6 @@ public class AssignmentSubmissionAPIController {
         AssignmentSubmission submission = submissionRepo.findById(submissionId).orElse(null);
         submission.setGrade(grade);
         submission.setFeedback(feedback);
-        System.out.println(submission.getContent());
         
         /*if (submission != null) {
             submission.setGrade(grade);
@@ -111,14 +110,12 @@ public class AssignmentSubmissionAPIController {
     @GetMapping("/assignment/{assignmentId}")
     public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId) {
         // Log the incoming request
-        System.out.println("Fetching submissions for assignment ID: " + assignmentId);
 
         // Verify the assignment exists first
         Assignment assignment = assignmentRepo.findById(assignmentId)
             .orElse(null);
         
         if (assignment == null) {
-            System.out.println("Assignment not found with ID: " + assignmentId);
             return new ResponseEntity<>(
                 Collections.singletonMap("error", "Assignment not found"), 
                 HttpStatus.NOT_FOUND
@@ -127,11 +124,7 @@ public class AssignmentSubmissionAPIController {
 
         // Find submissions for this assignment
         List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
-        
-        System.out.println("Found " + submissions.size() + " submissions");
-
         ResponseEntity<List<AssignmentSubmission>> response = new ResponseEntity<>(submissions, HttpStatus.OK);
-        System.out.println(response);
         
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
