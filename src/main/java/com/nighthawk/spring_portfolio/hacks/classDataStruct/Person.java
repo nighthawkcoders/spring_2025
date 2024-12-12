@@ -139,6 +139,7 @@ public class Person extends Generics{
 
         Person p4 = null;
         Person p5 = null;
+        Person p6 = null;
         try {
             p4 = new Person(
                 "madam@gmail.com",
@@ -153,11 +154,17 @@ public class Person extends Generics{
                 "John Mortensen",
                 new SimpleDateFormat("MM-dd-yyyy").parse("10-21-1959")
             );
+            p6 = new Person(
+                "tarasehdave@gmail.com", 
+                "123tara",
+                "Tara Sehdave",
+                new SimpleDateFormat("MM-dd-yyyy").parse("12-21-2006")
+            );
         } catch (Exception e) {
         }
 
         // Array definition and data initialization
-        Person persons[] = {p1, p2, p3, p4, p5};
+        Person persons[] = {p1, p2, p3, p4, p5, p6};
         return(persons);
     }
 
