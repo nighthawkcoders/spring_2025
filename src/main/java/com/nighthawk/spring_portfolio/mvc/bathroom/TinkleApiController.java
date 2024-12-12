@@ -47,7 +47,7 @@ public class TinkleApiController {
         return repository.findAll();
     }
 
-    @GetMapping("/{person}")
+    @GetMapping("/{name}")
     public ResponseEntity<Object> getTinkle(@PathVariable String name) {
         Optional<Tinkle> tinkle = repository.findByPersonName(name);
         if (tinkle.isPresent()) {
