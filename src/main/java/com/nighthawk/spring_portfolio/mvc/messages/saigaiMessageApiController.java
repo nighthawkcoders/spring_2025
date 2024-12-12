@@ -12,19 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController // annotation to simplify the creation of RESTful web services
-@RequestMapping("/api/messages")  // all requests in file begin with this URI
+@RequestMapping("/api/saigai/messages")  // all requests in file begin with this URI
 @CrossOrigin(origins = "http://127.0.0.1:4100", allowCredentials = "true")
-public class MessageApiController {
-     private static final Logger logger = LoggerFactory.getLogger(MessageApiController.class);
+public class saigaiMessageApiController {
+     private static final Logger logger = LoggerFactory.getLogger(saigaiMessageApiController.class);
     // Autowired enables Control to connect URI request and POJO Object to easily for Database CRUD operations
     @Autowired
-    private MessageJpaRepository messageRepository;
+    private saigaiMessageJpaRepository messageRepository;
 
     /* GET List of Jokes
      * @GetMapping annotation is used for mapping HTTP GET requests onto specific handler methods.
      */
     @GetMapping("/")
-    public ResponseEntity<List<Message>> getMessages() {
+    public ResponseEntity<List<saigaiMessage>> getMessages() {
         // ResponseEntity returns List of Jokes provide by JPA findAll()
         return new ResponseEntity<>( messageRepository.findAll(), HttpStatus.OK);
     }
@@ -33,20 +33,20 @@ public class MessageApiController {
      * @PutMapping annotation is used for mapping HTTP PUT requests onto specific handler methods.
      * @PathVariable annotation extracts the templated part {id}, from the URI
      */
-    @PostMapping("/message")
-    public ResponseEntity<Message>  createMessage(@RequestBody Message message) {
+    @PostMapping("/saigai/message")
+    public ResponseEntity<saigaiMessage>  createMessage(@RequestBody saigaiMessage message) {
 
          if (message.getComments() == null) {
             message.setComments(new ArrayList<>());
         }
 
        
-        for (Message oldmessage :  messageRepository.findAll()) {
+        for (saigaiMessage oldmessage :  messageRepository.findAll()) {
             if(oldmessage.compareTo(message)== 1){
                 return ResponseEntity.status(409).body(oldmessage);
             }
         }
-        Message savedMessage = messageRepository.save(message);
+        saigaiMessage savedMessage = messageRepository.save(message);
         return ResponseEntity.status(201).body(savedMessage);
     }
 
@@ -62,7 +62,7 @@ public class MessageApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Message> getMessageById(@PathVariable Long id) {
+    public ResponseEntity<saigaiMessage> getMessageById(@PathVariable Long id) {
         return messageRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
