@@ -16,6 +16,8 @@ volumes/sqlite.db
 
 volumes
 
+*.db
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
