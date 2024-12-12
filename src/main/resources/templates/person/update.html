@@ -52,145 +52,52 @@
 
             document.getElementById("addRoleButton").addEventListener("click",()=>{
                 console.log(document.getElementById("addRole2").checked);
+                var roleNames = [];
+
                 if(document.getElementById("addRole1").checked == true){
-                    var body = {
-                        ghid:document.getElementById("ghid").value,
-                        roleName:"ROLE_USER",
-                    }
-                    fetch("/mvc/person/update/role",{
-                        method: "POST",
-                        credentials: "include",
-                        body: JSON.stringify(body),
-                        cache: "no-cache",
-                        headers: new Headers({
-                            "content-type": "application/json"
-                        })
-                    }).then(function(response){
-                        if (response.status !== 200) {
-                            const errorMsg = 'Database response error: ' + response.status;
-                            alert(errorMsg);
-                            document.getElementById("footerInfo").style.color = "red";
-                            document.getElementById("footerInfo").innerText = "Failed to update roles";
-                            return;
-                        }
-                        else {
-                            document.getElementById("footerInfo").style.color = "green";
-                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
-                            return;
-                        }
-                    })
+                    roleNames.push("ROLE_USER");
                 }
                 if(document.getElementById("addRole2").checked == true){
-                    var body = {
-                        ghid:document.getElementById("ghid").value,
-                        roleName:"ROLE_ADMIN",
-                    }
-                    fetch("/mvc/person/update/role",{
-                        method: "POST",
-                        credentials: "include",
-                        body: JSON.stringify(body),
-                        cache: "no-cache",
-                        headers: new Headers({
-                            "content-type": "application/json"
-                        })
-                    }).then(function(response){
-                        if (response.status !== 200) {
-                            const errorMsg = 'Database response error: ' + response.status;
-                            document.getElementById("footerInfo").style.color = "red";
-                            document.getElementById("footerInfo").innerText = "Failed to update roles";
-                            return;
-                        }
-                        else {
-                            document.getElementById("footerInfo").style.color = "green";
-                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
-                            return;
-                        }
-                    })
+                    roleNames.push("ROLE_ADMIN");
                 }
                 if(document.getElementById("addRole3").checked == true){
-                    var body = {
-                        ghid:document.getElementById("ghid").value,
-                        roleName:"ROLE_TESTER",
-                    }
-                    fetch("/mvc/person/update/role",{
-                        method: "POST",
-                        credentials: "include",
-                        body: JSON.stringify(body),
-                        cache: "no-cache",
-                        headers: new Headers({
-                            "content-type": "application/json"
-                        })
-                    }).then(function(response){
-                        if (response.status !== 200) {
-                            const errorMsg = 'Database response error: ' + response.status;
-                            alert(errorMsg);
-                            document.getElementById("footerInfo").style.color = "red";
-                            document.getElementById("footerInfo").innerText = "Failed to update roles";
-                            return;
-                        }
-                        else {
-                            document.getElementById("footerInfo").style.color = "green";
-                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
-                            return;
-                        }
-                    })
+                    roleNames.push("ROLE_TESTER");
                 }
                 if(document.getElementById("addRole4").checked == true){
-                    var body = {
-                        ghid:document.getElementById("ghid").value,
-                        roleName:"ROLE_TEACHER",
-                    }
-                    fetch("/mvc/person/update/role",{
-                        method: "POST",
-                        credentials: "include",
-                        body: JSON.stringify(body),
-                        cache: "no-cache",
-                        headers: new Headers({
-                            "content-type": "application/json"
-                        })
-                    }).then(function(response){
-                        if (response.status !== 200) {
-                            const errorMsg = 'Database response error: ' + response.status;
-                            alert(errorMsg);
-                            document.getElementById("footerInfo").style.color = "red";
-                            document.getElementById("footerInfo").innerText = "Failed to update roles";
-                            return;
-                        }
-                        else {
-                            document.getElementById("footerInfo").style.color = "green";
-                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
-                            return;
-                        }
-                    })
+                    roleNames.push("ROLE_TEACHER");
                 }
                 if(document.getElementById("addRole5").checked == true){
-                    var body = {
-                        ghid:document.getElementById("ghid").value,
-                        roleName:"ROLE_STUDENT",
-                    }
-                    fetch("/mvc/person/update/role",{
-                        method: "POST",
-                        credentials: "include",
-                        body: JSON.stringify(body),
-                        cache: "no-cache",
-                        headers: new Headers({
-                            "content-type": "application/json"
-                        })
-                    }).then(function(response){
-                        if (response.status !== 200) {
-                            const errorMsg = 'Database response error: ' + response.status;
-                            alert(errorMsg);
-                            document.getElementById("footerInfo").style.color = "red";
-                            document.getElementById("footerInfo").innerText = "Failed to update roles";
-                            return;
-                        }
-                        else {
-                            document.getElementById("footerInfo").style.color = "green";
-                            document.getElementById("footerInfo").innerText = "Successfully updated roles";
-                            return;
-                        }
-                    })
+                    roleNames.push("ROLE_STUDENT");
                 }
+
+
+                if (roleNames.length == 0){return};
+                var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleNames:roleNames,
+                    }
+                fetch("/mvc/person/update/roles",{
+                    method: "POST",
+                    credentials: "include",
+                    body: JSON.stringify(body),
+                    cache: "no-cache",
+                    headers: new Headers({
+                        "content-type": "application/json"
+                    })
+                }).then(function(response){
+                    if (response.status !== 200) {
+                        const errorMsg = 'Database response error: ' + response.status;
+                        alert(errorMsg);
+                        document.getElementById("footerInfo").style.color = "red";
+                        document.getElementById("footerInfo").innerText = "Failed to update roles";
+                        return;
+                    }
+                    else {
+                        document.getElementById("footerInfo").style.color = "green";
+                        document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                        return;
+                    }
+                })
             })
         })
 

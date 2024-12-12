@@ -176,6 +176,28 @@ public String personUpdateSave(@Valid Person person, BindingResult bindingResult
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);
     }
 
+
+    @Getter
+    public static class PersonRolesDto{
+        private String ghid;
+        private List<String> roleNames;
+    }
+
+    @PostMapping("/update/roles")
+    public ResponseEntity<Object> personRolesUpdateSave(@RequestBody PersonRolesDto rolesDto) {
+
+        Person personToUpdate = repository.getByGhid(rolesDto.getGhid());
+        if(personToUpdate == null){
+            return new ResponseEntity<>(personToUpdate, HttpStatus.CONFLICT);
+        }
+
+        for (String roleName : rolesDto.getRoleNames()) {
+            repository.addRoleToPerson(rolesDto.getGhid(), roleName);
+        }
+        
+
+        return new ResponseEntity<>(personToUpdate, HttpStatus.OK);
+    }
     /*
         @param - Id
         @return - Redirect to read page
