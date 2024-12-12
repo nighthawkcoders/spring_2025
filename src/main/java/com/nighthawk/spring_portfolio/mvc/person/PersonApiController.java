@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,13 +26,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
+
 import lombok.Getter;
 
-/**
- * This class provides RESTful API endpoints for managing Person entities.
- * It includes endpoints for creating, retrieving, updating, and deleting Person
- * entities.
- */
+
 @RestController
 @RequestMapping("/api")
 public class PersonApiController {
@@ -63,13 +63,11 @@ public class PersonApiController {
      */
     @GetMapping("/person/get")
     public ResponseEntity<Person> getPerson(Authentication authentication) {
-        System.out.println("help me");
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);
-        System.out.println(person.getId() + "--------------");
+        Person person = repository.findByEmail(email);  
 
         // Return the person if found
         if (person != null) {
@@ -135,6 +133,10 @@ public class PersonApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+
+    @Autowired
+    private UserStocksRepository userStocksRepository;
+
     /*
      * DTO (Data Transfer Object) to support POST request for postPerson method
      * .. represents the data in the request body
@@ -170,6 +172,9 @@ public class PersonApiController {
                 true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
+
+        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", person);
+        userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -231,6 +236,14 @@ public class PersonApiController {
      *         search term.
      */
 
+    /**
+     * Search for a Person entity by name or email.
+     * 
+     * @param map of a key-value (k,v), the key is "term" and the value is the
+     *            search term.
+     * @return A ResponseEntity containing a list of Person entities that match the
+     *         search term.
+     */
     @PostMapping(value = "/people/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> personSearch(@RequestBody final Map<String, String> map) {
         // extract term from RequestEntity

@@ -32,6 +32,10 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
+import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.user.User;
+import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
@@ -51,6 +55,8 @@ public class ModelInit {
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
     @Autowired IssueJPARepository issueJPARepository;
+    @Autowired QuestionJpaRepository questionJpaRepository;
+    @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
 
@@ -72,6 +78,22 @@ public class ModelInit {
                 List<Comment> CommentFound = CommentJPA.findByAssignment(Comment.getAssignment()); 
                 if (CommentFound.isEmpty()) {
                     CommentJPA.save(new Comment(Comment.getAssignment(), Comment.getAuthor(), Comment.getText())); // JPA save
+                }
+            }
+            
+            Question[] questionArray = Question.init();
+            for (Question question : questionArray) {
+                Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
+                if (questionFound == null) {
+                    questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
+                }
+            }
+
+            User[] userArray = User.init();
+            for (User user : userArray) {
+                List<User> userFound = userJpaRepository.findByUsernameIgnoreCase(user.getUsername()); 
+                if (userFound.size() == 0) {
+                    userJpaRepository.save(new User(user.getUsername(), user.getPassword(), user.getRole(), user.isEnabled(), user.getBalance(), user.getStonks()));
                 }
             }
 
