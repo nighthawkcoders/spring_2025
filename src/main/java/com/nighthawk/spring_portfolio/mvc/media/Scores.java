@@ -9,7 +9,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+/*
+ * Score class:
+ *  - UID assigned to every user
+ *  - Person name
+ *  - Score as an int
+ */
 
 @Data
 @AllArgsConstructor
@@ -24,5 +29,6 @@ public class Scores {
     @Column(unique=true)
     private int uid;
     private String person_name;
+    private String className; // CSA, CSP, CSSE, or Other
     private int score;
 }

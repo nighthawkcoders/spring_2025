@@ -16,8 +16,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 
+/*
+ * MediaApiController class:
+ *  - Top ranked user is returned by default
+ *  - Top ranked user is able to be returned
+ */
+
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping("/api/media")
 @CrossOrigin(origins = "http://localhost:8080")  // Enable CORS for the frontend URL
 public class MediaApiController {
 
