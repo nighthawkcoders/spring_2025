@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
      @Autowired
      private MediaJpaRepository mediaJpaRepository;
  
+     // This mapping returns the leaderboard, it is the default. Might need to change this later and add a leaderboard path.
      @GetMapping("/")
      public ResponseEntity<List<Integer>> getLeaderboard() {
          List<Integer> scores = mediaJpaRepository.findAllByScoreInc()

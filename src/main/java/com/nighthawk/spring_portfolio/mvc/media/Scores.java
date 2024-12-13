@@ -31,4 +31,19 @@ public class Scores {
     private String person_name;
     private String className; // CSA, CSP, CSSE, or Other
     private int score;
+
+    // Score getter method
+    public Integer getScore() {
+        return this.score;
+    }
+
+    // Person name getter method
+    public String getPersonName() {
+        return this.person_name;
+    }
+
+    // uid getter method
+    public int getUid() {
+        return this.uid;
+    }
 }
