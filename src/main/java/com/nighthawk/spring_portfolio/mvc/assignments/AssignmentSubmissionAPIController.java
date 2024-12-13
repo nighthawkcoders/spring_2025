@@ -123,10 +123,7 @@ public class AssignmentSubmissionAPIController {
         }
 
         // Find submissions for this assignment
-        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
-        
-        ResponseEntity<List<AssignmentSubmission>> response = new ResponseEntity<>(submissions, HttpStatus.OK);
-        
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);        
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
 
