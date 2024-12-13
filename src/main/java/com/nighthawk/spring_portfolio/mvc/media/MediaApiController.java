@@ -12,6 +12,7 @@ import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -34,24 +35,26 @@ public class MediaApiController {
     @Autowired
     private MediaJpaRepository mediaJpaRepository;
 
-    // Get all analytics records
-    // Get all analytics records
+    // Get Leaderboard
     @GetMapping("/")
-    public ResponseEntity<List<Scores>> getAllAnalytics() {
-        List<Integer> scores = mediaJpaRepository.findAll(); // Fetch leaderboard
-        return scores;  // Return list of assignment IDs
+    public ResponseEntity<List<Integer>> getLeaderboard() {
+        List<Media> mediaList = mediaJpaRepository.findAllByScoreInc();
+        List<Integer> scores = mediaList.stream().map(Media::getScore).collect(Collectors.toList()); // Map to scores
+        return new ResponseEntity<>(scores, HttpStatus.OK);  // Return scores in increasing order
     }
 
     
-    @GetMapping("/leaderboard")
-    public List<Integer> getLeaderboard() {
-        List<Integer> scores = mediaJpaRepository.findAll(); // Fetch leaderboard
-        return scores;  // Return list of assignment IDs
+    @GetMapping("/firstplace")
+    public List<Integer> getFirstPlace() {
+        List<Media> stats = mediaJpaRepository.findFirstPlaceInfo(); // Fetch info on first place
+        // TODO implement first place score
+        return score;  // TODO: Redistribute information layout
     }
 
     @GetMapping("/score/{person_id}")
-    public List<Integer> getLeaderboard() {
-        List<Integer> scores = mediaJpaRepository.findAll(); // Fetch leaderboard
-        return scores;  // Return list of assignment IDs
+    public List<Integer> getScoreByPersonId() {
+        List<Media> stats = mediaJpaRepository.findFirstPlaceInfo(); // Fetch info on specific id
+        // TODO implement first place score
+        return score;  // TODO: Redistribute information layout
     }
 }
