@@ -13,7 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,7 +27,7 @@ public class Tinkle {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "person_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Person person;
@@ -85,13 +85,27 @@ public class Tinkle {
     //     users.add(new Tinkle("tarasehdave@gmail.com", "", 0.0));
     //     return users.toArray(new Tinkle[0]);
     // }
-    public static Tinkle[] init(Person[] persons)
-    {
+    public static Tinkle[] init(Person[] persons) {
         ArrayList<Tinkle> tinkles = new ArrayList<>();
-        for(Person person: persons)
-        {
-            tinkles.add(new Tinkle(person,"11:12:05-11:13:06,12:15:10-12:19:12"));
+    
+        // Ensure we have enough sample data for unique timeIn values
+        String[] timeInSamples = {
+            "08:00:00-08:10:00,09:30:00-09:45:00", // Entry 1
+            "07:50:00-08:05:00,10:00:00-10:15:00", // Entry 2
+            "09:15:00-09:25:00,11:10:00-11:20:00", // Entry 3
+            "12:00:00-12:20:00,13:30:00-13:50:00", // Entry 4
+            "14:10:00-14:25:00,15:15:00-15:30:00", // Entry 5
+            "16:05:00-16:15:00,17:45:00-18:00:00", // Entry 6
+            "18:10:00-18:25:00,19:30:00-19:45:00"  // Entry 7
+        };
+    
+        // Assign unique timeIn values to each Tinkle entry
+        for (int i = 0; i < persons.length; i++) {
+            String timeIn = timeInSamples[i % timeInSamples.length]; // Reuse timeIn samples if more persons exist
+            tinkles.add(new Tinkle(persons[i], timeIn));
         }
+    
         return tinkles.toArray(new Tinkle[0]);
     }
+    
 }

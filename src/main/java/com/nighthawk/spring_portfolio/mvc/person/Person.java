@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -21,34 +22,45 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.persistence.CascadeType;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import jakarta.persistence.CascadeType;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-/**
- * Person is a POJO, Plain Old Java Object.
- * --- @Data is Lombox annotation
- * for @Getter @Setter @ToString @EqualsAndHashCode @RequiredArgsConstructor
- * --- @AllArgsConstructor is Lombox annotation for a constructor with all
- * arguments
- * --- @NoArgsConstructor is Lombox annotation for a constructor with no
- * arguments
- * --- @Entity annotation is used to mark the class as a persistent Java class.
- */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -92,9 +104,16 @@ public class Person implements Comparable<Person> {
      * allowing all elements to be accessed using an integer index.
      * --- PersonRole is a POJO, Plain Old Java Object.
      */
-    @ManyToMany(fetch = EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "person_person_sections",
+        joinColumns = @JoinColumn(name = "person_id"),
+        inverseJoinColumns = @JoinColumn(name = "section_id")
+    )
     private Collection<PersonRole> roles = new ArrayList<>();
 
+    @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
+    private Tinkle timeEntries;
     /**
      * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
@@ -137,6 +156,16 @@ public class Person implements Comparable<Person> {
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
+
+    /**
+     * user_stocks and balance describe properties used by the gamify application
+     */
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private userStocksTable user_stocks;
+
+    @Column
+    private double balance = 100000;
     
     /**
      * stats is used to store JSON for daily stats
@@ -234,14 +263,7 @@ public class Person implements Comparable<Person> {
         } catch (Exception e) {
             // handle exception
         }
-
-        List<PersonRole> roles = new ArrayList<>();
-        for (String roleName : roleNames) {
-            PersonRole role = new PersonRole(roleName);
-            roles.add(role);
-        }
-        person.setRoles(roles);
-
+        
         return person;
     }
     

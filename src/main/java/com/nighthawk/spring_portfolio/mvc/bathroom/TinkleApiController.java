@@ -37,8 +37,7 @@ public class TinkleApiController {
             // student.get().addAverageDuration(tinkleDto.getAverageDuration());
             repository.save(student.get());
             return new ResponseEntity<>(student.get(), HttpStatus.OK);
-        }
-        else {
+        } else {
             return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
         }
     }
@@ -48,30 +47,15 @@ public class TinkleApiController {
         return repository.findAll();
     }
 
-    @GetMapping("/{person}")
-    public ResponseEntity<Object> getTinkle(@PathVariable String name)
-    {
+    @GetMapping("/{name}")
+    public ResponseEntity<Object> getTinkle(@PathVariable String name) {
         Optional<Tinkle> tinkle = repository.findByPersonName(name);
-        if (tinkle.isPresent())
-        {
+        if (tinkle.isPresent()) {
             Tinkle tinklePerson = tinkle.get();
             return new ResponseEntity<>(tinklePerson, HttpStatus.OK);
-        }
-        else{
+        } else {
             return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
         }
-        }
-    
-}
-//        @GetMapping("/person/{id}")
-//     public ResponseEntity<Person> getPerson(@PathVariable long id) {
-//         Optional<Person> optional = repository.findById(id);
-//         if (optional.isPresent()) { // Good ID
-//             Person person = optional.get(); // value from findByID
-//             return new ResponseEntity<>(person, HttpStatus.OK); // OK HTTP response: status code, headers, and body
-//         }
-//         // Bad ID
-//         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//     }
+    }
 
-// }
+}

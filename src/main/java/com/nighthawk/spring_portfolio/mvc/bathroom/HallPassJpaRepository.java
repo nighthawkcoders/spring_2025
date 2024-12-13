@@ -4,6 +4,6 @@ import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface HallPassJpaRepository extends CrudRepository<HallPass, String> {
+public interface HallPassJpaRepository extends CrudRepository<HallPass, Long> {
     Optional<HallPass> findByPersonIdAndCheckoutIsNull(String student_email);
 }

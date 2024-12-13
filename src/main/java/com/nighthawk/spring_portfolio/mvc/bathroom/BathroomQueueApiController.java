@@ -23,28 +23,30 @@ public class BathroomQueueApiController {
     @Autowired
     private BathroomQueueJPARepository repository;
 
-    // DTO class for queue entries
+    // DTO (Data Transfer Object) class for queue entries
     @Getter
     public static class QueueDto {
-        private String teacherEmail;
-        private String studentName;
+        private String teacherEmail; // The email of the teacher associated with the queue
+        private String studentName;  // The name of the student to be added or removed
     }
 
+    // Add a student to the queue for a specific teacher
     @PostMapping("/add")
     public ResponseEntity<Object> addToQueue(@RequestBody QueueDto queueDto) {
-        // Check if a queue entry for the teacher already exists
         Optional<BathroomQueue> existingQueue = repository.findByTeacherEmail(queueDto.getTeacherEmail());
         if (existingQueue.isPresent()) {
+            // If a queue already exists for the teacher, add the student to it
             existingQueue.get().addStudent(queueDto.getStudentName());
             repository.save(existingQueue.get());
-        }
-        else {
+        } else {
+            // If no queue exists, create a new one and add the student
             BathroomQueue newQueue = new BathroomQueue(queueDto.getTeacherEmail(), queueDto.getStudentName());
             repository.save(newQueue);
         }
         return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherEmail(), HttpStatus.CREATED);
     }
 
+    // Remove a student from the queue for a specific teacher
     @CrossOrigin(origins = "http://127.0.0.1:4100")
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
@@ -52,18 +54,18 @@ public class BathroomQueueApiController {
         if (queueEntry.isPresent()) {
             BathroomQueue bathroomQueue = queueEntry.get();
             try {
+                // Attempt to remove the student from the queue
                 bathroomQueue.removeStudent(queueDto.getStudentName());
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Removed " + queueDto.getStudentName() + " from " + queueDto.getTeacherEmail() + "'s queue", HttpStatus.OK);
-            } 
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
             }
         }
-        
         return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
+    // Approve the student at the front of the queue
     @CrossOrigin(origins = "http://127.0.0.1:4100")
     @PostMapping("/approve")
     public ResponseEntity<Object> approveStudent(@RequestBody QueueDto queueDto) {
@@ -72,22 +74,24 @@ public class BathroomQueueApiController {
             BathroomQueue bathroomQueue = queueEntry.get();
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(queueDto.getStudentName())) {
+                // Approve the student and update the queue status
                 bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + queueDto.getStudentName(), HttpStatus.OK);
-            } 
-            else {
+            } else {
                 return new ResponseEntity<>("Student is not at the front of the queue", HttpStatus.BAD_REQUEST);
             }
         }
         return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
+    // Retrieve all queues (for all teachers)
     @GetMapping("/all")
     public ResponseEntity<List<BathroomQueue>> getAllQueues() {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
     }
-   
+
+    // Retrieve active queues (with Cross-Origin support)
     @CrossOrigin(origins = "http://localhost:8085")
     @GetMapping("/getActive")
     public ResponseEntity<Object> getActiveQueues() {

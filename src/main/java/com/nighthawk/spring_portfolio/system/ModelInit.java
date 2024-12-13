@@ -15,6 +15,8 @@ import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
+import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TeacherJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
@@ -23,14 +25,22 @@ import com.nighthawk.spring_portfolio.mvc.comment.Comment;
 import com.nighthawk.spring_portfolio.mvc.comment.CommentJPA;
 import com.nighthawk.spring_portfolio.mvc.jokes.Jokes;
 import com.nighthawk.spring_portfolio.mvc.jokes.JokesJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.mortevision.Assignment;
-import com.nighthawk.spring_portfolio.mvc.mortevision.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.note.Note;
 import com.nighthawk.spring_portfolio.mvc.note.NoteJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
+import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.user.User;
+import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
+
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
 public class ModelInit {  
@@ -38,18 +48,21 @@ public class ModelInit {
     @Autowired NoteJpaRepository noteRepo;
     @Autowired PersonRoleJpaRepository roleJpaRepository;
     @Autowired PersonDetailsService personDetailsService;
+    @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
-    @Autowired AssignmentJpaRepository assignmentJpa;
     @Autowired CommentJPA CommentJPA;
     @Autowired TinkleJPARepository tinkleJPA;
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
-
-    // @Autowired IssueJPARepository issueJPARepository;
+    @Autowired IssueJPARepository issueJPARepository;
+    @Autowired QuestionJpaRepository questionJpaRepository;
+    @Autowired UserJpaRepository userJpaRepository;
+    @Autowired AssignmentJpaRepository assignmentJpaRepository;
+    @Autowired AssignmentSubmissionJPA submissionJPA;
 
     @Bean
     @Transactional
-    CommandLineRunner run() {  
+    CommandLineRunner run() {
         return args -> {
             
             List<Announcement> announcements = Announcement.init();
@@ -67,12 +80,20 @@ public class ModelInit {
                     CommentJPA.save(new Comment(Comment.getAssignment(), Comment.getAuthor(), Comment.getText())); // JPA save
                 }
             }
+            
+            Question[] questionArray = Question.init();
+            for (Question question : questionArray) {
+                Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
+                if (questionFound == null) {
+                    questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
+                }
+            }
 
-            Assignment[] assignments = Assignment.init();
-            for (Assignment assignment : assignments) {
-                Assignment assignmentFound = assignmentJpa.findByName(assignment.getName());  
-                if (assignmentFound == null) {
-                    assignmentJpa.save(new Assignment(assignment.getAssignmentId(), assignment.getName(), assignment.getStartDate(), assignment.getDueDate(), assignment.getRubric(), assignment.getPoints(), null)); // JPA save
+            User[] userArray = User.init();
+            for (User user : userArray) {
+                List<User> userFound = userJpaRepository.findByUsernameIgnoreCase(user.getUsername()); 
+                if (userFound.size() == 0) {
+                    userJpaRepository.save(new User(user.getUsername(), user.getPassword(), user.getRole(), user.isEnabled(), user.getBalance(), user.getStonks()));
                 }
             }
 
@@ -138,13 +159,13 @@ public class ModelInit {
                 teacherJPARepository.save(teacher); // JPA save
             }
             // Issue database initialization
-            // Issue[] issueArray = Issue.init();
-            // for (Issue issue : issueArray) {
-            //     List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
-            //     if (issueFound.isEmpty()) {
-            //         issueJPARepository.save(issue);
-            //     }
-            // }
+            Issue[] issueArray = Issue.init();
+            for (Issue issue : issueArray) {
+                List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
+                if (issueFound.isEmpty()) {
+                    issueJPARepository.save(issue);
+                }
+            }
             // ArrayList<Tinkle> tinkles = new ArrayList<>();
             // for(Person person: personArray)
             // {
@@ -155,6 +176,18 @@ public class ModelInit {
             //     tinkleJPA.save(tinkle);
             // }
 
+            // Assignment database is populated with sample assignments
+            Assignment[] assignmentArray = Assignment.init();
+            for (Assignment assignment : assignmentArray) {
+                Assignment assignmentFound = assignmentJpaRepository.findByName(assignment.getName());
+                if (assignmentFound == null) { // if the assignment doesn't exist
+                    Assignment newAssignment = new Assignment(assignment.getName(), assignment.getType(), assignment.getDescription(), assignment.getPoints(), assignment.getDueDate());
+                    assignmentJpaRepository.save(newAssignment);
+
+                    // create sample submission
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
+                }
+            }
         };
     }
 }
