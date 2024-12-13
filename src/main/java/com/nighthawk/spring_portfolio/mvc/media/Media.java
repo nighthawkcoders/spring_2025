@@ -1,7 +1,13 @@
 package com.nighthawk.spring_portfolio.mvc.media;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,14 +18,13 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Media {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int uid;
-    private String personName; 
+    private String personName;
     private int score;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
-    private Person person; 
+    private Person person;
 }
