@@ -46,4 +46,8 @@ public class Scores {
     public int getUid() {
         return this.uid;
     }
+
+    public static Media init() {
+        return new Media();
+    }
 }
