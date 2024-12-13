@@ -1,21 +1,18 @@
 package com.nighthawk.spring_portfolio.mvc.media;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
-
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
 
 /*
  * MediaApiController class:
@@ -47,14 +44,14 @@ public class MediaApiController {
     @GetMapping("/firstplace")
     public List<Integer> getFirstPlace() {
         List<Media> stats = mediaJpaRepository.findFirstPlaceInfo(); // Fetch info on first place
-        // TODO implement first place score
-        return score;  // TODO: Redistribute information layout
+        List<Integer> scores = stats.stream().map(Media::getScore).collect(Collectors.toList()); // Map to scores
+        return scores;  // Return scores
     }
 
     @GetMapping("/score/{person_id}")
-    public List<Integer> getScoreByPersonId() {
-        List<Media> stats = mediaJpaRepository.findFirstPlaceInfo(); // Fetch info on specific id
-        // TODO implement first place score
-        return score;  // TODO: Redistribute information layout
+    public List<Integer> getScoreByPersonId(@PathVariable Long person_id) {
+        List<Media> stats = mediaJpaRepository.findByPersonId(person_id); // Fetch info on specific id
+        List<Integer> score = stats.stream().map(Media::getScore).collect(Collectors.toList()); // Map to scores
+        return score;  // Return scores
     }
 }
