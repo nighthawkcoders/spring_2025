@@ -5,6 +5,122 @@
       layout:decorate="~{layouts/base}" lang="en">
 
 <head>
+    <title>Update Account</title>
+    <script>
+        // Function to handle image file input
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                document.getElementById("pfp_preview").src = base64Image; // Set the preview image
+                document.getElementById("pfp").value = base64Image; // Set the base64 string in the hidden field
+            };
+            if (file) {
+                reader.readAsDataURL(file); // Read the image file as base64
+            }
+        }
+        /**
+         * @Function encodeImageFileAsURL(); //Function to encode image files into Base64 String and set pfp field
+         * @Param @File || @Blob fileToConvert, image file to convert into base64
+        **/
+        function encodeImageFileAsURL(fileToConvert) { //currently unneeded, maybe add image upload?
+            const file = fileToConvert;
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                console.log('RESULT', reader.result)
+                document.getElementById("pfp").value = reader.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        window.addEventListener("load",()=>{ //wait for window to load everything
+            /**
+             *  @Function CheckImage(); // Function to attempt to load profile picture
+             *  @Param @String pfpSrc, string representing the image src to set; Should be in base64 in this case
+             *  @Param @Function success, response function on loading success
+             *  @Param @Function error, response function on loading error
+             **/
+            function checkImage(pfpSrc,success,error){
+                document.getElementById("github_pfp").onload = success;
+                document.getElementById("github_pfp").onerror = error;
+                document.getElementById("github_pfp").src = pfpSrc; //attempt to load image
+            }
+            checkImage(document.getElementById("pfp").value,()=>{
+                document.getElementById("github_pfp").style.display = "block"; //unhide image
+            }, ()=>{
+                console.warn("Couldn't load profile picture"); //warning, this will exist after generated error when image failed
+            })
+
+            document.getElementById("addRoleButton").addEventListener("click",()=>{
+                var roleNames = [];
+
+                if(document.getElementById("addRole1").checked == true){
+                    roleNames.push("ROLE_USER");
+                }
+                if(document.getElementById("addRole2").checked == true){
+                    roleNames.push("ROLE_ADMIN");
+                }
+                if(document.getElementById("addRole3").checked == true){
+                    roleNames.push("ROLE_TESTER");
+                }
+                if(document.getElementById("addRole4").checked == true){
+                    roleNames.push("ROLE_TEACHER");
+                }
+                if(document.getElementById("addRole5").checked == true){
+                    roleNames.push("ROLE_STUDENT");
+                }
+
+
+                if (roleNames.length == 0){return};
+                var body = {
+                        ghid:document.getElementById("ghid").value,
+                        roleNames:roleNames,
+                    }
+                fetch("/mvc/person/update/roles",{
+                    method: "POST",
+                    credentials: "include",
+                    body: JSON.stringify(body),
+                    cache: "no-cache",
+                    headers: new Headers({
+                        "content-type": "application/json"
+                    })
+                }).then(function(response){
+                    if (response.status !== 200) {
+                        const errorMsg = 'Database response error: ' + response.status;
+                        alert(errorMsg);
+                        document.getElementById("footerInfo").style.color = "red";
+                        document.getElementById("footerInfo").innerText = "Failed to update roles";
+                        return;
+                    }
+                    else {
+                        document.getElementById("footerInfo").style.color = "green";
+                        document.getElementById("footerInfo").innerText = "Successfully updated roles";
+                        return;
+                    }
+                })
+            })
+        })
+
+        /**
+         * @Function validateForm(); // Function to validate the form (password confirmation)
+         * @Param @Event event, form Submission event
+        **/
+        
+        function validateForm(event) {
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm_password").value;
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                event.preventDefault(); // Prevent form submission
+                return;
+            }
+        }
+    </script>
+
     <title>Person Update</title>
 </head>
 
@@ -12,6 +128,87 @@
 <th:block layout:fragment="body" th:remove="tag">
     <!-- Page specific body additions -->
     <div class="container">
+
+                            <!-- Confirm Password Input -->
+                            <div class="form-group mb-2 mr-sm-2">
+                                <label for="confirm_password">Confirm Password:</label>
+                                <input type="password" id="confirm_password">
+                            </div>
+
+                            <!-- Date of Birth Input -->
+                            <div class="input-group mb-2 mr-sm-2">
+                                <label for="dob">Birth Date:</label>
+                                <input type="date" th:field="*{dob}" id="dob">
+                                <small th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}">Birth Date Error</small>
+                            </div>
+
+                            <!-- Checkbox: Kasm Server Needed -->
+                            <div class="input-group mb-2 mr-sm-2">
+                                <label for="kasmServerNeeded">Kasm Server Needed:</label>
+                                <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
+                                <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
+                            </div>
+                            <!-- I am hiding this file upload for changing pfp.
+                            <div class="input-group mb-2 mr-sm-2"></div>
+                                <input type="file" id="pfp_input" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
+                            </div>
+                            -->
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary">Update Account</button>
+                        </form>
+                    </div>
+                    <hr>
+                    <!-- Roles Input -->
+                    <div  class="jumbotron">
+                        <h3>Add Roles:</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th> Role </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td> User </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole1">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Admin </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole2">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Tester </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole3">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Teacher </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole4">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Student </td>
+                                    <td>
+                                        <input type="checkbox" id="addRole5">
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th> 
+                                        <button type="button" id="addRoleButton">Add Roles</button>
+                                    </th> 
+                                    <th id="footerInfo"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 
         <div class="row justify-content-md-center">
             <h2>Welcome, Update The Persons Details</h2>
@@ -79,6 +276,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </form>
+
                 </div>
             </div>
         </div>

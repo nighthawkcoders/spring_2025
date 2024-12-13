@@ -1,1 +1,2 @@
-this file is only here to prevent issues if the sqlite file is removed, if this file gets removed then the volumes folder will be deleted once sqlite.db is added to the gitignore
+
+This file is included to prevent the 'beans' error from occurring when the volumes folder is deleted.
