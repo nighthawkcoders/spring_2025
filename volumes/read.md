@@ -1,1 +1,1 @@
-This file is included to prevent the 'beans' error from occurring when the volumes folder is deleted.
+This file is included to prevent the 'beans' error from occurring when the sqlite.db file is deleted.
