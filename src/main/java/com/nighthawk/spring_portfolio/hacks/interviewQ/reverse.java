@@ -71,9 +71,12 @@ public class Reverse {
         }
     }
 
-    /** Method 4: For loop using string concatenation
-     * The for loop is used to iterate through the string in reverse order
-     * The concatenation operator is used to add characters to the reversed string
+    /** Method 4: For loop using StringBuilder
+     * StringBuilder is a mutable sequence of characters; this is considered more efficient than using string concatenation
+     * the .append() method is used to add characters to the mutable sequence
+     * the .toString() method is used to convert the sequence back to a string
+     * Conventional for loop is used to iterate through the string;
+     * .length() allows you to find the length of the string
      * --- How it works ---
      * Initial call: reverseString4("Hello, World!")
      * reversed = ""
@@ -82,17 +85,18 @@ public class Reverse {
      * reversed = "!d" + "l" = "!dl"
      * ...
      * Last Iteration: reversed = "!dlroW,olle" + "H" = "!dlroW,olleH"
+     * reversed.toString() = "!dlroW,olleH"
      * Return reversed: "!dlroW,olleH"
      */
     public static String reverseString4(String original) {
-        String reversed = "";
+        StringBuilder reversed = new StringBuilder();
         for (int i = original.length() - 1; i >= 0; i--) {
-            reversed = reversed + original.charAt(i);
+            reversed.append(original.charAt(i));
         }
-        return reversed;
+        return reversed.toString();
     }
 
-/** Method 5: Stream Method using StringBuilder
+    /** Method 5: Stream Method using StringBuilder
      * The .chars() method is used to convert the string to an IntStream
      * The .forEach() method is used to iterate through the IntStream
      * The .insert() method is used to insert characters at the beginning of the string
