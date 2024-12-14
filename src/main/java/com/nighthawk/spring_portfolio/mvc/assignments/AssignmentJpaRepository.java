@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AssignmentJpaRepository extends JpaRepository<Assignment, Long> {
     Assignment findByName(String name);
+    // hello this is a test commit
 }
