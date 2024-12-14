@@ -2,7 +2,6 @@ package com.nighthawk.spring_portfolio.mvc.synergy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -13,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
-import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import java.util.List;
