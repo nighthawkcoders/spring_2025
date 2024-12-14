@@ -2,7 +2,9 @@ package com.nighthawk.spring_portfolio.hacks.interviewQ;
 
 /**
  * Reverse a string
- * College Board will typically ask you to reverse a string
+ * College Board will typically ask you to reverse a string or something similar
+ * This is a common interview question that tests your understanding of strings and loops
+ * Also, performing different methods explores the different coding styles in Java
  */
 public class Reverse {
     /** Method 1: While loop using string concatenation (Classic Method)
@@ -27,7 +29,7 @@ public class Reverse {
         return reversed;
     }
 
-    /** Method 2: For each loop using string concatenation 
+    /** Method 2: For each loop using string concatenation (College Board Method)
      * The foreach loop is used to iterate through the string
      * The .toCharArray() method is used to convert the string to a character array
      * The concatenation operator is used to add characters to the reversed string;
@@ -42,13 +44,13 @@ public class Reverse {
      */
     public static String reverseString2(String original) {
         String reversed = "";
-        for (char c : original.toCharArray()) {
+        for (char c : original.toCharArray()) { // "Hello, World!" to ['H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!'] 
             reversed = c + reversed; // Add character in front of current string, thus reversing the string
         }
         return reversed;
     }
 
-    /** Method 3: Recursion Method
+    /** Method 3: Recursion Method (Recursion Method)
      * The base case is when the string is empty, the reversed string is empty
      * The recursive case is when the string is not empty, the first character is added to the end of the reversed string
      * The .isEmpty() method is used to check if the string is empty
@@ -71,7 +73,7 @@ public class Reverse {
         }
     }
 
-    /** Method 4: For loop using StringBuilder
+    /** Method 4: For loop using StringBuilder (Modern Method)
      * StringBuilder is a mutable sequence of characters; this is considered more efficient than using string concatenation
      * the .append() method is used to add characters to the mutable sequence
      * the .toString() method is used to convert the sequence back to a string
@@ -96,11 +98,12 @@ public class Reverse {
         return reversed.toString();
     }
 
-    /** Method 5: Stream Method using StringBuilder
-     * The .chars() method is used to convert the string to an IntStream
-     * The .forEach() method is used to iterate through the IntStream
-     * The .insert() method is used to insert characters at the beginning of the string
-     * The .toString() method is used to convert the StringBuilder to a string
+    /** Method 5: Functional Programming using Streams (Modern Method)
+     * The .chars() method converts the string to an IntStream, which is a stream of ASCII values of the characters     
+     * The .forEach() method is used to iterate through the stream
+     * The .insert() method is used to insert characters at the beginning of the StringBuilder
+     * The (char) cast is used to convert the integer ASCII value to a character
+     * The .toString() method is used to return the StringBuilder as a string
      * --- How it works ---
      * Initial call: reverseString5("Hello, World!")
      * reversed = ""
@@ -117,17 +120,106 @@ public class Reverse {
         original.chars().forEach(c -> reversed.insert(0, (char) c));
         return reversed.toString();
     }
-    
+
+    /** Number Reversei 1: Using While Loop (Classic and College Board Method)
+     * The % operator is used to get the last digit of the number
+     * The / operator is used to remove the last digit of the number
+     * The * operator is used to shift the digits to the left
+     * The + operator is used to add the last digit to the reversed number
+     * --- How it works ---
+     * Initial call: reverseNumber(12345)
+     * reversed = 0 * 10 + 5 = 5
+     * reversed = 5 * 10 + 4 = 54
+     * reversed = 54 * 10 + 3 = 543
+     * reversed = 543 * 10 + 2 = 5432
+     * reversed = 5432 * 10 + 1 = 54321
+     * Return reversed: 54321
+     */
+    public static int reverseNumber1(int number) {
+        int reversed = 0;
+        while (number != 0) {
+            reversed = reversed * 10 + number % 10;
+            number = number / 10;
+        }
+        return reversed;
+    }
+
+    /** Number Reverse 2: Using Recursion (Recursion Method)
+     * The base case is when the number is 0, the reversed number is 0
+     * The recursive case is when the number is not 0, the last digit is added to the reversed number
+     * The recursive case is when the number is not 0, the last digit is added to the reversed number
+     * The recursive case is when the number is not 0, the last digit is added to the reversed number
+     * --- How it works ---
+     *  
+     * Initial call: reverseNumber2(12345, 0)
+     * Recursive call: reverseNumber2(1234, 5)
+     * Recursive call: reverseNumber2(123, 54)
+     * Recursive call: reverseNumber2(12, 543)
+     * Recursive call: reverseNumber2(1, 5432)
+     * Recursive call: reverseNumber2(0, 54321)
+     * Return result: 54321
+     */
+    public static int reverseNumber2(int number, int reversed) {
+        if (number == 0) {
+            return reversed;
+        } else {
+            return reverseNumber2(number / 10, reversed * 10 + number % 10);
+        }
+    }
+
+    /** Number Reverse 3: Converting to String (Using Helper Method)
+     * Use the reverseString methods to reverse the string representation of the number
+     * Convert the reversed string back to an integer
+     * --- How it works ---
+     * Initial call: reverseNumber3(12345)
+     * reversed = reverseString1("12345") = "54321"
+     * Return Integer.parseInt("54321") = 54321
+     * Return reversed: 54321
+     */
+    public static int reverseNumber3(int number) {
+        return Integer.parseInt(reverseString1(Integer.toString(number)));
+    }
+
+    /** Number Reverse 4: Using Functional Programming (Modern Method)
+     * Use modulo math inside of a stream to reverse the number
+     * --- How it works ---
+     * Initial state: a = 0
+     * First .reduce: a = 0, b = 5 -> 0 * 10 + 5 = 5
+     * Second .reduce: a = 5, b = 4 -> 5 * 10 + 4 = 54
+     * Third .reduce: a = 54, b = 3 -> 54 * 10 + 3 = 543
+     * Fourth .reduce: a = 543, b = 2 -> 543 * 10 + 2 = 5432
+     * Last .reduce: a = 5432, b = 1 -> 5432 * 10 + 1 = 54321
+     * Return .reduce: 54321
+     */
+    public static int reverseNumber4(int number) {
+        // observe "Method Chaining" for interate, map, and reduce
+        return java.util.stream.IntStream
+                .iterate(number, n -> n != 0, n -> n / 10) // Iterate and divide by 10 until n = 0
+                .map(n -> n % 10) // Maps each iteration to the last digit, one's place
+                .reduce(0, (a, b) -> a * 10 + b); // Reduce the stream to a single integer
+                // a: accumulated value, starts with 0
+                // b: current digit in the stream
+                // a * 10 + b: shift the accumulated value to the left and add the current digit
+    }
+
     // Main method to test the reverseString methods
     public static void main(String[] args) {
         String original = "Hello, World!";
-        System.out.println("Original: \t\t\t" + original);
+        System.out.println("Original: \t\t\t\t" + original);
 
-        System.out.println("Reversed using While: \t\t" + reverseString1(original));
-        System.out.println("Reversed using For each \t" + reverseString2(original));
-        System.out.println("Reversed using Recursion: \t" + reverseString3(original));
-        System.out.println("Reversed with StringBuilder: \t" + reverseString4(original));
-        System.out.println("Reversed using Streams: \t" + reverseString5(original));
+        System.out.println("Reversed using While: \t\t\t" + reverseString1(original));
+        System.out.println("Reversed using For each: \t\t" + reverseString2(original));
+        System.out.println("Reversed using Recursion: \t\t" + reverseString3(original));
+        System.out.println("Reversed with StringBuilder: \t\t" + reverseString4(original));
+        System.out.println("Reversed with Functional Programming: \t" + reverseString5(original));
+
+        System.out.println();
+
+        int number = 12345;
+        System.out.println("Original Number: \t\t\t\t" + number);
+        System.out.println("Reversed Number using While: \t\t\t" + reverseNumber1(number));
+        System.out.println("Reversed Number using Recursion: \t\t" + reverseNumber2(number, 0));
+        System.out.println("Reversed Number converting to String: \t\t" + reverseNumber3(number));
+        System.out.println("Reversed Number with Functional Programming: \t" + reverseNumber4(number));
     }
-
 }
