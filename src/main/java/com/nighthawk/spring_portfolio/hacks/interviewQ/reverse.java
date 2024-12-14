@@ -4,9 +4,8 @@ package com.nighthawk.spring_portfolio.hacks.interviewQ;
  * Reverse a string
  * College Board will typically ask you to reverse a string
  */
-
-public class reverse {
-    /**  Method 1: While loop using string concatenation
+public class Reverse {
+    /**  While loop using string concatenation (Classic Method)
      * CharAt() is allows you to access the character at a specific index
      * length() is allows you to find the length of the string
      */
@@ -20,32 +19,32 @@ public class reverse {
         return reversed;
     }
     
-    /** Method 2: For loop using StringBuilder
+    /** Method 2: For each loop using string concatenation 
+     * The foreach loop is used to iterate through the string
+     * The .toCharArray() method is used to convert the string to a character array
+     * The concatenation operator is used to add characters to the reversed string;
+     */
+    public static String reverseString2(String original) {
+        String reversed = "";
+        for (char c : original.toCharArray()) {
+            reversed = c + reversed; // Add character in front of current string, thus reversing the string
+        }
+        return reversed;
+    }
+
+    /** Method 3: For loop using StringBuilder
      * StringBuilder is a mutable sequence of characters;
      * the .append() method is used to add characters to the sequence
      * the .toString() method is used to convert the sequence to a string
      * Conventional for loop is used to iterate through the string;
      * .length() is allows you to find the length of the string 
      */
-    public static String reverseString2(String original) {
+    public static String reverseString3(String original) {
         StringBuilder reversed = new StringBuilder();
         for (int i = original.length(); i > 0; i--) {
             reversed.append(original.charAt(i-1));
         }
         return reversed.toString();
-    }
-
-    /** Method 3: For each loop using string concatenation 
-     * The foreach loop is used to iterate through the string
-     * The .toCharArray() method is used to convert the string to a character array
-     * The concatenation operator is used to add characters to the reversed string;
-     */
-    public static String reverseString3(String original) {
-        String reversed = "";
-        for (char c : original.toCharArray()) {
-            reversed = c + reversed; // Add character in front of current string, thus reversing the string
-        }
-        return reversed;
     }
     
     /** Method 4: Stream Method using StringBuilder
@@ -60,6 +59,30 @@ public class reverse {
         return reversed.toString();
     }
 
+    /** Method5: Recursion Method
+     * The base case is when the string is empty, the reversed string is empty
+     * The recursive case is when the string is not empty, the first character is added to the end of the reversed string
+     * The .isEmpty() method is used to check if the string is empty
+     * The substring() method is used to remove the first character from the string
+     * --- How it works ---
+     * Inital call: reverseString5("Hello, World!")
+     * Recursive call: reverseString5("ello, World!") + "H"
+     * Recursive call: reverseString5("llo, World!") + "e" + "H"
+     * ...
+     * Last Pass: reverseString5("") + "d" + "l" + "r" + "o" + "W" + "," + "o" + "l" + "l" + "e" + "H"
+     * Recursion Unwinding: "" + "d" + "l" + "r" + "o" + "W" + "," + "o" + "l" + "l" + "e" + "H"
+     * Return result: "dlroW,olleH"
+     */
+    public static String reverseString5(String original) {
+        if (original.isEmpty()) {
+            return original;
+        } else {
+            // Trims 0 index on each recursion and creates a stack of concatenations at unwinding
+            return reverseString5(original.substring(1)) + original.charAt(0);
+        }
+    }
+
+
     // Main method to test the reverseString methods
     public static void main(String[] args) {
         String original = "Hello, World!";
@@ -69,6 +92,7 @@ public class reverse {
         System.out.println("Reversed method 2: " + reverseString2(original));
         System.out.println("Reversed method 3: " + reverseString3(original));
         System.out.println("Reversed method 4: " + reverseString4(original));
+        System.out.println("Reversed method 5: " + reverseString5(original));
     }
 
 }
