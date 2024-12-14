@@ -57,41 +57,45 @@ public class AnalyticsApiController {
 
     // Fetch grades by assignment ID
     @GetMapping("/assignment/{assignment_id}/grades")
-public ResponseEntity<GradeStatistics> getGradesByAssignment(@PathVariable("assignment_id") Long assignmentId,  
-                                                             @AuthenticationPrincipal UserDetails userDetails) {
-    // Fetch grades associated with the assignment ID from the database
-    Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
-    if (!assignment.isPresent()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such assignment exists");
+    public ResponseEntity<GradeStatistics> getGradesByAssignment(
+        @PathVariable("assignment_id") Long assignmentId,  
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        // Fetch grades associated with the assignment ID from the database
+        Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
+        if (!assignment.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such assignment exists");
+        }
+
+        List<SynergyGrade> grades = gradeJpaRepository.findByAssignment(assignment.get());
+
+        // Extract grades from the list of Grade objects
+        List<Double> gradeValues = new ArrayList<>();
+        for (SynergyGrade grade : grades) {
+            gradeValues.add(grade.getGrade());
+        }
+
+        // Convert list to array for statistical calculations
+        double[] gradesArray = gradeValues.stream().mapToDouble(i -> i).toArray();
+
+        // Calculate statistical values
+        double mean = calculateMean(gradesArray);
+        double stdDev = calculateStandardDeviation(gradesArray, mean);
+        double median = calculateMedian(gradeValues);
+        double q1 = calculateQuartile(gradeValues, 25);
+        double q3 = calculateQuartile(gradeValues, 75);
+
+        // Create and return GradeStatistics object
+        GradeStatistics stats = new GradeStatistics(gradesArray, mean, stdDev, median, q1, q3);
+        return new ResponseEntity<>(stats, HttpStatus.OK);
     }
 
-    List<SynergyGrade> grades = gradeJpaRepository.findByAssignment(assignment.get());
 
-    // Extract grades from the list of Grade objects
-    List<Double> gradeValues = new ArrayList<>();
-    for (SynergyGrade grade : grades) {
-        gradeValues.add(grade.getGrade());
-    }
-
-    // Convert list to array for statistical calculations
-    double[] gradesArray = gradeValues.stream().mapToDouble(i -> i).toArray();
-
-    // Calculate statistical values
-    double mean = calculateMean(gradesArray);
-    double stdDev = calculateStandardDeviation(gradesArray, mean);
-    double median = calculateMedian(gradeValues);
-    double q1 = calculateQuartile(gradeValues, 25);
-    double q3 = calculateQuartile(gradeValues, 75);
-
-    // Create and return GradeStatistics object
-    GradeStatistics stats = new GradeStatistics(gradesArray, mean, stdDev, median, q1, q3);
-    return new ResponseEntity<>(stats, HttpStatus.OK);
-}
-
-
-@GetMapping("/assignment/{assignment_id}/student/{student_email}/grade")
-    public ResponseEntity<Double> getStudentGradeForAssignment(@PathVariable("assignment_id") Long assignmentId,
-                                                                @PathVariable("student_email") String studentEmail) {
+    @GetMapping("/assignment/{assignment_id}/student/{student_email}/grade")
+    public ResponseEntity<Double> getStudentGradeForAssignment(
+        @PathVariable("assignment_id") Long assignmentId, 
+        @PathVariable("student_email") String studentEmail
+    ) {
         
         // Lookup user by email (using PersonJpaRepository, not SynergyGradeJpaRepository)
         Person user = personJpaRepository.findByEmail(studentEmail);

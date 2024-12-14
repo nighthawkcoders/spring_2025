@@ -2,13 +2,12 @@ package com.nighthawk.spring_portfolio.mvc.messages;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.Set;
+
 
 @Entity
 @Data

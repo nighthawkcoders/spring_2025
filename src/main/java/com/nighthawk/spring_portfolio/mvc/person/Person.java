@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -21,22 +22,29 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.persistence.CascadeType;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 
+import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
 
 /**
  * Person is a POJO, Plain Old Java Object.
@@ -91,9 +99,11 @@ public class Person implements Comparable<Person> {
      * allowing all elements to be accessed using an integer index.
      * --- PersonRole is a POJO, Plain Old Java Object.
      */
-    @ManyToMany(fetch = EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Collection<PersonRole> roles = new ArrayList<>();
 
+    @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
+    private Tinkle timeEntries;
     /**
      * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
@@ -136,6 +146,16 @@ public class Person implements Comparable<Person> {
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
+
+    /**
+     * user_stocks and balance describe properties used by the gamify application
+     */
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private userStocksTable user_stocks;
+
+    @Column
+    private double balance = 100000;
     
     /**
      * stats is used to store JSON for daily stats
@@ -240,7 +260,7 @@ public class Person implements Comparable<Person> {
             roles.add(role);
         }
         person.setRoles(roles);
-
+        
         return person;
     }
     

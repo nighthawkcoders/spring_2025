@@ -111,6 +111,8 @@ public class AssignmentSubmissionAPIController {
     @Transactional
     @GetMapping("/assignment/{assignmentId}")
     public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId) {
+        // Log the incoming request
+
         // Verify the assignment exists first
         Assignment assignment = assignmentRepo.findById(assignmentId)
             .orElse(null);
