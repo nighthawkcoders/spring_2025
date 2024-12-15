@@ -109,8 +109,26 @@ public class MiningController {
     @GetMapping("/shop")
     public ResponseEntity<?> getGPUShop() {
         try {
-            List<GPU> gpus = gpuRepository.findAll();
-            return ResponseEntity.ok(gpus);
+            MiningUser user = getOrCreateMiningUser();
+            List<GPU> allGpus = gpuRepository.findAll();
+            
+            // Convert GPUs to maps with additional ownership info
+            List<Map<String, Object>> gpuList = new ArrayList<>();
+            for (GPU gpu : allGpus) {
+                Map<String, Object> gpuInfo = new HashMap<>();
+                gpuInfo.put("id", gpu.getId());
+                gpuInfo.put("name", gpu.getName());
+                gpuInfo.put("hashRate", gpu.getHashRate());
+                gpuInfo.put("powerConsumption", gpu.getPowerConsumption());
+                gpuInfo.put("temp", gpu.getTemp());
+                gpuInfo.put("price", gpu.getPrice());
+                gpuInfo.put("category", gpu.getCategory());
+                gpuInfo.put("owned", user.getGpus().contains(gpu));
+                
+                gpuList.add(gpuInfo);
+            }
+            
+            return ResponseEntity.ok(gpuList);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
@@ -123,6 +141,15 @@ public class MiningController {
             MiningUser user = getOrCreateMiningUser();
             GPU gpu = gpuRepository.findById(gpuId)
                 .orElseThrow(() -> new RuntimeException("GPU not found"));
+            
+            // Check if user already owns this GPU
+            if (user.ownsGPUById(gpuId)) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "success", false,
+                        "message", "You already own this GPU"
+                    ));
+            }
             
             user.addGPU(gpu);
             miningUserRepository.save(user);
@@ -147,6 +174,36 @@ public class MiningController {
             return ResponseEntity.ok(Map.of(
                 "isMining", user.isMining(),
                 "message", user.isMining() ? "Mining started" : "Mining stopped"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/gpu/toggle/{gpuId}")
+    public ResponseEntity<?> toggleGPU(@PathVariable Long gpuId) {
+        try {
+            MiningUser user = getOrCreateMiningUser();
+            GPU gpu = gpuRepository.findById(gpuId)
+                .orElseThrow(() -> new RuntimeException("GPU not found"));
+            
+            // Check if user owns this GPU
+            if (!user.ownsGPUById(gpuId)) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "success", false,
+                        "message", "You don't own this GPU"
+                    ));
+            }
+
+            boolean isActive = user.toggleGPU(gpu);
+            miningUserRepository.save(user);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", isActive ? "GPU activated" : "GPU deactivated",
+                "isActive", isActive
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
