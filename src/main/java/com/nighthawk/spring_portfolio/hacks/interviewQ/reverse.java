@@ -2,9 +2,9 @@ package com.nighthawk.spring_portfolio.hacks.interviewQ;
 
 /**
  * Reverse a string
- * College Board will typically ask you to reverse a string or something similar
- * This is a common interview question that tests your understanding of strings and loops
- * Also, performing different methods explores the different coding styles in Java
+ * College Board will typically ask you to reverse a string, number or something similar
+ * This is a common interview question that tests your understanding of simple alorithms
+ * Coding different methods explores the different coding styles within Java
  */
 public class Reverse {
     /** Method 1: While loop using string concatenation (Classic Method)

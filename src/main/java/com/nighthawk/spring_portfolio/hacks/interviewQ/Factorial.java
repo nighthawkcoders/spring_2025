@@ -34,10 +34,13 @@ public class Factorial {
      * Method 3: Stream Method
      * The .rangeClosed() method is used to create a stream of integers from 1 to n
      * The .reduce() method is used to multiply all the integers in the stream
-     * The .orElse() method is used to return 1 if the stream is empty
+     * The .orElse() method is used to return 1 if the stream is empty, ie n = 0
      */
     public static int factorial3(int n) {
-        return java.util.stream.IntStream.rangeClosed(1, n).reduce((a, b) -> a * b).orElse(1);
+        return java.util.stream.IntStream
+            .rangeClosed(1, n)
+            .reduce((a, b) -> a * b)
+            .orElse(1);
     }
 
     /**
