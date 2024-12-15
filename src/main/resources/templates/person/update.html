@@ -86,9 +86,12 @@
                 }).then(function(response){
                     if (response.status !== 200) {
                         const errorMsg = 'Database response error: ' + response.status;
-                        alert(errorMsg);
+                        console.error(errorMsg);
                         document.getElementById("footerInfo").style.color = "red";
-                        document.getElementById("footerInfo").innerText = "Failed to update roles";
+                        document.getElementById("footerInfo").innerText = "Failed to update roles.";
+                        if(response.status = 403){
+                            document.getElementById("footerInfo").innerText = "Unauthorized, You must be an admin to update roles.";
+                        }
                         return;
                     }
                     else {
