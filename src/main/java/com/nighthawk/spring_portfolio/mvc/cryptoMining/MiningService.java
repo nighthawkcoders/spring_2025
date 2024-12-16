@@ -24,11 +24,21 @@ public class MiningService {
             .collect(Collectors.toList());
             
         for (MiningUser miner : activeMiners) {
-            double hashrate = miner.getCurrentHashrate();
-            double btcMined = hashrate * 60 / (1e12); // Example calculation
+            double hashrate = miner.getActiveGPUs().stream()
+                .mapToDouble(GPU::getHashRate)
+                .sum();
+            
+            double btcMined = hashrate * 0.00000001;
+            
             miner.setPendingBalance(miner.getPendingBalance() + btcMined);
             miner.setShares(miner.getShares() + 1);
             miningUserRepository.save(miner);
+            
+            System.out.println("Mining Update for user: " + miner.getPerson().getEmail());
+            System.out.println("Active GPUs: " + miner.getActiveGPUs().size());
+            System.out.println("Total Hashrate: " + hashrate + " MH/s");
+            System.out.println("BTC Mined this minute: " + btcMined);
+            System.out.println("New Pending Balance: " + miner.getPendingBalance());
         }
     }
 
