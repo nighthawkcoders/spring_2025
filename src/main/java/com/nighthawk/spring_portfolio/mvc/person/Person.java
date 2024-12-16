@@ -291,6 +291,10 @@ public class Person implements Comparable<Person> {
         people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         
         Collections.sort(people);
+        for (Person person : people) {
+            userStocksTable stock = new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person);
+            person.setUser_stocks(stock);
+        }
 
         return people.toArray(new Person[0]);
     }
