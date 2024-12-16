@@ -127,7 +127,7 @@ public class AdventureAnswerApiController {
         Person personOpt = optional.get(); // get the person object from optional
 
         // retrieve the balance of the person
-        Double balance = personOpt.getBalance();
+        Double balance = personOpt.getBalanceDouble();
 
         // return the balance with an ok status
         return new ResponseEntity<>(balance, HttpStatus.OK);

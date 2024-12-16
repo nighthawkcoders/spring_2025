@@ -32,6 +32,7 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
@@ -160,8 +161,15 @@ public class Person implements Comparable<Person> {
     private userStocksTable user_stocks;
 
     @Column
-    private double balance = 100000;
-    
+    private String balance;
+    public double getBalanceDouble() {
+        var balance_tmp = getBalance();
+        return Double.parseDouble(balance_tmp);
+    }
+    public String setBalanceString(double updatedBalance) {
+        this.balance = String.valueOf(updatedBalance); // Update the balance as a String
+        return this.balance; // Return the updated balance as a String
+    }
     /**
      * stats is used to store JSON for daily stats
      * --- @JdbcTypeCode annotation is used to specify the JDBC type code for a
@@ -184,15 +192,17 @@ public class Person implements Comparable<Person> {
      * @param email, a String
      * @param password, a String
      * @param name, a String
+     * @param balance,
      * @param dob, a Date
      */
-    public Person(String email, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
+    public Person(String email, String password, String name, Date dob, String pfp, String balance,  Boolean kasmServerNeeded, PersonRole role) {
         this.email = email;
         this.password = password;
         this.name = name;
         this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
         this.pfp = pfp;
+        this.balance = balance;
         this.roles.add(role);
     }
 
@@ -232,12 +242,13 @@ public class Person implements Comparable<Person> {
      * @param name
      * @param email
      * @param password
+     * @param balance
      * @param dob
      * @return Person
      */
-    public static Person createPerson(String name, String email, String password, Boolean kasmServerNeeded, String dob) {
+    public static Person createPerson(String name, String email, String password, Boolean kasmServerNeeded, String balance, String dob) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, email, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
+        return createPerson(name, email, password, null, kasmServerNeeded, balance, dob, Arrays.asList("ROLE_USER", "ROLE_STUDENT"));
     }
     
     /**
@@ -245,12 +256,13 @@ public class Person implements Comparable<Person> {
      * 
      * @param roles
      */
-    public static Person createPerson(String name, String email, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
+    public static Person createPerson(String name, String email, String password, String pfp, Boolean kasmServerNeeded, String balance, String dob, List<String> roleNames) {
         Person person = new Person();
         person.setName(name);
         person.setEmail(email);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
+        person.setBalance(balance);
         person.setPfp(pfp);
         try {
             Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
@@ -268,14 +280,15 @@ public class Person implements Comparable<Person> {
      * Sorts the list of Person objects using Collections.sort which uses the compareTo method 
      * @return Person[], an array of Person objects
      */
+    public static String startingBalance = "100000";
     public static Person[] init() {
         ArrayList<Person> people = new ArrayList<>();
-        people.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
+        people.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         
         Collections.sort(people);
 

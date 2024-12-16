@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
@@ -139,6 +139,7 @@ public class PersonApiController {
         private String name;
         private String dob;
         private String pfp;
+        private double balance;
         private Boolean kasmServerNeeded; 
     }
 
@@ -159,7 +160,7 @@ public class PersonApiController {
             return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
         }
         // A person object WITHOUT ID will create a new record in the database
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER", true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, startingBalance, "USER", true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 

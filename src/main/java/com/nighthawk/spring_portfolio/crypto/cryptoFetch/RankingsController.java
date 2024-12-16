@@ -35,7 +35,7 @@ public class RankingsController {
 
         // Sort users by balance (descending) and take the top 10
         List<Map<String, Object>> topUsers = people.stream()
-                .sorted(Comparator.comparingDouble(Person::getBalance).reversed())
+                .sorted(Comparator.comparingDouble(Person::getBalanceDouble).reversed())
                 .limit(10)
                 .map(person -> {
                     Map<String, Object> userMap = new HashMap<>();
