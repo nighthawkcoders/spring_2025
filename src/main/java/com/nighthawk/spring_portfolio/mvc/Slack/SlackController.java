@@ -1,7 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.Slack;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;

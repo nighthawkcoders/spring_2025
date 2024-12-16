@@ -31,7 +31,11 @@ import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
 import lombok.Getter;
 
-
+/**
+ * This class provides RESTful API endpoints for managing Person entities.
+ * It includes endpoints for creating, retrieving, updating, and deleting Person
+ * entities.
+ */
 @RestController
 @RequestMapping("/api")
 public class PersonApiController {

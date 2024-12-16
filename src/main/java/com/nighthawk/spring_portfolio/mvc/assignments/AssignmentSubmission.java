@@ -1,7 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
-import java.time.format.DateTimeFormatter;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
@@ -37,13 +35,14 @@ public class AssignmentSubmission {
     private Double grade;
     private String feedback;
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private String comment;
 
-    public AssignmentSubmission(Assignment assignment, Person student, String content) {
+    public AssignmentSubmission(Assignment assignment, Person student, String content, String comment) {
         this.assignment = assignment;
         this.student = student;
         this.content = content;
         this.grade = null;
         this.feedback = null;
+        this.comment = comment;
     }
 }

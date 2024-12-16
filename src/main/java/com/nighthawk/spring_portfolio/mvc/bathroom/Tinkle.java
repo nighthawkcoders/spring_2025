@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Column;
@@ -30,6 +31,7 @@ public class Tinkle {
     @OneToOne
     @JoinColumn(name = "person_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonBackReference
     private Person person;
     private String timeIn;
 
