@@ -10,6 +10,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 
@@ -28,6 +30,9 @@ public class AnalyticsApiController {
 
     @Autowired
     private SynergyGradeJpaRepository gradeJpaRepository;
+
+    @Autowired
+    private PersonJpaRepository personJpaRepository;
 
     // Get all analytics records
     // Get all analytics records
@@ -52,54 +57,72 @@ public class AnalyticsApiController {
 
     // Fetch grades by assignment ID
     @GetMapping("/assignment/{assignment_id}/grades")
-public ResponseEntity<GradeStatistics> getGradesByAssignment(@PathVariable("assignment_id") Long assignmentId,  
-                                                             @AuthenticationPrincipal UserDetails userDetails) {
-    // Fetch grades associated with the assignment ID from the database
-    Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
-    if (!assignment.isPresent()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such assignment exists");
+    public ResponseEntity<GradeStatistics> getGradesByAssignment(
+        @PathVariable("assignment_id") Long assignmentId,  
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        // Fetch grades associated with the assignment ID from the database
+        Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
+        if (!assignment.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such assignment exists");
+        }
+
+        List<SynergyGrade> grades = gradeJpaRepository.findByAssignment(assignment.get());
+
+        // Extract grades from the list of Grade objects
+        List<Double> gradeValues = new ArrayList<>();
+        for (SynergyGrade grade : grades) {
+            gradeValues.add(grade.getGrade());
+        }
+
+        // Convert list to array for statistical calculations
+        double[] gradesArray = gradeValues.stream().mapToDouble(i -> i).toArray();
+
+        // Calculate statistical values
+        double mean = calculateMean(gradesArray);
+        double stdDev = calculateStandardDeviation(gradesArray, mean);
+        double median = calculateMedian(gradeValues);
+        double q1 = calculateQuartile(gradeValues, 25);
+        double q3 = calculateQuartile(gradeValues, 75);
+
+        // Create and return GradeStatistics object
+        GradeStatistics stats = new GradeStatistics(gradesArray, mean, stdDev, median, q1, q3);
+        return new ResponseEntity<>(stats, HttpStatus.OK);
     }
 
-    List<SynergyGrade> grades = gradeJpaRepository.findByAssignment(assignment.get());
 
-    // Extract grades from the list of Grade objects
-    List<Double> gradeValues = new ArrayList<>();
-    for (SynergyGrade grade : grades) {
-        gradeValues.add(grade.getGrade());
+    @GetMapping("/assignment/{assignment_id}/student/{student_email}/grade")
+    public ResponseEntity<Double> getStudentGradeForAssignment(
+        @PathVariable("assignment_id") Long assignmentId, 
+        @PathVariable("student_email") String studentEmail
+    ) {
+        
+        // Lookup user by email (using PersonJpaRepository, not SynergyGradeJpaRepository)
+        Person user = personJpaRepository.findByEmail(studentEmail);
+        
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + studentEmail);
+        }
+
+        // Get the student ID
+        Long studentId = user.getId();
+
+        // Ensure the assignment exists
+        Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
+        if (assignment.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
+        }
+
+
+        // Find the grade using the gradeJpaRepository (SynergyGradeJpaRepository)
+        Optional<SynergyGrade> synergyGrade = gradeJpaRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
+        if (synergyGrade.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No grade found for this student on this assignment.");
+        }
+
+        return new ResponseEntity<>(synergyGrade.get().getGrade(), HttpStatus.OK);
     }
 
-    // Convert list to array for statistical calculations
-    double[] gradesArray = gradeValues.stream().mapToDouble(i -> i).toArray();
-
-    // Calculate statistical values
-    double mean = calculateMean(gradesArray);
-    double stdDev = calculateStandardDeviation(gradesArray, mean);
-    double median = calculateMedian(gradeValues);
-    double q1 = calculateQuartile(gradeValues, 25);
-    double q3 = calculateQuartile(gradeValues, 75);
-
-    // Create and return GradeStatistics object
-    GradeStatistics stats = new GradeStatistics(gradesArray, mean, stdDev, median, q1, q3);
-    return new ResponseEntity<>(stats, HttpStatus.OK);
-}
-
-@GetMapping("/assignment/{assignment_id}/student/{student_id}/grade")
-public ResponseEntity<Double> getStudentGradeForAssignment(@PathVariable("assignment_id") Long assignmentId,
-                                                            @PathVariable("student_id") Long studentId) {
-    // Ensure the assignment exists
-    Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
-    if (assignment.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
-    }
-
-    // Find the grade using the repository instance
-    Optional<SynergyGrade> synergyGrade = gradeJpaRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
-    if (synergyGrade.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No grade found for this student on this assignment.");
-    }
-
-    return new ResponseEntity<>(synergyGrade.get().getGrade(), HttpStatus.OK);
-}
 
     // Helper method to calculate mean
     private double calculateMean(double[] grades) {

@@ -31,3 +31,8 @@
 
 - A ".gitignore" can teach a Developer a lot about Java runtime.  A target directory is created when you press play button, byte code is generated and files are moved into this location.
 - "pom.xml" file can teach you a lot about Java dependencies.  This is similar to "requirements.txt" file in Python.  It manages packages and dependencies.
+
+## .env files
+- In order to run this project locally, a .env file should be set up with the approprate variables:
+- GAMIFY_API_URL
+- GAMIFY_API_KEY

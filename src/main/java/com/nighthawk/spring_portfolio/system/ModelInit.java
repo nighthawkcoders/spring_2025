@@ -185,7 +185,7 @@ public class ModelInit {
                     assignmentJpaRepository.save(newAssignment);
 
                     // create sample submission
-                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission","test comment"));
                 }
             }
         };
