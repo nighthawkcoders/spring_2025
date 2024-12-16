@@ -6,7 +6,7 @@ package com.nighthawk.spring_portfolio.hacks.interviewQ;
  * This is a common interview question that tests your understanding of simple alorithms
  * Coding different methods explores the different coding styles within Java
  */
-public class Reverse {
+public class IQReverse {
     /** Method 1: While loop using string concatenation (Classic Method)
      * CharAt() allows you to access the character at a specific index
      * length() allows you to find the length of the string
