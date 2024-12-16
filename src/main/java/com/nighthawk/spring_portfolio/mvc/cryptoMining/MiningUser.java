@@ -79,7 +79,9 @@ public class MiningUser {
 
     public double getCurrentHashrate() {
         if (!isMining) return 0.0;
-        return this.currentHashrate;
+        return activeGPUs.stream()
+            .mapToDouble(GPU::getHashRate)
+            .sum();
     }
 
     public boolean ownsGPU(GPU gpu) {
@@ -112,5 +114,14 @@ public class MiningUser {
 
     public List<GPU> getActiveGPUs() {
         return this.activeGPUs;
+    }
+
+    public void setMining(boolean mining) {
+        this.isMining = mining;
+        if (!mining) {
+            this.currentHashrate = 0.0;
+        } else {
+            updateHashrate();
+        }
     }
 }

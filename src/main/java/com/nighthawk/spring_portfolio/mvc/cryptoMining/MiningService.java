@@ -18,20 +18,23 @@ public class MiningService {
     private GPURepository gpuRepository;
 
     @Scheduled(fixedRate = 60000) // Every minute
+    @Transactional
     public void processMining() {
         List<MiningUser> activeMiners = miningUserRepository.findAll().stream()
             .filter(MiningUser::isMining)
             .collect(Collectors.toList());
             
+        System.out.println("Processing mining for " + activeMiners.size() + " active miners");
+            
         for (MiningUser miner : activeMiners) {
-            double hashrate = miner.getActiveGPUs().stream()
-                .mapToDouble(GPU::getHashRate)
-                .sum();
+            double hashrate = miner.getCurrentHashrate();
             
             double btcMined = hashrate * 0.00000001;
+            int newShares = (int)(hashrate * 0.1);
             
             miner.setPendingBalance(miner.getPendingBalance() + btcMined);
-            miner.setShares(miner.getShares() + 1);
+            miner.setShares(miner.getShares() + newShares);
+            
             miningUserRepository.save(miner);
             
             System.out.println("Mining Update for user: " + miner.getPerson().getEmail());
@@ -39,6 +42,7 @@ public class MiningService {
             System.out.println("Total Hashrate: " + hashrate + " MH/s");
             System.out.println("BTC Mined this minute: " + btcMined);
             System.out.println("New Pending Balance: " + miner.getPendingBalance());
+            System.out.println("Total Shares: " + miner.getShares());
         }
     }
 

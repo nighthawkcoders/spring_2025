@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mining")
@@ -72,37 +73,41 @@ public class MiningController {
     @GetMapping("/stats")
     public ResponseEntity<?> getMiningStats() {
         try {
-            System.out.println("\nDEBUG - Getting mining stats");
             MiningUser user = getOrCreateMiningUser();
             
             Map<String, Object> stats = new HashMap<>();
-            stats.put("btcBalance", user.getBtcBalance());
-            stats.put("pendingBalance", user.getPendingBalance());
-            stats.put("hashrate", user.getCurrentHashrate());
+            stats.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
+            stats.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
+            stats.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
             stats.put("shares", user.getShares());
             stats.put("isMining", user.isMining());
             stats.put("currentPool", user.getCurrentPool());
             
-            List<Map<String, Object>> gpus = new ArrayList<>();
-            for (GPU gpu : user.getGpus()) {
-                Map<String, Object> gpuInfo = new HashMap<>();
-                gpuInfo.put("id", gpu.getId());
-                gpuInfo.put("name", gpu.getName());
-                gpuInfo.put("hashrate", gpu.getHashRate());
-                gpuInfo.put("power", gpu.getPowerConsumption());
-                gpus.add(gpuInfo);
-            }
-            stats.put("gpus", gpus);
+            // Add power consumption and temperature
+            stats.put("powerConsumption", user.getPowerConsumption());
+            stats.put("averageTemperature", user.getAverageTemperature());
+            
+            // Add active GPUs info
+            List<Map<String, Object>> activeGpus = user.getActiveGPUs().stream()
+                .map(gpu -> {
+                    Map<String, Object> gpuInfo = new HashMap<>();
+                    gpuInfo.put("id", gpu.getId());
+                    gpuInfo.put("name", gpu.getName());
+                    gpuInfo.put("hashrate", gpu.getHashRate());
+                    gpuInfo.put("power", gpu.getPowerConsumption());
+                    gpuInfo.put("temp", gpu.getTemp());
+                    return gpuInfo;
+                })
+                .collect(Collectors.toList());
+            stats.put("activeGPUs", activeGpus);
+            
+            System.out.println("Returning stats: " + stats); // Debug log
             
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "error", e.getMessage(),
-                    "type", e.getClass().getSimpleName(),
-                    "trace", Arrays.toString(e.getStackTrace())
-                ));
+                .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -171,10 +176,13 @@ public class MiningController {
             user.setMining(!user.isMining());
             miningUserRepository.save(user);
             
-            return ResponseEntity.ok(Map.of(
-                "isMining", user.isMining(),
-                "message", user.isMining() ? "Mining started" : "Mining stopped"
-            ));
+            Map<String, Object> response = new HashMap<>();
+            response.put("isMining", user.isMining());
+            response.put("message", user.isMining() ? "Mining started" : "Mining stopped");
+            response.put("currentHashrate", user.getCurrentHashrate());
+            response.put("activeGPUs", user.getActiveGPUs().size());
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
