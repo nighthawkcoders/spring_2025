@@ -102,7 +102,7 @@ public class Person {
      * property or field, in this case unique and ghid.
      */
     @NotEmpty
-    @Size(min = 5)
+    @Size(min = 1)
     @Column(unique = true)
     private String ghid;
 
