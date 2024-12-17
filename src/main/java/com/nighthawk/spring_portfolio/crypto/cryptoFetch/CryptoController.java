@@ -162,29 +162,43 @@ public class CryptoController {
     private String removeOrUpdateCryptoHoldings(String currentCrypto, String cryptoId, double cryptoAmount) {
         StringBuilder updatedCrypto = new StringBuilder();
         boolean removed = false;
-
-        if (currentCrypto != null && !currentCrypto.isEmpty()) {
+    
+        // Check if currentCrypto is null or empty
+        if (currentCrypto != null && !currentCrypto.trim().isEmpty()) {
             String[] holdings = currentCrypto.split(",");
             for (String holding : holdings) {
+                if (holding == null || holding.trim().isEmpty()) continue; // Skip empty entries
+    
                 String[] parts = holding.split(":");
-                String id = parts[0];
-                double amount = Double.parseDouble(parts[1]);
-
+                if (parts.length != 2) continue; // Skip malformed entries
+    
+                String id = parts[0].trim();
+                double amount = Double.parseDouble(parts[1].trim());
+    
+                // Reduce the crypto amount if ID matches
                 if (id.equalsIgnoreCase(cryptoId)) {
                     if (amount < cryptoAmount) {
-                        return null; // Not enough crypto
+                        throw new RuntimeException("Insufficient crypto balance to sell.");
                     }
                     amount -= cryptoAmount;
                     removed = true;
                 }
+    
+                // Append only non-zero amounts
                 if (amount > 0) {
                     updatedCrypto.append(id).append(":").append(amount).append(",");
                 }
             }
         }
-
-        return removed ? updatedCrypto.toString().replaceAll(",$", "") : null;
+    
+        if (!removed) {
+            throw new RuntimeException("Crypto ID not found in user's holdings.");
+        }
+    
+        // Remove the trailing comma if any
+        return updatedCrypto.toString().replaceAll(",$", "");
     }
+    
 
     // Inner DTO class for BuyRequest
     static class BuyRequest {
