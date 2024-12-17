@@ -310,6 +310,13 @@ public class PersonViewController {
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
     }
 
+    @GetMapping("/person-quiz")
+    public String personQuiz(Model model){
+        List<Person> list = repository.listAll();  // Fetch all persons
+        model.addAttribute("person", list.get((int)(Math.random()*list.size())));  // Add the list to the model for the view
+        return "person/person-quiz";
+    }
+
     @GetMapping("/delete/user")
     public String personDelete(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();

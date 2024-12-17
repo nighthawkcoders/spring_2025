@@ -58,6 +58,7 @@ public class SecurityConfig {
                 .requestMatchers("/mvc/person/search/**").authenticated()
                 .requestMatchers("/mvc/person/create/**").permitAll()
                 .requestMatchers("/mvc/person/read/**").authenticated()
+                .requestMatchers("/mvc/person/person-quiz").authenticated()
                 .requestMatchers(HttpMethod.GET,"/mvc/person/update/user").authenticated()
                 .requestMatchers(HttpMethod.GET,"/mvc/person/update/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET,"/mvc/person/delete/user").authenticated()
