@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
+
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
@@ -165,7 +165,7 @@ public class PersonApiController {
 
         personDetailsService.save(person);
 
-        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person);
+        userStocksTable userStocks = new userStocksTable(null, null, startingBalance, person.getEmail(), person);
         userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
