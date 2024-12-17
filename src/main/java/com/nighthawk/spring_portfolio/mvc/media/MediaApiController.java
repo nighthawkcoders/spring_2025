@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
      public ResponseEntity<List<Integer>> getLeaderboard() {
          List<Integer> scores = mediaJpaRepository.findAllByScoreInc()
                  .stream()
-                 .map(Media::getScore)
+                 .map(Score::getScore)
                  .collect(Collectors.toList());
          return ResponseEntity.ok(scores); // Formatted response entity
      }
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
      public ResponseEntity<List<Integer>> getFirstPlace() {
          List<Integer> fpInfo = mediaJpaRepository.findFirstPlaceInfo()
                  .stream()
-                 .map(Media::getScore)
+                 .map(Score::getScore)
                  .collect(Collectors.toList());
          return ResponseEntity.ok(fpInfo);
      }
@@ -48,7 +48,7 @@ import org.springframework.web.bind.annotation.RestController;
      public ResponseEntity<List<Integer>> getScoreByPersonId(@PathVariable Long personId) {
          List<Integer> personInfo = mediaJpaRepository.findByPersonId(personId)
                  .stream()
-                 .map(Media::getScore)
+                 .map(Score::getScore)
                  .collect(Collectors.toList());
          return ResponseEntity.ok(personInfo);
      }
