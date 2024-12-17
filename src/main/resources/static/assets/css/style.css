@@ -2004,7 +2004,7 @@ progress {
 .table {
   --bs-table-bg: transparent;
   --bs-table-accent-bg: transparent;
-  --bs-table-striped-color: #28a746;
+  --bs-table-striped-color: rgb(40, 167, 70);
   --bs-table-striped-bg: rgba(40, 167, 70, 0.05);
   --bs-table-active-color: #28a746;
   --bs-table-active-bg: rgba(40, 167, 70, 0.05);
@@ -3165,8 +3165,9 @@ textarea.form-control-lg {
 
 .btn-light {
   color: #000;
-  background-color: #f8f9fa;
-  border-color: #f8f9fa;
+  font-weight: 500;
+  background-color: rgba(40, 167, 70, 0.75);
+  border-color: #181818;
 }
 .btn-light:hover {
   color: #000;

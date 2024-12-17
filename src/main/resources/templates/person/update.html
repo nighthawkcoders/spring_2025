@@ -127,7 +127,7 @@
         <div class="container">
             <div class="row justify-content-md-center">
                 <div class="col8">
-                    <div class="jumbotron">
+                    <div class="jumbotron text-light">
                         <h3>Update Account</h3>
                         <!-- Form submits the data to the backend for account creation -->
                         <form class="form-inline" action="#" th:action="@{/mvc/person/update}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
@@ -184,7 +184,7 @@
                             </div>
                             -->
                             <!-- Submit Button -->
-                            <button type="submit" class="btn btn-primary">Update Account</button>
+                            <button type="submit" class="btn btn-light">Update Account</button>
                         </form>
                     </div>
                     <hr>
@@ -232,7 +232,7 @@
                             <tfoot>
                                 <tr>
                                     <th> 
-                                        <button type="button" id="addRoleButton">Add Roles</button>
+                                        <button class = "btn btn-light" type="button" id="addRoleButton">Add Roles</button>
                                     </th> 
                                     <th id="footerInfo"></th>
                                 </tr>
