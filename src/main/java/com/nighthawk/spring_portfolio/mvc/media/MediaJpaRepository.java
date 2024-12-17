@@ -10,13 +10,13 @@ import org.springframework.data.jpa.repository.Query;
 
 
 
-public interface MediaJpaRepository extends JpaRepository<Media, Long> {
+public interface MediaJpaRepository extends JpaRepository<Score, Long> {
 
     @Query("SELECT m FROM Media m ORDER BY m.score ASC")
-    List<Media> findAllByScoreInc();
+    List<Score> findAllByScoreInc();
 
     @Query("SELECT m FROM Media m ORDER BY m.score DESC")
-    List<Media> findFirstPlaceInfo();
+    List<Score> findFirstPlaceInfo();
 
-    List<Media> findByPersonId(Long personId);
+    List<Score> findByPersonId(Long personId);
 }
