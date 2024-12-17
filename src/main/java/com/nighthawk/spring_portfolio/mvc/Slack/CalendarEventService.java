@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 public class CalendarEventService {
@@ -27,22 +26,35 @@ public class CalendarEventService {
         return calendarEventRepository.findByDate(date);
     }
 
+    public boolean updateEventByTitle(String title, String newTitle, String description) {
+        CalendarEvent event = getEventByTitle(title);
+        if (event != null) {
+            event.setTitle(newTitle);
+            event.setDescription(description);
+            calendarEventRepository.save(event);
+            return true;
+        }
+        return false;
+    }
+    
+
     // Get events within a date range
     public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {
         return calendarEventRepository.findByDateBetween(startDate, endDate);
     }
 
-    @GetMapping("/events/next-day")
-    public List<CalendarEvent> getNextDayEvents() {
-        LocalDate nextDay = LocalDate.now().plusDays(1);
-        return calendarEventRepository.findByDate(nextDay);
-    }
-
-
     // Retrieve all events
     public List<CalendarEvent> getAllEvents() {
         return calendarEventRepository.findAll();
     }
+    public CalendarEvent getEventByTitle(String title) {
+        return calendarEventRepository.findAll()
+            .stream()
+            .filter(event -> event.getTitle().equals(title)) // Exact match
+            .findFirst()
+            .orElse(null);
+    }
+    
 
     // Method to parse a Slack message and create calendar events
     public void parseSlackMessage(Map<String, String> jsonMap, LocalDate weekStartDate) {
@@ -56,6 +68,7 @@ public class CalendarEventService {
     // Extract events and calculate date for each day of the week
     private List<CalendarEvent> extractEventsFromText(String text, LocalDate weekStartDate) {
         List<CalendarEvent> events = new ArrayList<>();
+        // Regex pattern filtering for keywords that mark the days of the week
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
         Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*-\\s*(.+)");
 
@@ -94,10 +107,16 @@ public class CalendarEventService {
                         type = "grade";
                     }
 
-                    // Update the last event
-                    CalendarEvent lastEvent = events.get(events.size() - 1);
-                    lastEvent.setDescription(description);
-                    lastEvent.setType(type);
+                    // Update all events of the current day range with the description and type
+                    for (int i = events.size() - 1; i >= 0; i--) {
+                        CalendarEvent event = events.get(i);
+                        if (event.getDescription().isEmpty()) {
+                            event.setDescription(description);
+                            event.setType(type);
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
         }
