@@ -132,7 +132,7 @@ public class Person implements Comparable<Person> {
 
     /**
      * name, dob are attributes to describe the person
-     * --- @NonNull annotation is used to generate a constructor with
+     * --- @NonNull annotation is used to generate a constructor witha
      * AllArgsConstructor Lombox annotation.
      * --- @Size annotation is used to validate that the annotated field is between
      * the specified boundaries, in this case between 2 and 30 characters.

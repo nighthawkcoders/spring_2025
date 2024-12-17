@@ -8,3 +8,4 @@ public interface UserStocksRepository extends JpaRepository<userStocksTable, Lon
     // You can add custom methods if needed, but JpaRepository already provides save(), findById(), etc.
     userStocksTable findByEmail(String username);
 }
+ 

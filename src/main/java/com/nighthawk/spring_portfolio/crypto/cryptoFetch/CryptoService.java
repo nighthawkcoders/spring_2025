@@ -34,6 +34,7 @@ public class CryptoService {
             Crypto[] cryptos = new Crypto[dataArray.size()];
             for (int i = 0; i < dataArray.size(); i++) {
                 JSONObject cryptoData = (JSONObject) dataArray.get(i);
+                String symbol = (String) cryptoData.get("symbol"); // Fetch symbol
                 String name = (String) cryptoData.get("name");
 
                 JSONObject quoteData = (JSONObject) cryptoData.get("quote");
@@ -43,7 +44,7 @@ public class CryptoService {
                                           ? ((Number) usdData.get("percent_change_24h")).doubleValue() 
                                           : 0.0;
 
-                cryptos[i] = new Crypto(null, name, price, changePercentage);
+                cryptos[i] = new Crypto(symbol, name, price, changePercentage);
             }
             return cryptos;
         } catch (ParseException e) {
@@ -55,6 +56,26 @@ public class CryptoService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    // Method to fetch the price of a specific cryptocurrency by symbol
+    public double getCryptoPrice(String cryptoId) {
+        Crypto[] cryptoData = this.getCryptoData();
+    
+        if (cryptoData == null || cryptoData.length == 0) {
+            System.err.println("Failed to fetch crypto data for " + cryptoId);
+            return -1.0; // Return invalid price
+        }
+    
+        for (Crypto crypto : cryptoData) {
+            // Compare the symbol field instead of the name
+            if (crypto.getSymbol().equalsIgnoreCase(cryptoId)) {
+                return crypto.getPrice(); // Return the price if found
+            }
+        }
+    
+        System.err.println("Crypto ID " + cryptoId + " not found in the live data.");
+        return -1.0; // Return invalid price if cryptoId not found
     }
 
     // Method to fetch historical data from CoinGecko
@@ -70,13 +91,11 @@ public class CryptoService {
             JSONObject jsonResponse = (JSONObject) parser.parse(response);
             JSONArray pricesArray = (JSONArray) jsonResponse.get("prices");
 
-            // Check if pricesArray is null or empty
             if (pricesArray == null || pricesArray.isEmpty()) {
                 System.err.println("No price data returned for cryptoId: " + cryptoId);
                 return null;
             }
 
-            // Extract prices from the JSON response
             List<Double> prices = new ArrayList<>();
             for (Object priceObj : pricesArray) {
                 JSONArray priceArray = (JSONArray) priceObj;
