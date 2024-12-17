@@ -241,7 +241,7 @@ public class Person {
         ArrayList<Person> persons = new ArrayList<>();
         persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", TobyImage.imageString, true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
         persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", MortImage.imageString, false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
-        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", NikoImage.imageString, true, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", NikoImage.imageString, true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", CurieImage.imageString, true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", HopperImage.imageString, true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
 
