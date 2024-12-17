@@ -29,12 +29,14 @@ public class TinkleApiController {
         // private double averageDuration;
     }
 
+    //POST request that adds the student's time entry into the datatable.
     @PostMapping("/add")
     public ResponseEntity<Object> timeInOut(@RequestBody TinkleDto tinkleDto) {
+        //First finds the student by name
         Optional<Tinkle> student = repository.findByPersonName(tinkleDto.getStudentEmail());
+        //If the student exists then it adds the timeIn to the student's timeIn column
         if (student.isPresent()) {
             student.get().addTimeIn(tinkleDto.getTimeIn());
-            // student.get().addAverageDuration(tinkleDto.getAverageDuration());
             repository.save(student.get());
             return new ResponseEntity<>(student.get(), HttpStatus.OK);
         } else {
@@ -42,13 +44,16 @@ public class TinkleApiController {
         }
     }
 
+    //GET Request to get all of the tinkle objects
     @GetMapping("/all")
     public List<Tinkle> getAll() {
         return repository.findAll();
     }
 
+    //GET REQUEst by the person's name, used to find a person's specific bathrooms statistics on the bathroom frontend
     @GetMapping("/{name}")
     public ResponseEntity<Object> getTinkle(@PathVariable String name) {
+        //JPA function to find the person
         Optional<Tinkle> tinkle = repository.findByPersonName(name);
         if (tinkle.isPresent()) {
             Tinkle tinklePerson = tinkle.get();
