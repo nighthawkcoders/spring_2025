@@ -202,22 +202,19 @@ public class SynergyApiController {
         @RequestBody SynergyGradeRequestSeedDto requestData
     ) throws ResponseStatusException {
         String email = userDetails.getUsername();
-        Person grader = personRepository.findByEmail(email);
-        if (grader == null) {
+        Person student = personRepository.findByEmail(email);
+        if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
             );
         }
 
-        Person student = personRepository.findById(requestData.getStudentId()).orElseThrow(() -> 
-            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student ID passed")
-        );
         Assignment assignment = assignmentRepository.findByName("Seed");
         if (assignment == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no seed assignment");
         }
         
-        SynergyGradeRequest gradeRequest = new SynergyGradeRequest(assignment, student, grader, requestData.getExplanation(), requestData.getGradeSuggestion());
+        SynergyGradeRequest gradeRequest = new SynergyGradeRequest(assignment, student, student, requestData.getExplanation(), requestData.getGradeSuggestion());
         gradeRequestRepository.save(gradeRequest);
 
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request for seed."));
