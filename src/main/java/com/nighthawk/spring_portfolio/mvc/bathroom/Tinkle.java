@@ -28,21 +28,21 @@ public class Tinkle {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+
+    //Sets up a OnetoOne join column with the person_id on the person datable
+    // OnDelete annotation makes it such that the tinkle object will be deleted if the 
     @OneToOne
     @JoinColumn(name = "person_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
+    //TimeIn column is where the entries are stored for when a user checks in and checks out
     private Person person;
     private String timeIn;
 
     @Column
     private String person_name;
-    // @Column
 
-    // private String studentEmail;
-    // private String timeIn;
-    // private double averageDuration;
-
+    //Constructor for the Tinkle Object
     public Tinkle(Person person, String statsInput)
     {
         this.person = person;
@@ -50,6 +50,7 @@ public class Tinkle {
         this.person_name = person.getName();
     }
 
+    //Logic to add the timeIn value. Example formatting for the timeIn entry: 11:30:12-12:14:10,12:15:14-11:10:9
     public void addTimeIn(String timeIn)
     {
         if (this.timeIn == null || this.timeIn.isEmpty())
@@ -63,30 +64,7 @@ public class Tinkle {
 
     }
 
-    // public void addAverageDuration(double averageDuration)
-    // {
-    //     if (this.averageDuration == 0.0)
-    //     {
-    //         this.averageDuration = averageDuration;
-    //     }
-    //     else 
-    //     {
-    //         this.averageDuration += averageDuration;
-    //     }
-    // }
-
-    // public static Tinkle[] init()
-    // {
-    //     ArrayList<Tinkle> users = new ArrayList<>();
-    //     users.add(new Tinkle("toby@gmail.com", "", 0.0));
-    //     users.add(new Tinkle("lexb@gmail.com", "", 0.0));
-    //     users.add(new Tinkle("niko@gmail.com", "", 0.0));
-    //     users.add(new Tinkle("madam@gmail.com", "", 0.0));
-    //     users.add(new Tinkle("hop@gmail.com", "", 0.0));
-    //     users.add(new Tinkle("jm1021@gmail.com", "", 0.0));
-    //     users.add(new Tinkle("tarasehdave@gmail.com", "", 0.0));
-    //     return users.toArray(new Tinkle[0]);
-    // }
+    //Initializing ddata for the sqlite db
     public static Tinkle[] init(Person[] persons) {
         ArrayList<Tinkle> tinkles = new ArrayList<>();
     
