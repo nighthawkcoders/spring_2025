@@ -37,6 +37,10 @@ public class AssignmentSubmission {
 
     private String comment;
 
+    private long assignmentid;
+
+    
+
     public AssignmentSubmission(Assignment assignment, Person student, String content, String comment) {
         this.assignment = assignment;
         this.student = student;
@@ -44,5 +48,6 @@ public class AssignmentSubmission {
         this.grade = null;
         this.feedback = null;
         this.comment = comment;
+        this.assignmentid=assignment.getId();
     }
 }
