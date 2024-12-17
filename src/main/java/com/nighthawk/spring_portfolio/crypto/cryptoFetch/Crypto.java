@@ -15,8 +15,19 @@ public class Crypto {
     private Long id;
 
     @Column(unique = true)
-    private String name;
+    private String symbol; // Ticker symbol, e.g., BTC
 
-    private double price;
-    private double changePercentage;
+    @Column(unique = true)
+    private String name;   // Full name, e.g., Bitcoin
+
+    private double price;  // Current price in USD
+    private double changePercentage; // 24-hour percentage change
+
+    // Custom constructor to match the usage in CryptoService
+    public Crypto(String symbol, String name, double price, double changePercentage) {
+        this.symbol = symbol;
+        this.name = name;
+        this.price = price;
+        this.changePercentage = changePercentage;
+    }
 }
