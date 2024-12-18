@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.crypto.cryptoFetch;
+package com.nighthawk.spring_portfolio.mvc.crypto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

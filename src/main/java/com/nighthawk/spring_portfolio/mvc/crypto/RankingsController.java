@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.crypto.cryptoFetch;
+package com.nighthawk.spring_portfolio.mvc.crypto;
 
 import java.util.Comparator;
 import java.util.HashMap;

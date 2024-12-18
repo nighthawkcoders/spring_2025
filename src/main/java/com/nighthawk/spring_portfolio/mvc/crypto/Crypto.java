@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.crypto.cryptoFetch;
+package com.nighthawk.spring_portfolio.mvc.crypto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
