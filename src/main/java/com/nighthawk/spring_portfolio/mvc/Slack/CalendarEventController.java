@@ -5,14 +5,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -100,4 +98,16 @@ public class CalendarEventController {
         LocalDate endDate = LocalDate.parse(end);
         return calendarEventService.getEventsWithinDateRange(startDate, endDate);
     }
+
+
+    @GetMapping("/events/next-day")
+    public List<CalendarEvent> getNextDayEvents() {
+        // Get the current date and the next day
+        LocalDate today = LocalDate.now();
+        LocalDate nextDay = today.plusDays(1);
+
+        // Fetch events for the next day
+        return calendarEventService.getEventsByDate(nextDay);
+    }
+
 }
