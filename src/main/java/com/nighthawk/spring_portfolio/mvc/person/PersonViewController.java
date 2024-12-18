@@ -198,7 +198,7 @@ public class PersonViewController {
             return "redirect:/logout"; //logout the user
         }
         
-        return "redirect:/mvc/person/read";  // Redirect to the read page after deletion
+        return "person/read";  // Redirect to the read page after deletion
     }
 
 @PostMapping("/update")
@@ -262,7 +262,7 @@ public String personUpdateSave(Authentication authentication, @Valid Person pers
         repository.save(personToUpdate); // Save the updated person object
     }
 
-    return "redirect:/profile"; // Redirect to the profile page or another appropriate page
+    return "redirect:/mvc/person/read"; // Redirect to the profile page or another appropriate page
 }
 
 
