@@ -54,7 +54,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherEmail(), HttpStatus.CREATED);
     }
 
-    @CrossOrigin(origins = "*")
+    @CrossOrigin(origins = {"http://127.0.0.1:4100", "https://spring2025.nighthawkcodingsociety.com"})
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
@@ -74,7 +74,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
-    @CrossOrigin(origins = "*")
+    @CrossOrigin(origins = {"http://127.0.0.1:4100", "https://spring2025.nighthawkcodingsociety.com"})
     @PostMapping("/approve")
     public ResponseEntity<Object> approveStudent(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
@@ -158,7 +158,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
     }
    
-    @CrossOrigin(origins = "*")
+    @CrossOrigin(origins = {"http://127.0.0.1:4100", "https://spring2025.nighthawkcodingsociety.com"})
     @GetMapping("/getActive")
     public ResponseEntity<Object> getActiveQueues() {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
