@@ -140,7 +140,7 @@ public class MiningController {
         }
     }
 
-    @PostMapping("/buy/{gpuId}")
+    @PostMapping("/gpu/buy/{gpuId}")
     public ResponseEntity<?> buyGPU(@PathVariable Long gpuId) {
         try {
             MiningUser user = getOrCreateMiningUser();
@@ -149,6 +149,7 @@ public class MiningController {
             
             // Check if user already owns this GPU
             if (user.ownsGPUById(gpuId)) {
+                System.out.println("User already owns GPU with ID: " + gpuId); // Debug log
                 return ResponseEntity.badRequest()
                     .body(Map.of(
                         "success", false,
@@ -164,6 +165,7 @@ public class MiningController {
                 "message", "Successfully purchased " + gpu.getName()
             ));
         } catch (Exception e) {
+            e.printStackTrace(); // Print stack trace for debugging
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
         }
