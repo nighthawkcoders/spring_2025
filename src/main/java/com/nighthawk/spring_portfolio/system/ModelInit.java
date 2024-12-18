@@ -36,6 +36,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
@@ -59,6 +61,7 @@ public class ModelInit {
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
+    @Autowired StudentInfoJPARepository studentInfoJPA;
 
     @Bean
     @Transactional
@@ -129,23 +132,26 @@ public class ModelInit {
             }
 
             Tinkle[] tinkleArray = Tinkle.init(personArray);
-            for(Tinkle tinkle: tinkleArray)
-            {
+            for(Tinkle tinkle: tinkleArray) {
                 // List<Tinkle> tinkleFound = 
                 Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPerson_name());
-                if(tinkleFound.isEmpty())
-                {
+                if(tinkleFound.isEmpty()) {
                     tinkleJPA.save(tinkle);
                 }
             }
 
+            StudentInfo[] studentInfoArray = StudentInfo.init(personArray);
+            for (StudentInfo studentInfo: studentInfoArray) {
+                Optional<StudentInfo> studentFound = studentInfoJPA.findByPersonName(studentInfo.getPerson_name());
+                if (studentFound.isEmpty()) {
+                    studentInfoJPA.save(studentInfo);
+                }
+            }
+
             BathroomQueue[] queueArray = BathroomQueue.init();
-            for(BathroomQueue queue: queueArray)
-            {
-                // List<Tinkle> tinkleFound = 
+            for(BathroomQueue queue: queueArray) {
                 Optional<BathroomQueue> queueFound = queueJPA.findByTeacherEmail(queue.getTeacherEmail());
-                if(queueFound.isEmpty())
-                {
+                if(queueFound.isEmpty()) {
                     queueJPA.save(queue);
                 }
             }
@@ -165,16 +171,7 @@ public class ModelInit {
                     issueJPARepository.save(issue);
                 }
             }
-            // ArrayList<Tinkle> tinkles = new ArrayList<>();
-            // for(Person person: personArray)
-            // {
-            //     tinkles.add(new Tinkle(person, "2"));
-            // }
-            // for(Tinkle tinkle: tinkles)
-            // {
-            //     tinkleJPA.save(tinkle);
-            // }
-
+            
             // Assignment database is populated with sample assignments
             Assignment[] assignmentArray = Assignment.init();
             for (Assignment assignment : assignmentArray) {

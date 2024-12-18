@@ -61,6 +61,16 @@ public class SynergyApiController {
         public Double gradeSuggestion;
         public String explanation;
     }
+    
+    /**
+     * A data transfer object that stores information about a grade request that is made for
+     * the student who creaed it.
+     */
+    @Getter
+    public static class SynergyGradeRequestSeedDto {
+        public Double gradeSuggestion;
+        public String explanation;
+    }
 
     /**
      * A data transfer object that stores the id of a grade request.
@@ -177,6 +187,37 @@ public class SynergyApiController {
         gradeRequestRepository.save(gradeRequest);
 
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
+    }
+
+    /**
+     * A POST endpoint to create a grade request for seed.
+     * @param userDetails The information about the logged in user. Automatically passed in by thymeleaf.
+     * @param requestData The JSON data passed in, of the format studentId: Long, assignmentId: Long,
+     *                    gradeSuggestion: Double, explanation: String
+     * @return A JSON object signifying that the request was created.
+     */
+    @PostMapping("/grades/requests/seed")
+    public ResponseEntity<Map<String, String>> createGradeRequestSeed(
+        @AuthenticationPrincipal UserDetails userDetails, 
+        @RequestBody SynergyGradeRequestSeedDto requestData
+    ) throws ResponseStatusException {
+        String email = userDetails.getUsername();
+        Person student = personRepository.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        Assignment assignment = assignmentRepository.findByName("Seed");
+        if (assignment == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no seed assignment");
+        }
+        
+        SynergyGradeRequest gradeRequest = new SynergyGradeRequest(assignment, student, student, requestData.getExplanation(), requestData.getGradeSuggestion());
+        gradeRequestRepository.save(gradeRequest);
+
+        return ResponseEntity.ok(Map.of("message", "Successfully created the grade request for seed."));
     }
 
     /**
