@@ -1,5 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.crypto;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +21,27 @@ public class CryptoController {
     @Autowired
     private UserStocksRepository userStocksRepo;
 
+    @GetMapping("/live")
+    public ResponseEntity<?> getLiveCryptoData() {
+        Crypto[] cryptoData = cryptoService.getCryptoData();
+        
+        if (cryptoData == null || cryptoData.length == 0) {
+            return ResponseEntity.status(500).body("Failed to fetch cryptocurrency data");
+        }
+        
+        return ResponseEntity.ok(cryptoData);
+    }
+    
+    @GetMapping("/trend")
+    public ResponseEntity<?> getCryptoTrend(@RequestParam String cryptoId, @RequestParam int days) {
+        List<Double> trendData = cryptoService.getCryptoHistoricalData(cryptoId, days);
+
+        if (trendData == null || trendData.isEmpty()) {
+            return ResponseEntity.status(500).body("Failed to fetch trend data");
+        }
+        
+        return ResponseEntity.ok(trendData);
+    }
     // Endpoint to get the live cryptocurrency price
     @GetMapping("/price")
     public ResponseEntity<?> getCryptoPrice(@RequestParam String cryptoId) {
