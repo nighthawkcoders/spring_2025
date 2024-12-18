@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 // New Queue class to represent the three lists
-public class Queue {
+public class AssignmentQueue {
     private List<String> haventGone;
     private List<String> queue;
     private List<String> done;
 
-    public Queue() {
+    public AssignmentQueue() {
         this.haventGone = new ArrayList<>();
         this.queue = new ArrayList<>();
         this.done = new ArrayList<>();

@@ -43,4 +43,7 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
         @Param("trimester") int trimester, 
         @Param("period") int period
     );
+
+    Optional<StudentInfo> findByPersonName(String personName);
+
 }

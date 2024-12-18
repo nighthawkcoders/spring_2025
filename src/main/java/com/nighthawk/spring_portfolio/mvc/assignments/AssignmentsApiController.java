@@ -101,6 +101,26 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    @GetMapping("/submissions/student/{studentId}")
+    public ResponseEntity<?> getStudentSubmissions(@PathVariable Long studentId) {
+        List<AssignmentSubmission> submissions = submissionRepo.findByStudentId(studentId);
+        return new ResponseEntity<>(submissions, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        Optional<Assignment> assignment = assignmentRepo.findById(id);
+
+        if (assignment.isPresent()) {
+            return ResponseEntity.ok(assignment.get().getName());
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Assignment not found with ID: " + id);
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+    }
+
+
     /**
      * A POST endpoint to delete an assignment.
      * @param id The ID of the assignment to delete.
@@ -179,7 +199,7 @@ public class AssignmentsApiController {
     }
 
     @GetMapping("/getQueue/{id}")
-    public ResponseEntity<Queue> getQueue(@PathVariable long id) {
+    public ResponseEntity<AssignmentQueue> getQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();

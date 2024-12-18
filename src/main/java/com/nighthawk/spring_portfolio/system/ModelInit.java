@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
@@ -32,14 +36,12 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -55,10 +57,11 @@ public class ModelInit {
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
     @Autowired IssueJPARepository issueJPARepository;
-    @Autowired QuestionJpaRepository questionJpaRepository;
+    @Autowired AdventureQuestionJpaRepository questionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
+    @Autowired StudentInfoJPARepository studentInfoJPA;
 
     @Bean
     @Transactional
@@ -73,19 +76,18 @@ public class ModelInit {
                 }
             }
 
+            AdventureQuestion[] questionArray = AdventureQuestion.init();
+            for (AdventureQuestion question : questionArray) {
+                AdventureQuestion questionFound = questionJpaRepository.findByTitle(question.getTitle());
+                if (questionFound == null) {
+                    questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
+                }
+            }
             List<Comment> Comments = Comment.init();
             for (Comment Comment : Comments) {
                 List<Comment> CommentFound = CommentJPA.findByAssignment(Comment.getAssignment()); 
                 if (CommentFound.isEmpty()) {
                     CommentJPA.save(new Comment(Comment.getAssignment(), Comment.getAuthor(), Comment.getText())); // JPA save
-                }
-            }
-            
-            Question[] questionArray = Question.init();
-            for (Question question : questionArray) {
-                Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
-                if (questionFound == null) {
-                    questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
 
@@ -130,23 +132,26 @@ public class ModelInit {
             }
 
             Tinkle[] tinkleArray = Tinkle.init(personArray);
-            for(Tinkle tinkle: tinkleArray)
-            {
+            for(Tinkle tinkle: tinkleArray) {
                 // List<Tinkle> tinkleFound = 
                 Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPerson_name());
-                if(tinkleFound.isEmpty())
-                {
+                if(tinkleFound.isEmpty()) {
                     tinkleJPA.save(tinkle);
                 }
             }
 
+            StudentInfo[] studentInfoArray = StudentInfo.init(personArray);
+            for (StudentInfo studentInfo: studentInfoArray) {
+                Optional<StudentInfo> studentFound = studentInfoJPA.findByPersonName(studentInfo.getPerson_name());
+                if (studentFound.isEmpty()) {
+                    studentInfoJPA.save(studentInfo);
+                }
+            }
+
             BathroomQueue[] queueArray = BathroomQueue.init();
-            for(BathroomQueue queue: queueArray)
-            {
-                // List<Tinkle> tinkleFound = 
+            for(BathroomQueue queue: queueArray) {
                 Optional<BathroomQueue> queueFound = queueJPA.findByTeacherEmail(queue.getTeacherEmail());
-                if(queueFound.isEmpty())
-                {
+                if(queueFound.isEmpty()) {
                     queueJPA.save(queue);
                 }
             }
@@ -166,16 +171,7 @@ public class ModelInit {
                     issueJPARepository.save(issue);
                 }
             }
-            // ArrayList<Tinkle> tinkles = new ArrayList<>();
-            // for(Person person: personArray)
-            // {
-            //     tinkles.add(new Tinkle(person, "2"));
-            // }
-            // for(Tinkle tinkle: tinkles)
-            // {
-            //     tinkleJPA.save(tinkle);
-            // }
-
+            
             // Assignment database is populated with sample assignments
             Assignment[] assignmentArray = Assignment.init();
             for (Assignment assignment : assignmentArray) {

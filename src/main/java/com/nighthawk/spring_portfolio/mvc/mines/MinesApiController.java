@@ -45,7 +45,7 @@ public class MinesApiController {
      * @return True if the user has sufficient balance, false otherwise.
      */
     private boolean hasSufficientBalance(Person user, double betSize) {
-        if (user.getBalance() < betSize) {
+        if (user.getBalanceDouble() < betSize) {
             log.warn("Insufficient balance for user {}. Bet size: {}, Balance: {}", user.getEmail(), betSize, user.getBalance());
             return false;
         }
@@ -79,7 +79,7 @@ public class MinesApiController {
 
         user.setBalance(user.getBalance() + board.winnings() * betSize);
         personJpaRepository.save(user);
-        return new ResponseEntity<>(user.getBalance(), HttpStatus.OK);
+        return new ResponseEntity<>(user.getBalanceDouble(), HttpStatus.OK);
     }
 
     /**
@@ -99,8 +99,9 @@ public class MinesApiController {
         if (!hasSufficientBalance(user, betSize)) {
             return new ResponseEntity<>("Insufficient balance", HttpStatus.BAD_REQUEST);
         }
+        double updatedBalance = user.getBalanceDouble() - betSize;
 
-        user.setBalance(user.getBalance() - betSize);
+        user.setBalanceString(updatedBalance);
         personJpaRepository.save(user);
         board = new MinesBoard(stakes);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -117,6 +118,6 @@ public class MinesApiController {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(user.getBalance(), HttpStatus.OK);
+        return new ResponseEntity<>(user.getBalanceDouble(), HttpStatus.OK);
     }
 }

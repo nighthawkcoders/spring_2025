@@ -1,7 +1,7 @@
-package com.nighthawk.spring_portfolio.mvc.rpg.answer;
+package com.nighthawk.spring_portfolio.mvc.rpg.adventureAnswer;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Answer {
+public class AdventureAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -28,7 +28,7 @@ public class Answer {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Question question;
+    private AdventureQuestion question;
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
@@ -41,7 +41,7 @@ public class Answer {
 
     private Long chatScore;
 
-    public Answer (String content, Question question, Person person, Long chatScore) {
+    public AdventureAnswer (String content, AdventureQuestion question, Person person, Long chatScore) {
         this.content = content;
         this.question = question;
         this.person = person;
