@@ -68,6 +68,11 @@ public class PersonApiController {
      */
     @GetMapping("/person/get")
     public ResponseEntity<Person> getPerson(@AuthenticationPrincipal UserDetails userDetails) {
+        // Check if the user is not logged in
+        if (userDetails == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
