@@ -32,6 +32,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
 import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
@@ -55,10 +57,11 @@ public class ModelInit {
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
     @Autowired IssueJPARepository issueJPARepository;
-    @Autowired QuestionJpaRepository questionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
+    @Autowired StudentInfoJPARepository studentInfoJPA;
+    @Autowired QuestionJpaRepository questionJpaRepository;
 
     @Bean
     @Transactional
@@ -80,7 +83,7 @@ public class ModelInit {
                     CommentJPA.save(new Comment(Comment.getAssignment(), Comment.getAuthor(), Comment.getText())); // JPA save
                 }
             }
-            
+
             Question[] questionArray = Question.init();
             for (Question question : questionArray) {
                 Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
@@ -88,7 +91,7 @@ public class ModelInit {
                     questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
-
+            
             User[] userArray = User.init();
             for (User user : userArray) {
                 List<User> userFound = userJpaRepository.findByUsernameIgnoreCase(user.getUsername()); 
@@ -139,6 +142,15 @@ public class ModelInit {
                     tinkleJPA.save(tinkle);
                 }
             }
+
+            StudentInfo[] studentInfoArray = StudentInfo.init(personArray);
+            for(StudentInfo studentInfo: studentInfoArray)
+            {
+                Optional<StudentInfo> studentFound = studentInfoJPA.findByPersonName(studentInfo.getPerson_name());
+                if (studentFound.isEmpty()) {
+                studentInfoJPA.save(studentInfo);
+            }
+        }
 
             BathroomQueue[] queueArray = BathroomQueue.init();
             for(BathroomQueue queue: queueArray)

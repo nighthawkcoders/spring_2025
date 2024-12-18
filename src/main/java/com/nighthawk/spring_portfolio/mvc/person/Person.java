@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 
 import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
@@ -104,6 +105,10 @@ public class Person implements Comparable<Person> {
 
     @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
     private Tinkle timeEntries;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private StudentInfo studentInfo;
     /**
      * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
