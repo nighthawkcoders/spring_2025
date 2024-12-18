@@ -20,6 +20,8 @@ import jakarta.validation.Valid;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -199,8 +201,9 @@ public class PersonViewController {
         return "redirect:/mvc/person/read";  // Redirect to the read page after deletion
     }
 
-    @PostMapping("/update")
-public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult) {
+@PostMapping("/update")
+public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult,
+                                @RequestParam(value = "pfpBase64", required = false) String pfpBase64) {
     // Check authentication and user details
     if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
         return "redirect:/e#unauthorized"; // Redirect if authentication is null or invalid
@@ -226,12 +229,17 @@ public String personUpdateSave(Authentication authentication, @Valid Person pers
 
     // Update fields only if the new values are provided
     boolean updated = false;
-   
+
+    if (pfpBase64 != null && !pfpBase64.isEmpty()) {
+        personToUpdate.setPfp(pfpBase64); // Update the profile picture with Base64 value
+        updated = true;
+    }
 
     if (person.getPassword() != null && !person.getPassword().isEmpty()) {
         personToUpdate.setPassword(person.getPassword());
         updated = true;
     }
+
     if (person.getName() != null && !person.getName().isEmpty()) {
         personToUpdate.setName(person.getName());
         updated = true;
@@ -243,35 +251,18 @@ public String personUpdateSave(Authentication authentication, @Valid Person pers
         if (existingPerson != null && !existingPerson.getId().equals(personToUpdate.getId())) {
             return "redirect:/e#email_already_in_use"; // Redirect if email is already taken
         }
-        }
+    }
 
     if (person.getDob() != null) {
         personToUpdate.setDob(person.getDob());
         updated = true;
     }
-    if (person.getPfp() != null && !person.getPfp().isEmpty()) {
-        personToUpdate.setPfp(person.getPfp());
-        updated = true;
-    }
-    if (person.getKasmServerNeeded() != null) {
-        personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
-        updated = true;
+
+    if (updated) {
+        repository.save(personToUpdate); // Save the updated person object
     }
 
-    // If no attributes were updated, inform the user
-    if (!updated) {
-        return "redirect:/e#no_changes_detected";
-    }
-
-    // Save the updated person to the repository
-    repository.save(personToUpdate);
-
-    // Assign roles if necessary
-    repository.addRoleToPerson(person.getEmail(), "ROLE_USER");
-    repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
-
-    // Redirect to the read page after successfully saving the changes
-    return "redirect:/mvc/person/read";
+    return "redirect:/profile"; // Redirect to the profile page or another appropriate page
 }
 
 
