@@ -65,8 +65,8 @@ public class Assignment {
     @NotNull
     private Double points;
 
-    @Convert(converter = QueueConverter.class)
-    private Queue assignmentQueue;
+    @Convert(converter = AssignmentQueueConverter.class)
+    private AssignmentQueue assignmentQueue;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -100,7 +100,7 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        this.assignmentQueue = new Queue();
+        this.assignmentQueue = new AssignmentQueue();
     }
 
     public static Assignment[] init() {
