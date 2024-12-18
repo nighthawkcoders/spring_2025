@@ -26,17 +26,17 @@ public class Issue {
     
     private int count;
 
-    private float positionX;
+    private double positionX;
 
-    private float positionY;
+    private double positionY;
 
-    public Issue(String bathroomName, String issue, int count, float positionX, float positionY)
-    {
-        this.bathroom = bathroomName;
-        this.issue = issue;
-        this.count = count;
-        this.positionX = positionX;
-        this.positionY = positionY;
+    public Issue(String bathroomName, String issue, int count, double positionX, double positionY)
+        {
+            this.bathroom = bathroomName;
+            this.issue = issue;
+            this.count = count;
+            this.positionX = positionX;
+            this.positionY = positionY;
 
     }
 
