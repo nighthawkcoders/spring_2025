@@ -48,6 +48,6 @@ public class Scores {
     }
 
     public static Score init() {
-        return new Score();
+        return new Score("John Doe", 100);
     }
 }

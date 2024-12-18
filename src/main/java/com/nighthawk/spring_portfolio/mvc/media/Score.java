@@ -21,10 +21,15 @@ public class Score {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String personName;
+    private String person_name;
     private int score;
-
+    
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
+
+    public Score(String person_name, int score) {
+        this.person_name = person_name;
+        this.score = score;
+    }
 }
