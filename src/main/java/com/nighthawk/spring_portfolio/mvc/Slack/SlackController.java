@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 import java.util.List;
+import com.nighthawk.spring_portfolio.mvc.Slack.CalendarEventController;
 
 @RestController
 public class SlackController {
@@ -23,6 +24,9 @@ public class SlackController {
     private String slackToken = "xoxp-7892664186276-7887305704597-7924387129461-e2333e0f3c20a3ddb2ba833ec37f4e52";
     
     // Rest template for API handling
+    @Autowired
+    private CalendarEventController calendarEventController;
+    
     @Autowired
     private final RestTemplate restTemplate;
 
@@ -79,32 +83,32 @@ public class SlackController {
         if (payload.getChallenge() != null) {
             return ResponseEntity.ok(payload.getChallenge());
         }
-        // Differentiates between the verification challenge and normal slack message post requests
-
+    
         try {
             SlackEvent.Event messageEvent = payload.getEvent();
             String eventType = messageEvent.getType();
+    
             // Distinguishing messages from other events
             if ("message".equals(eventType)) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String messageContent = objectMapper.writeValueAsString(messageEvent);
-                // Mapping the message's content to key value pairs, ex. the text, channel id, etc.
+    
+                // Mapping the message's content to key-value pairs
+                Map<String, String> messageData = objectMapper.readValue(messageContent, Map.class);
+    
+                // Saving message to DB
                 messageService.saveMessage(messageContent);
-                // Saving message to db table
                 System.out.println("Message saved to database: " + messageContent);
-                String calendarUrl = "https://spring2025.nighthawkcodingsociety.com/api/calendar/add";
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Content-Type", "application/json");
-                // Sending data to be processed by the calendar API
-                HttpEntity<String> calendarEntity = new HttpEntity<>(messageContent, headers);
-                ResponseEntity<String> calendarResponse = restTemplate.postForEntity(calendarUrl, calendarEntity, String.class);
-
-                System.out.println("Message sent to calendar service: " + calendarResponse.getBody());
+    
+                // Direct call to the CalendarEventController method
+                calendarEventController.addEventsFromSlackMessage(messageData);
+                System.out.println("Message processed by CalendarEventController");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+    
         return ResponseEntity.ok("OK");
     }
+    
 }
