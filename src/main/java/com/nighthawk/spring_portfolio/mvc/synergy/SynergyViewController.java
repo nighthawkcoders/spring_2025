@@ -2,7 +2,6 @@ package com.nighthawk.spring_portfolio.mvc.synergy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -13,11 +12,14 @@ import org.springframework.web.server.ResponseStatusException;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
-import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+
+import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 @Controller
@@ -35,6 +37,25 @@ public class SynergyViewController {
     @Autowired
     private PersonJpaRepository personRepository;
 
+    @Getter
+    public static class SynergyGradeRequestDto {
+        private String assignmentName;
+        private String explanation;
+        private Double gradeSuggestion;
+        private String graderName;
+        private String studentName;
+        private Long id;
+        
+        public SynergyGradeRequestDto(SynergyGradeRequest request) {
+            this.assignmentName = request.getAssignment().getName();
+            this.explanation = request.getExplanation();
+            this.gradeSuggestion = request.getGradeSuggestion();
+            this.graderName = request.getGrader().getName();
+            this.studentName = request.getStudent().getName();
+            this.id = request.getId();
+        }
+    }
+
     /**
      * Opens the teacher or student gradebook. The teacher gradebook is for editing grades, while the student gradebook allows them to view grades.
      * @param model The parameters for the webpage
@@ -43,6 +64,7 @@ public class SynergyViewController {
      */
     @GetMapping("/gradebook")
     public String editGrades(Model model, @AuthenticationPrincipal UserDetails userDetails) throws ResponseStatusException {
+        // Load the user
         String email = userDetails.getUsername();
         Person user = personRepository.findByEmail(email);
         if (user == null) {
@@ -51,9 +73,10 @@ public class SynergyViewController {
             );
         }
 
+        // Load the assignments
         List<Assignment> assignments = assignmentRepository.findAll();
 
-        // students can't edit grades, teachers can edit
+        // If the user is a student, allow them to view their grades, else allow them to edit grades
         if (user.hasRoleWithName("ROLE_STUDENT")) {
             List<SynergyGrade> studentGrades = gradeRepository.findByStudent(user);
         
@@ -66,14 +89,31 @@ public class SynergyViewController {
             model.addAttribute("assignmentGrades", assignmentGrades);
             return "synergy/view_student_grades";
         } else if (user.hasRoleWithName("ROLE_TEACHER") || user.hasRoleWithName("ROLE_ADMIN")) {
+            // Load info from db
             List<Person> students = personRepository.findPeopleWithRole("ROLE_STUDENT");
             List<SynergyGrade> gradesList = gradeRepository.findAll();
+            List<SynergyGradeRequest> gradeRequests = gradeRequestRepository.findAll();
 
+            // Preprocess grades into a map so that they can be easily accessed on the frontend
             Map<Long, Map<Long, Double>> grades = createGradesMap(gradesList, assignments, students);
+            
+            // Preprocess pending requests into a map so that they can be easily accessed on the frontend
+            Map<String, List<SynergyGradeRequestDto>> pendingRequestsMap = new HashMap<>();
+            for (SynergyGradeRequest request : gradeRequests) {
+                if (request.getStatus() == 0) {  // Only include pending requests
+                    String key = request.getAssignment().getId().toString() + "-" + request.getStudent().getId().toString();
+                    pendingRequestsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(new SynergyGradeRequestDto(request));
+                }
+            }
 
+            System.out.println("PendingRequestsMap: " + pendingRequestsMap);
+
+            // Pass in information to thymeleaf template
             model.addAttribute("assignments", assignments);
             model.addAttribute("students", students);
             model.addAttribute("grades", grades);
+            model.addAttribute("pendingRequestsMap", pendingRequestsMap);
+            model.addAttribute("gradeRequests", gradeRequests);
 
             return "synergy/edit_grades";
         }
@@ -93,7 +133,7 @@ public class SynergyViewController {
     private Map<Long, Map<Long, Double>> createGradesMap(List<SynergyGrade> gradesList, List<Assignment> assignments, List<Person> students) {
         Map<Long, Map<Long, Double>> gradesMap = new HashMap<>();
 
-        // Ok so these are the default vals
+        // Default values
         for (Assignment assignment : assignments) {
             gradesMap.put(assignment.getId(), new HashMap<>());
             for (Person student : students) {
@@ -101,6 +141,7 @@ public class SynergyViewController {
             }
         }
 
+        // Create the map
         for (SynergyGrade grade : gradesList) {
             if (gradesMap.containsKey(grade.getAssignment().getId())) {
                 gradesMap.get(grade.getAssignment().getId()).put(grade.getStudent().getId(), grade.getGrade());

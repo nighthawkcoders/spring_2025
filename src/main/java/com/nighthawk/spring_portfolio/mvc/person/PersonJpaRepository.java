@@ -33,9 +33,15 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
      * Spring Data JPA will automatically generate a query using the method name.
      */
     Person findByEmail(String email);
+    
     List<Person> findAllByOrderByNameAsc();
+
     List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
+    
     Person findByEmailAndPassword(String email, String password);
+
+    boolean existsByEmail(String email);
+
     /**
      * Custom JPA query using the @Query annotation.
      * This allows for more complex queries that can't be expressed through the method name.

@@ -14,7 +14,7 @@
 
 - Starter code should be fun and practical
 - Organize with Bootstrap menu 
-- Add some color and fun through VANTA Visuals (birds, halo, solar, net)
+- Add some color and fun through VANTA Visuals (, halo, solar, net)
 - Show some practical and fun links (hrefs) like Twitter, Git, Youtube
 - Show student project specific links (hrefs) per page
 - Show student About me pages
@@ -31,3 +31,8 @@
 
 - A ".gitignore" can teach a Developer a lot about Java runtime.  A target directory is created when you press play button, byte code is generated and files are moved into this location.
 - "pom.xml" file can teach you a lot about Java dependencies.  This is similar to "requirements.txt" file in Python.  It manages packages and dependencies.
+
+## .env files
+- In order to run this project locally, a .env file should be set up with the approprate variables:
+- GAMIFY_API_URL
+- GAMIFY_API_KEY

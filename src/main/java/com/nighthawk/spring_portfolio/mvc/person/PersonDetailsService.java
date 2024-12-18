@@ -31,11 +31,14 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
     @Autowired // Inject PasswordEncoder
     private PasswordEncoder passwordEncoder;
 
-    /* loadUserByUsername Overrides and maps Person & Roles POJO into Spring Security */
+    /*
+     * loadUserByUsername Overrides and maps Person & Roles POJO into Spring
+     * Security
+     */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Person person = personJpaRepository.findByEmail(email); // setting variable user equal to the method finding the username in the database
-        if(person==null) {
+        if (person == null) {
 			throw new UsernameNotFoundException("User not found with username: " + email);
         }
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -49,22 +52,22 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
 
     /* Person Section */
 
-    public  List<Person>listAll() {
+    public List<Person> listAll() {
         return personJpaRepository.findAllByOrderByNameAsc();
     }
 
     // custom query to find match to name or email
-    public  List<Person>list(String name, String email) {
+    public List<Person> list(String name, String email) {
         return personJpaRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(name, email);
     }
 
     // custom query to find anything containing term in name or email ignoring case
-    public  List<Person>listLike(String term) {
+    public List<Person> listLike(String term) {
         return personJpaRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(term, term);
     }
 
     // custom query to find anything containing term in name or email ignoring case
-    public  List<Person>listLikeNative(String term) {
+    public List<Person> listLikeNative(String term) {
         String like_term = String.format("%%%s%%",term);  // Like required % rappers
         return personJpaRepository.findByLikeTermNative(like_term);
     }
@@ -90,7 +93,7 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
     }
 
     public void defaults(String password, String roleName) {
-        for (Person person: listAll()) {
+        for (Person person : listAll()) {
             if (person.getPassword() == null || person.getPassword().isEmpty() || person.getPassword().isBlank()) {
                 person.setPassword(passwordEncoder.encode(password));
             }
@@ -103,7 +106,7 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
         }
     }
 
-    public  List<PersonRole>listAllRoles() {
+    public List<PersonRole> listAllRoles() {
         return personRoleJpaRepository.findAll();
     }
 
@@ -111,21 +114,26 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
         return personRoleJpaRepository.findByName(roleName);
     }
 
+    
     public void addRoleToPerson(String email, String roleName) { // by passing in the two strings you are giving the user that certain role
         Person person = personJpaRepository.findByEmail(email);
-        if (person != null) {   // verify person
+        if (person != null) { // verify person
             PersonRole role = personRoleJpaRepository.findByName(roleName);
             if (role != null) { // verify role
                 boolean addRole = true;
-                for (PersonRole roleObj : person.getRoles()) {    // only add if user is missing role
+                for (PersonRole roleObj : person.getRoles()) { // only add if user is missing role
                     if (roleObj.getName().equals(roleName)) {
                         addRole = false;
                         break;
                     }
                 }
-                if (addRole) person.getRoles().add(role);   // everything is valid for adding role
+                if (addRole)
+                    person.getRoles().add(role); // everything is valid for adding role
             }
         }
     }
-    
+
+    public boolean existsByEmail(String email) {  // check if email in db
+        return personJpaRepository.existsByEmail(email);
+    }
 }

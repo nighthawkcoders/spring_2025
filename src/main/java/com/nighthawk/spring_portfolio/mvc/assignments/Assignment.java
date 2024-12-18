@@ -4,11 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
 import jakarta.persistence.Column;
@@ -67,8 +65,8 @@ public class Assignment {
     @NotNull
     private Double points;
 
-    @Convert(converter = QueueConverter.class)
-    private Queue assignmentQueue;
+    @Convert(converter = AssignmentQueueConverter.class)
+    private AssignmentQueue assignmentQueue;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -102,7 +100,7 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        this.assignmentQueue = new Queue();
+        this.assignmentQueue = new AssignmentQueue();
     }
 
     public static Assignment[] init() {

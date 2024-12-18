@@ -2,6 +2,7 @@ package com.nighthawk.spring_portfolio.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -12,6 +13,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
+import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
+import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
+import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
+import com.nighthawk.spring_portfolio.mvc.bathroom.TeacherJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import com.nighthawk.spring_portfolio.mvc.bathroom.TinkleJPARepository;
+import com.nighthawk.spring_portfolio.mvc.comment.Comment;
+import com.nighthawk.spring_portfolio.mvc.comment.CommentJPA;
 import com.nighthawk.spring_portfolio.mvc.jokes.Jokes;
 import com.nighthawk.spring_portfolio.mvc.jokes.JokesJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.note.Note;
@@ -25,10 +40,6 @@ import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestio
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -39,6 +50,11 @@ public class ModelInit {
     @Autowired PersonDetailsService personDetailsService;
     @Autowired PersonJpaRepository personJpaRepository;
     @Autowired AnnouncementJPA announcementJPA;
+    @Autowired CommentJPA CommentJPA;
+    @Autowired TinkleJPARepository tinkleJPA;
+    @Autowired BathroomQueueJPARepository queueJPA;
+    @Autowired TeacherJpaRepository teacherJPARepository;
+    @Autowired IssueJPARepository issueJPARepository;
     @Autowired AdventureQuestionJpaRepository questionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
@@ -46,13 +62,12 @@ public class ModelInit {
 
     @Bean
     @Transactional
-    CommandLineRunner run() {  // The run() method will be executed after the application starts
+    CommandLineRunner run() {
         return args -> {
             
-            // Announcement API is populated with starting announcements
             List<Announcement> announcements = Announcement.init();
             for (Announcement announcement : announcements) {
-                Announcement announcementFound = announcementJPA.findByAuthor(announcement.getAuthor());  // JPA lookup
+                Announcement announcementFound = announcementJPA.findByAuthor(announcement.getAuthor());  
                 if (announcementFound == null) {
                     announcementJPA.save(new Announcement(announcement.getAuthor(), announcement.getTitle(), announcement.getBody(), announcement.getTags())); // JPA save
                 }
@@ -65,6 +80,13 @@ public class ModelInit {
                     questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
+            List<Comment> Comments = Comment.init();
+            for (Comment Comment : Comments) {
+                List<Comment> CommentFound = CommentJPA.findByAssignment(Comment.getAssignment()); 
+                if (CommentFound.isEmpty()) {
+                    CommentJPA.save(new Comment(Comment.getAssignment(), Comment.getAuthor(), Comment.getText())); // JPA save
+                }
+            }
 
             User[] userArray = User.init();
             for (User user : userArray) {
@@ -74,45 +96,84 @@ public class ModelInit {
                 }
             }
 
-            // Joke database is populated with starting jokes
             String[] jokesArray = Jokes.init();
             for (String joke : jokesArray) {
                 List<Jokes> jokeFound = jokesRepo.findByJokeIgnoreCase(joke);  // JPA lookup
-                if (jokeFound.size() == 0)
-                    jokesRepo.save(new Jokes(null, joke, 0, 0)); //JPA save
+                if (jokeFound.size() == 0) {
+                    jokesRepo.save(new Jokes(null, joke, 0, 0)); // JPA save
+                }
             }
 
-            // Person database is populated with starting people
             Person[] personArray = Person.init();
             for (Person person : personArray) {
-                // Name and email are used to lookup the person
                 List<Person> personFound = personDetailsService.list(person.getName(), person.getEmail());  // lookup
-                if (personFound.size() == 0) { // add if not found
-                    // Roles are added to the database if they do not exist
+                if (personFound.size() == 0) { 
                     List<PersonRole> updatedRoles = new ArrayList<>();
                     for (PersonRole role : person.getRoles()) {
-                        // Name is used to lookup the role
                         PersonRole roleFound = roleJpaRepository.findByName(role.getName());  // JPA lookup
-                        if (roleFound == null) { // add if not found
-                            // Save the new role to database
+                        if (roleFound == null) {
                             roleJpaRepository.save(role);  // JPA save
                             roleFound = role;
                         }
-                        // Accumulate reference to role from database
                         updatedRoles.add(roleFound);
                     }
                     // Update person with roles from role databasea
                     person.setRoles(updatedRoles); // Object reference is updated
 
-                    // Save person to database
                     personDetailsService.save(person); // JPA save
 
-                    // Add a "test note" for each new person
                     String text = "Test " + person.getEmail();
-                    Note n = new Note(text, person);  // constructor uses new person as Many-to-One association
+                    Note n = new Note(text, person);  
                     noteRepo.save(n);  // JPA Save                  
                 }
             }
+
+            Tinkle[] tinkleArray = Tinkle.init(personArray);
+            for(Tinkle tinkle: tinkleArray)
+            {
+                // List<Tinkle> tinkleFound = 
+                Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPerson_name());
+                if(tinkleFound.isEmpty())
+                {
+                    tinkleJPA.save(tinkle);
+                }
+            }
+
+            BathroomQueue[] queueArray = BathroomQueue.init();
+            for(BathroomQueue queue: queueArray)
+            {
+                // List<Tinkle> tinkleFound = 
+                Optional<BathroomQueue> queueFound = queueJPA.findByTeacherEmail(queue.getTeacherEmail());
+                if(queueFound.isEmpty())
+                {
+                    queueJPA.save(queue);
+                }
+            }
+
+            // Teacher API is populated with starting announcements
+            List<Teacher> teachers = Teacher.init();
+            for (Teacher teacher : teachers) {
+                List<Teacher> existTeachers = teacherJPARepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase(teacher.getFirstname(), teacher.getLastname());
+                if(existTeachers.isEmpty())
+                teacherJPARepository.save(teacher); // JPA save
+            }
+            // Issue database initialization
+            Issue[] issueArray = Issue.init();
+            for (Issue issue : issueArray) {
+                List<Issue> issueFound = issueJPARepository.findByIssueAndBathroomIgnoreCase(issue.getIssue(), issue.getBathroom());
+                if (issueFound.isEmpty()) {
+                    issueJPARepository.save(issue);
+                }
+            }
+            // ArrayList<Tinkle> tinkles = new ArrayList<>();
+            // for(Person person: personArray)
+            // {
+            //     tinkles.add(new Tinkle(person, "2"));
+            // }
+            // for(Tinkle tinkle: tinkles)
+            // {
+            //     tinkleJPA.save(tinkle);
+            // }
 
             // Assignment database is populated with sample assignments
             Assignment[] assignmentArray = Assignment.init();
@@ -123,7 +184,7 @@ public class ModelInit {
                     assignmentJpaRepository.save(newAssignment);
 
                     // create sample submission
-                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission"));
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission","test comment"));
                 }
             }
         };

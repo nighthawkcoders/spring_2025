@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,7 +32,11 @@ import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
 import lombok.Getter;
 
-
+/**
+ * This class provides RESTful API endpoints for managing Person entities.
+ * It includes endpoints for creating, retrieving, updating, and deleting Person
+ * entities.
+ */
 @RestController
 @RequestMapping("/api")
 public class PersonApiController {
@@ -62,8 +67,12 @@ public class PersonApiController {
      *         NOT_FOUND status if not found.
      */
     @GetMapping("/person/get")
-    public ResponseEntity<Person> getPerson(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    public ResponseEntity<Person> getPerson(@AuthenticationPrincipal UserDetails userDetails) {
+        // Check if the user is not logged in
+        if (userDetails == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username

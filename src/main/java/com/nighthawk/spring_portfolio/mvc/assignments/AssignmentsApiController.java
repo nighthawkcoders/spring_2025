@@ -152,11 +152,13 @@ public class AssignmentsApiController {
     public ResponseEntity<?> submitAssignment(
             @PathVariable Long assignmentId,
             @RequestParam Long studentId,
-            @RequestParam String content) {
+            @RequestParam String content,
+            @RequestParam String comment
+            ) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
-            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content,comment);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
@@ -177,7 +179,7 @@ public class AssignmentsApiController {
     }
 
     @GetMapping("/getQueue/{id}")
-    public ResponseEntity<Queue> getQueue(@PathVariable long id) {
+    public ResponseEntity<AssignmentQueue> getQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();

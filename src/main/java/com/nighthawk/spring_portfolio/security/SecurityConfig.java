@@ -10,10 +10,22 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
-
 /*
 * To enable HTTP Security in Spring
 */
+
+/*
+ * THIS FILE IS IMPORTANT
+ * 
+ * you can configure which http requests need to be authenticated or not
+ * for example, you can change the /authenticate to "authenticated()" or "permitAll()"
+ * --> obviously, you want to set it to permitAll() so anyone can login. it doesn't make sense
+ *     to have to login first before authenticating!
+ * 
+ * another example is /mvc/person/create/** which i changed to permitAll() so anyone can make an account.
+ * it doesn't make sense to have to login to make your account!
+ */
+
 @Configuration
 public class SecurityConfig {
 
@@ -61,9 +73,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/mvc/person/search/**").authenticated()
                         .requestMatchers("/mvc/person/create/**").permitAll()
-                        .requestMatchers("/mvc/person/read/**").authenticated()
+                        .requestMatchers("/mvc/person/read/**").permitAll()
                         .requestMatchers("/mvc/person/update/**").authenticated()
                         .requestMatchers("/mvc/person/delete/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/mvc/bathroom/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/authenticateForm").permitAll()
                         .requestMatchers("/mvc/synergy/**").authenticated()
