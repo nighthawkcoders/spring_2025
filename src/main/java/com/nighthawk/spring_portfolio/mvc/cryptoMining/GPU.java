@@ -24,6 +24,6 @@ public class GPU {
     }
     
     public double getHashRate() {
-        return this.hashRate;
+        return this.hashRate; // Ensure this matches the field name
     }
 }

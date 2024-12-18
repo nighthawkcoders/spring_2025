@@ -69,7 +69,7 @@ public class PokerApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Person not found
         }
 
-        double currentBalance = person.getBalance();
+        double currentBalance = person.getBalanceDouble();
 
         // Deal hands for the game
         pokerBoard.dealHands();
@@ -81,7 +81,7 @@ public class PokerApiController {
         double updatedBalance = currentBalance + winnings;
 
         // Update the person's balance in the database
-        person.setBalance(updatedBalance);
+        person.setBalanceString(updatedBalance);
         personJpaRepository.save(person);
 
         // Create and return the response object with game results and updated balance

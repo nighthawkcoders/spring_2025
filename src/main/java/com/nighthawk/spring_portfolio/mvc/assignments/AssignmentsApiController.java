@@ -199,7 +199,7 @@ public class AssignmentsApiController {
     }
 
     @GetMapping("/getQueue/{id}")
-    public ResponseEntity<Queue> getQueue(@PathVariable long id) {
+    public ResponseEntity<AssignmentQueue> getQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();

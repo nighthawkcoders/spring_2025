@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.nighthawk.spring_portfolio.mvc.user.User;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 public interface BlackjackJpaRepository extends JpaRepository<Blackjack, Long> {
-    Optional<Blackjack> findFirstByUserAndStatusOrderByIdDesc(User user, String status);
+    Optional<Blackjack> findFirstByPersonAndStatusOrderByIdDesc(Person person, String status);
 }

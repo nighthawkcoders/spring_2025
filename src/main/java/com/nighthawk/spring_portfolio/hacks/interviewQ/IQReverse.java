@@ -192,14 +192,14 @@ public class IQReverse {
      * Return .reduce: 54321
      */
     public static int reverseNumber4(int number) {
-        // observe "Method Chaining" for interate, map, and reduce
+        // observe "Method Chaining" for interate, map, and reduce until n = 0
         return java.util.stream.IntStream
                 .iterate(number, n -> n != 0, n -> n / 10) // Iterate and divide by 10 until n = 0
                 .map(n -> n % 10) // Maps each iteration to the last digit, one's place
                 .reduce(0, (a, b) -> a * 10 + b); // Reduce the stream to a single integer
-                // a: accumulated value, starts with 0
-                // b: current digit in the stream
-                // a * 10 + b: shift the accumulated value to the left and add the current digit
+                // a: accumulated value, starts with 0 increasing by each a * 10 + b calculation
+                // b: current digit in the stream from n % 10
+                // returns: the accumulated value "a" as the reversed number at end of stream
     }
 
     // Main method to test the reverseString methods

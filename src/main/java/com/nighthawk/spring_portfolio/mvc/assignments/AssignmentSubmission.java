@@ -38,9 +38,7 @@ public class AssignmentSubmission {
     private String comment;
 
     private long assignmentid;
-
     
-
     public AssignmentSubmission(Assignment assignment, Person student, String content, String comment) {
         this.assignment = assignment;
         this.student = student;

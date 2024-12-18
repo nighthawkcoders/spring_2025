@@ -92,7 +92,7 @@ public class SlackController {
                 messageService.saveMessage(messageContent);
                 // Saving message to db table
                 System.out.println("Message saved to database: " + messageContent);
-                String calendarUrl = "http://localhost:8085/api/calendar/add";
+                String calendarUrl = "/api/calendar/add";
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Content-Type", "application/json");
                 // Sending data to be processed by the calendar API

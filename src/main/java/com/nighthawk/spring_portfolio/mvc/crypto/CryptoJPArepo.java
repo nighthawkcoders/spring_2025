@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.crypto.cryptoFetch;
+package com.nighthawk.spring_portfolio.mvc.crypto;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
