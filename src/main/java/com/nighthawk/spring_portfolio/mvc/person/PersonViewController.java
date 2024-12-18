@@ -3,6 +3,8 @@ package com.nighthawk.spring_portfolio.mvc.person;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -61,25 +63,88 @@ public class PersonViewController {
     }
 
     @PostMapping("/update")
-    public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
-        // Validation of Decorated PersonForm attributes
-        if (bindingResult.hasErrors()) {
-            return "person/update";
-        }
-        repository.save(person);
-        repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
-
-        // Redirect to next step
-        return "redirect:/mvc/person/read";
+public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult) {
+    // Check authentication and user details
+    if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+        return "redirect:/e#unauthorized"; // Redirect if authentication is null or invalid
     }
 
-    @GetMapping("/delete/{id}")
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    boolean isAdmin = userDetails.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+    // Retrieve the person to update by email
+    Person personToUpdate = repository.getByEmail(person.getEmail());
+    if (personToUpdate == null) {
+        return "redirect:/e#email_does_not_exist"; // Redirect if the person does not exist
+    }
+
+    // If the user is not an admin, ensure they are updating their own record
+    if (!isAdmin) {
+        Person currentUser = repository.getByEmail(userDetails.getUsername());
+        if (currentUser == null || !currentUser.getId().equals(personToUpdate.getId())) {
+            return "redirect:/e#unauthorized"; // Redirect if not authorized
+        }
+    }
+
+    // Update fields only if the new values are provided
+    boolean updated = false;
+   
+
+    if (person.getPassword() != null && !person.getPassword().isEmpty()) {
+        personToUpdate.setPassword(person.getPassword());
+        updated = true;
+    }
+    if (person.getName() != null && !person.getName().isEmpty()) {
+        personToUpdate.setName(person.getName());
+        updated = true;
+    }
+
+    if (person.getEmail() != null && !person.getEmail().isEmpty()) {
+        // Check if the new email already exists to avoid conflicts
+        Person existingPerson = repository.getByEmail(person.getEmail());
+        if (existingPerson != null && !existingPerson.getId().equals(personToUpdate.getId())) {
+            return "redirect:/e#email_already_in_use"; // Redirect if email is already taken
+        }
+        }
+
+    if (person.getDob() != null) {
+        personToUpdate.setDob(person.getDob());
+        updated = true;
+    }
+    if (person.getPfp() != null && !person.getPfp().isEmpty()) {
+        personToUpdate.setPfp(person.getPfp());
+        updated = true;
+    }
+    if (person.getKasmServerNeeded() != null) {
+        personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
+        updated = true;
+    }
+
+    // If no attributes were updated, inform the user
+    if (!updated) {
+        return "redirect:/e#no_changes_detected";
+    }
+
+    // Save the updated person to the repository
+    repository.save(personToUpdate);
+
+    // Assign roles if necessary
+    repository.addRoleToPerson(person.getEmail(), "ROLE_USER");
+    repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
+
+    // Redirect to the read page after successfully saving the changes
+    return "redirect:/mvc/person/read";
+}
+
+
+
+@GetMapping("/delete/{id}")
     public String personDelete(@PathVariable("id") long id) {
         repository.delete(id);
         return "redirect:/mvc/person/read";
     }
-
-    @GetMapping("/search")
+ @GetMapping("/search")
     public String person() {
         return "person/search";
     }
