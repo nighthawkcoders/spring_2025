@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nighthawk.spring_portfolio.mvc.announcement.Announcement;
 import com.nighthawk.spring_portfolio.mvc.announcement.AnnouncementJPA;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
@@ -32,14 +36,10 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.Question;
-import com.nighthawk.spring_portfolio.mvc.rpg.question.QuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -55,7 +55,7 @@ public class ModelInit {
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
     @Autowired IssueJPARepository issueJPARepository;
-    @Autowired QuestionJpaRepository questionJpaRepository;
+    @Autowired AdventureQuestionJpaRepository adventurequestionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
@@ -81,11 +81,11 @@ public class ModelInit {
                 }
             }
             
-            Question[] questionArray = Question.init();
-            for (Question question : questionArray) {
-                Question questionFound = questionJpaRepository.findByTitle(question.getTitle());
+            AdventureQuestion[] questionArray = AdventureQuestion.init();
+            for (AdventureQuestion question : questionArray) {
+                AdventureQuestion questionFound = adventurequestionJpaRepository.findByTitle(question.getTitle());
                 if (questionFound == null) {
-                    questionJpaRepository.save(new Question(question.getTitle(), question.getContent(), question.getPoints()));
+                    adventurequestionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
 
