@@ -52,6 +52,11 @@ public class SynergyGradeRequest {
         this.status = 0;
     }
 
+    @Override
+    public String toString() {
+        return "SynergyGradeRequest{id=" + id + ", explanation=" + explanation + ", gradeSuggestion=" + gradeSuggestion + ", status=" + status + ", grader=" + grader.getName() + ", student=" + student.getName() + ", assignment=" + assignment.getName() + "}";
+    }
+
     public void accept() {
         this.status = 1;
     }
