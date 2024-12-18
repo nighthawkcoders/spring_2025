@@ -401,6 +401,37 @@
     function closeSubmissionsModal() {
         document.getElementById('submissionsModal').style.display = 'none';
     }
+
+    function gradeSubmission(submissionId) {
+        const grade = prompt('Enter grade:');
+        const feedback = prompt('Enter feedback (optional):');
+
+        if (grade !== null) {
+            const params = new URLSearchParams({
+                grade,
+                feedback: feedback || ''
+            });
+
+            fetch(`/api/submissions/grade/${submissionId}`, {
+                method: 'POST',
+                body: params
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Submission graded successfully');
+                    // Optionally, refresh the submissions list or update the view
+                    // You might want to implement a function to refresh the current view
+                } else {
+                    throw new Error('Grading failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error grading submission:', error);
+                alert('Failed to grade submission');
+            });
+        }
+    }
+
 </script>
 </th:block>
 </html>
