@@ -55,7 +55,7 @@ public class ModelInit {
     @Autowired BathroomQueueJPARepository queueJPA;
     @Autowired TeacherJpaRepository teacherJPARepository;
     @Autowired IssueJPARepository issueJPARepository;
-    @Autowired AdventureQuestionJpaRepository adventurequestionJpaRepository;
+    @Autowired AdventureQuestionJpaRepository questionJpaRepository;
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
@@ -73,19 +73,18 @@ public class ModelInit {
                 }
             }
 
+            AdventureQuestion[] questionArray = AdventureQuestion.init();
+            for (AdventureQuestion question : questionArray) {
+                AdventureQuestion questionFound = questionJpaRepository.findByTitle(question.getTitle());
+                if (questionFound == null) {
+                    questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
+                }
+            }
             List<Comment> Comments = Comment.init();
             for (Comment Comment : Comments) {
                 List<Comment> CommentFound = CommentJPA.findByAssignment(Comment.getAssignment()); 
                 if (CommentFound.isEmpty()) {
                     CommentJPA.save(new Comment(Comment.getAssignment(), Comment.getAuthor(), Comment.getText())); // JPA save
-                }
-            }
-            
-            AdventureQuestion[] questionArray = AdventureQuestion.init();
-            for (AdventureQuestion question : questionArray) {
-                AdventureQuestion questionFound = adventurequestionJpaRepository.findByTitle(question.getTitle());
-                if (questionFound == null) {
-                    adventurequestionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
 

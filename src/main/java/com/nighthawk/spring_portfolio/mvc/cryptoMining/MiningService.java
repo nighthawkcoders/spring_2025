@@ -16,18 +16,34 @@ public class MiningService {
     @Autowired
     private GPURepository gpuRepository;
 
+    private static final double costPerKWh = 0.12; // Example value, adjust as needed
+
     @Scheduled(fixedRate = 60000) // Every minute
+    @Transactional
     public void processMining() {
         List<MiningUser> activeMiners = miningUserRepository.findAll().stream()
             .filter(MiningUser::isMining)
             .collect(Collectors.toList());
             
+        System.out.println("Processing mining for " + activeMiners.size() + " active miners");
+            
         for (MiningUser miner : activeMiners) {
             double hashrate = miner.getCurrentHashrate();
-            double btcMined = hashrate * 60 / (1e12); // Example calculation
+            
+            double btcMined = hashrate * 0.00000001;
+            int newShares = (int)(hashrate * 0.1);
+            
             miner.setPendingBalance(miner.getPendingBalance() + btcMined);
-            miner.setShares(miner.getShares() + 1);
+            miner.setShares(miner.getShares() + newShares);
+            
             miningUserRepository.save(miner);
+            
+            System.out.println("Mining Update for user: " + miner.getPerson().getEmail());
+            System.out.println("Active GPUs: " + miner.getActiveGPUs().size());
+            System.out.println("Total Hashrate: " + hashrate + " MH/s");
+            System.out.println("BTC Mined this minute: " + btcMined);
+            System.out.println("New Pending Balance: " + miner.getPendingBalance());
+            System.out.println("Total Shares: " + miner.getShares());
         }
     }
 
@@ -45,5 +61,21 @@ public class MiningService {
             "message", "Successfully purchased " + gpu.getName(),
             "newBalance", user.getBtcBalance()
         );
+    }
+
+    public void calculateProfitability(MiningUser miner) {
+        double totalRevenue = 0.0;
+        double totalPowerCost = 0.0;
+    
+        for (GPU gpu : miner.getActiveGPUs()) {
+            double dailyRevenue = (gpu.getHashRate() * 86400) * 0.00000001; // Adjust as needed
+            double dailyPowerCost = (gpu.getPowerConsumption() * 24) * costPerKWh; // Adjust costPerKWh as needed
+    
+            totalRevenue += dailyRevenue;
+            totalPowerCost += dailyPowerCost;
+        }
+    
+        miner.setDailyRevenue(totalRevenue);
+        miner.setPowerCost(totalPowerCost);
     }
 }

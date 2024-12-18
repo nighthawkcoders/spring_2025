@@ -37,12 +37,13 @@ public class DiceApiController {
         
         Person user = personJpaRepository.findByEmail(diceRequest.getEmail());
 
-        double currentBalance = user.getBalance();
-        System.out.println(user.getBalance());
-        user.setBalance(currentBalance + dice.calculateWin());
+        double currentBalance = user.getBalanceDouble();
+        System.out.println(user.getBalanceDouble());
+        double updatedBalance = currentBalance - diceRequest.getBetSize();
+        user.setBalanceString(updatedBalance);
         personJpaRepository.save(user);  // Save the updated balance
 
-        return new ResponseEntity<>(user.getBalance(), HttpStatus.OK);  // Return updated user data
+        return new ResponseEntity<>(user.getBalanceDouble(), HttpStatus.OK);  // Return updated user data
     }
 
 }

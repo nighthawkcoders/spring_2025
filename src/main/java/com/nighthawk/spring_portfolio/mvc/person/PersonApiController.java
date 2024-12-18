@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
@@ -148,6 +148,7 @@ public class PersonApiController {
         private String name;
         private String dob;
         private String pfp;
+        private double balance;
         private Boolean kasmServerNeeded; 
     }
 
@@ -168,11 +169,12 @@ public class PersonApiController {
             return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
         }
         // A person object WITHOUT ID will create a new record in the database
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER", true, personDetailsService.findRole("USER"));
+        String startingBalance = "100000";
+        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
-        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", person);
+        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person);
         userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -327,6 +329,29 @@ public class PersonApiController {
 
         // Return NOT_FOUND if the person with the given ID does not exist
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    
+    /**
+     * Retrieves the balance of a Person entity by its ID.
+     *
+     * @param id The ID of the Person entity whose balance is to be fetched.
+     * @return A ResponseEntity containing the balance if found, or a NOT_FOUND status if the person does not exist.
+     */
+    @GetMapping("/person/{id}/balance")
+    public ResponseEntity<Object> getBalance(@PathVariable long id) {
+        Optional<Person> optional = repository.findById(id);
+        if (optional.isPresent()) {
+            Person person = optional.get();
+
+        // Assuming there is a getBalance() method or a balance field in Person
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", person.getId());
+            response.put("name", person.getName());
+            response.put("balance", person.getBalance()); // Replace with actual logic if needed
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Person not found", HttpStatus.NOT_FOUND);
     }
 
     /**
