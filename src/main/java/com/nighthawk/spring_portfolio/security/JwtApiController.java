@@ -65,6 +65,7 @@ public class JwtApiController {
 			.secure(true)
 			.path("/")
 			.maxAge(3600)
+			.domain("nighthawkcoders.github.io")
 			.sameSite("None; Secure")
 			.build();
 
