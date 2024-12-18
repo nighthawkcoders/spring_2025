@@ -35,6 +35,7 @@ public class BathroomQueueApiController {
     public static class QueueDto {
         private String teacherEmail; // The email of the teacher associated with the queue
         private String studentName;  // The name of the student to be added or removed
+        private String uri;
     }
 
     @PostMapping("/add")
@@ -53,7 +54,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherEmail(), HttpStatus.CREATED);
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4100")
+    @CrossOrigin(origins = "*")
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
@@ -73,7 +74,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4100")
+    @CrossOrigin(origins = "*")
     @PostMapping("/approve")
     public ResponseEntity<Object> approveStudent(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
@@ -103,7 +104,7 @@ public class BathroomQueueApiController {
                 try {
                     String encodedTeacherEmail = URLEncoder.encode(queueDto.getTeacherEmail(), StandardCharsets.UTF_8.toString());
                     String encodedStudentName = URLEncoder.encode(queueDto.getStudentName(), StandardCharsets.UTF_8.toString());
-                    String approvalLink = "http://localhost:8085/api/queue/approveLink?teacherEmail=" 
+                    String approvalLink = queueDto.getUri()+ "/api/queue/approveLink?teacherEmail=" 
                         + encodedTeacherEmail 
                         + "&studentName=" 
                         + encodedStudentName;
@@ -157,7 +158,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
     }
    
-    @CrossOrigin(origins = "http://localhost:8085")
+    @CrossOrigin(origins = "*")
     @GetMapping("/getActive")
     public ResponseEntity<Object> getActiveQueues() {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
