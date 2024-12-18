@@ -41,7 +41,7 @@
                 <div class="collapse navbar-collapse" id="navbarNavDarkDropdown2">
                     <ul class="navbar-nav">
                         <!-- Check if the user is authenticated -->
-                        <li class="nav-item dropdown" th:if="${#authentication.principal != null}">
+                        <li class="nav-item dropdown"  sec:authorize="isAuthenticated()">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Database
                             </a>
