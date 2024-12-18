@@ -21,4 +21,6 @@ public interface MediaJpaRepository extends JpaRepository<Score, Long> {
     // Retrieve the top score (first place)
     @Query("SELECT s FROM Score s ORDER BY s.score DESC LIMIT 1")
     Score findFirstPlace();
+
+    void save(String Joke);
 }

@@ -1,5 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.media;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,29 +27,19 @@ public class Scores {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-
-    @Column(unique=true)
+    @Column(unique = true)
     private int uid;
     private String person_name;
     private String className; // CSA, CSP, CSSE, or Other
     private int score;
 
-    // Score getter method
-    public Integer getScore() {
-        return this.score;
-    }
+    @Autowired
+    private MediaJpaRepository mediaJpaRepository;
 
-    // Person name getter method
-    public String getPersonName() {
-        return this.person_name;
-    }
-
-    // uid getter method
-    public int getUid() {
-        return this.uid;
-    }
-
-    public static Score init() {
-        return new Score("John Doe", 100);
+    // Initialize a score object and save it
+    public Score init() {
+        Score score = new Score("John Doe", 100);
+        mediaJpaRepository.save(score);
+        return score;
     }
 }
