@@ -25,6 +25,8 @@ public class MiningUser {
     private String currentPool = "nicehash";
     private int shares = 0;
     private double currentHashrate = 0.0;
+    private double dailyRevenue;
+    private double powerCost;
     
     @ManyToMany
     private List<GPU> ownedGPUs = new ArrayList<>();
@@ -123,5 +125,22 @@ public class MiningUser {
         } else {
             updateHashrate();
         }
+    }
+    
+
+    public double getDailyRevenue() {
+        return dailyRevenue;
+    }
+
+    public void setDailyRevenue(double dailyRevenue) {
+        this.dailyRevenue = dailyRevenue;
+    }
+
+    public double getPowerCost() {
+        return powerCost;
+    }
+
+    public void setPowerCost(double powerCost) {
+        this.powerCost = powerCost;
     }
 }

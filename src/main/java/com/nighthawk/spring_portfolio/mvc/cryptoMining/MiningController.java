@@ -24,6 +24,9 @@ public class MiningController {
     @Autowired
     private GPURepository gpuRepository;
 
+    @Autowired
+    private MiningService miningService;
+
     private MiningUser getOrCreateMiningUser() {
         // Get authentication details
         var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -75,6 +78,9 @@ public class MiningController {
         try {
             MiningUser user = getOrCreateMiningUser();
             
+            // Calculate profitability
+            miningService.calculateProfitability(user); // Ensure profitability is calculated
+    
             Map<String, Object> stats = new HashMap<>();
             stats.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
             stats.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
@@ -94,12 +100,16 @@ public class MiningController {
                     gpuInfo.put("id", gpu.getId());
                     gpuInfo.put("name", gpu.getName());
                     gpuInfo.put("hashrate", gpu.getHashRate());
-                    gpuInfo.put("power", gpu.getPowerConsumption());
+                    gpuInfo.put("power", gpu.getPowerConsumption()); // Use powerConsumption
                     gpuInfo.put("temp", gpu.getTemp());
                     return gpuInfo;
                 })
                 .collect(Collectors.toList());
             stats.put("activeGPUs", activeGpus);
+            
+            // Add profitability stats
+            stats.put("dailyRevenue", user.getDailyRevenue()); // Ensure this method exists
+            stats.put("powerCost", user.getPowerCost()); // Ensure this method exists
             
             System.out.println("Returning stats: " + stats); // Debug log
             
@@ -220,4 +230,30 @@ public class MiningController {
                 .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/testMining")
+        public ResponseEntity<?> testMining() {
+            try {
+                MiningUser user = getOrCreateMiningUser(); // Get or create the mining user
+                user.setMining(true); // Ensure the user is set to mining
+
+                // Simulate a hashrate for testing
+                user.setCurrentHashrate(60.55); // Set hashrate to 60.55 MH/s
+
+                // Call the mining process
+                miningService.processMining(); // This should update the user's balance and shares
+
+                // Prepare the response
+                Map<String, Object> response = new HashMap<>();
+                response.put("btcBalance", user.getBtcBalance());
+                response.put("pendingBalance", user.getPendingBalance());
+                response.put("shares", user.getShares());
+                response.put("message", "Mining test completed successfully.");
+
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+            }
+        }
 }

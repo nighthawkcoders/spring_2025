@@ -17,6 +17,8 @@ public class MiningService {
     @Autowired
     private GPURepository gpuRepository;
 
+    private static final double costPerKWh = 0.12; // Example value, adjust as needed
+
     @Scheduled(fixedRate = 60000) // Every minute
     @Transactional
     public void processMining() {
@@ -60,5 +62,21 @@ public class MiningService {
             "message", "Successfully purchased " + gpu.getName(),
             "newBalance", user.getBtcBalance()
         );
+    }
+
+    public void calculateProfitability(MiningUser miner) {
+        double totalRevenue = 0.0;
+        double totalPowerCost = 0.0;
+    
+        for (GPU gpu : miner.getActiveGPUs()) {
+            double dailyRevenue = (gpu.getHashRate() * 86400) * 0.00000001; // Adjust as needed
+            double dailyPowerCost = (gpu.getPowerConsumption() * 24) * costPerKWh; // Adjust costPerKWh as needed
+    
+            totalRevenue += dailyRevenue;
+            totalPowerCost += dailyPowerCost;
+        }
+    
+        miner.setDailyRevenue(totalRevenue);
+        miner.setPowerCost(totalPowerCost);
     }
 }
