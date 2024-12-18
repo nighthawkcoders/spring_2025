@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
      // This mapping returns the leaderboard, it is the default. Might need to change this later and add a leaderboard path.
      @GetMapping("/")
      public ResponseEntity<List<Integer>> getLeaderboard() {
-         List<Integer> scores = mediaJpaRepository.findAllByScoreInc()
-                 .stream()
+         List<Score> scoresList = mediaJpaRepository.findAllByScoreInc();
+         List<Integer> scores = scoresList.stream()
                  .map(Score::getScore)
                  .collect(Collectors.toList());
          return ResponseEntity.ok(scores); // Formatted response entity
@@ -37,17 +37,14 @@ import org.springframework.web.bind.annotation.RestController;
  
      @GetMapping("/firstplace")
      public ResponseEntity<List<Integer>> getFirstPlace() {
-         List<Integer> fpInfo = mediaJpaRepository.findFirstPlaceInfo()
-                 .stream()
-                 .map(Score::getScore)
-                 .collect(Collectors.toList());
-         return ResponseEntity.ok(fpInfo);
+         Score fpInfo = mediaJpaRepository.findFirstPlace();
+         return ResponseEntity.ok(List.of(fpInfo.getScore()));
      }
  
      @GetMapping("/score/{personId}")
      public ResponseEntity<List<Integer>> getScoreByPersonId(@PathVariable Long personId) {
-         List<Integer> personInfo = mediaJpaRepository.findByPersonId(personId)
-                 .stream()
+         List<Score> personInfoList = mediaJpaRepository.findByPersonId(personId);
+         List<Integer> personInfo = personInfoList.stream()
                  .map(Score::getScore)
                  .collect(Collectors.toList());
          return ResponseEntity.ok(personInfo);

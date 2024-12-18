@@ -1,22 +1,24 @@
-
 package com.nighthawk.spring_portfolio.mvc.media;
-
-
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-
-
 public interface MediaJpaRepository extends JpaRepository<Score, Long> {
 
-    @Query("SELECT m FROM Media m ORDER BY m.score ASC")
+    // Retrieve all scores in ascending order
+    @Query("SELECT s FROM Score s ORDER BY s.score ASC")
     List<Score> findAllByScoreInc();
 
-    @Query("SELECT m FROM Media m ORDER BY m.score DESC")
-    List<Score> findFirstPlaceInfo();
+    // Retrieve all scores in descending order
+    @Query("SELECT s FROM Score s ORDER BY s.score DESC")
+    List<Score> findAllByScoreDec();
 
+    // Retrieve scores for a specific person by ID
     List<Score> findByPersonId(Long personId);
+
+    // Retrieve the top score (first place)
+    @Query("SELECT s FROM Score s ORDER BY s.score DESC LIMIT 1")
+    Score findFirstPlace();
 }
