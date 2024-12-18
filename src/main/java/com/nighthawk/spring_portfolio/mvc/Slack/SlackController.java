@@ -30,16 +30,21 @@ public class SlackController {
     @Autowired
     private SlackMessageRepository messageRepository;
 
+    // Constructor
     public SlackController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
+    // Deprecated feature sadly
+    // Was used to get a list of every slack message
     @GetMapping("/slack/")
     public ResponseEntity<List<SlackMessage>> returnSlackData() {
         List<SlackMessage> messages = messageRepository.findAll();
         return ResponseEntity.ok(messages);
     }
 
+    // Deprecated feature sadly
+    // Was used to link the user id of the message sender to their actual name
     @PostMapping("/slack/getUsername")
     public ResponseEntity<String> getUsername(@RequestBody Map<String, String> requestBody) {
         String userId = requestBody.get("userId");
@@ -66,16 +71,18 @@ public class SlackController {
         return ResponseEntity.ok(username);
     }
 
+    // Main message receiver function
     @PostMapping("/slack/events")
     public ResponseEntity<String> handleSlackEvent(@RequestBody SlackEvent payload) {
         if (payload.getChallenge() != null) {
             return ResponseEntity.ok(payload.getChallenge());
         }
-
+    
         try {
             SlackEvent.Event messageEvent = payload.getEvent();
             String eventType = messageEvent.getType();
-
+    
+            // Distinguishing messages from other events
             if ("message".equals(eventType)) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String messageContent = objectMapper.writeValueAsString(messageEvent);
@@ -100,7 +107,7 @@ public class SlackController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+    
         return ResponseEntity.ok("OK");
     }
 

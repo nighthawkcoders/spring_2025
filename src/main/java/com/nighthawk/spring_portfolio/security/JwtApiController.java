@@ -40,6 +40,8 @@ public class JwtApiController {
 	@Autowired
 	private PersonDetailsService personDetailsService;
 
+    // @CrossOrigin(origins = "http://127.0.0.1:4100")
+	@CrossOrigin(origins = "http://localhost:4100")
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
 		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
@@ -59,10 +61,11 @@ public class JwtApiController {
 		}
 
 		final ResponseCookie tokenCookie = ResponseCookie.from("jwt_java_spring", token)
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(3600)
+			.domain("nighthawkcoders.github.io")
 			.sameSite("None; Secure")
 			.build();
 
@@ -92,9 +95,10 @@ public class JwtApiController {
 	
 			// Expire the JWT token immediately by setting a past expiration date
 			ResponseCookie cookie = ResponseCookie.from("jwt_java_spring", "")
-				.httpOnly(true)
+				.httpOnly(false)
 				.secure(true)
 				.path("/")
+				.domain("nighthawkcoders.github.io")
 				.maxAge(0)  // Set maxAge to 0 to expire the cookie immediately
 				.sameSite("None; Secure")
 				.build();

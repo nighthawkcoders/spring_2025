@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -7,13 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +26,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
+import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
 import lombok.Getter;
 
@@ -62,12 +67,16 @@ public class PersonApiController {
      *         NOT_FOUND status if not found.
      */
     @GetMapping("/person/get")
-    public ResponseEntity<Person> getPerson(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    public ResponseEntity<Person> getPerson(@AuthenticationPrincipal UserDetails userDetails) {
+        // Check if the user is not logged in
+        if (userDetails == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);
+        Person person = repository.findByEmail(email);  
 
         // Return the person if found
         if (person != null) {
@@ -124,6 +133,10 @@ public class PersonApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+
+    @Autowired
+    private UserStocksRepository userStocksRepository;
+
     /*
      * DTO (Data Transfer Object) to support POST request for postPerson method
      * .. represents the data in the request body
@@ -135,6 +148,7 @@ public class PersonApiController {
         private String name;
         private String dob;
         private String pfp;
+        private double balance;
         private Boolean kasmServerNeeded; 
     }
 
@@ -155,9 +169,13 @@ public class PersonApiController {
             return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
         }
         // A person object WITHOUT ID will create a new record in the database
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER", true, personDetailsService.findRole("USER"));
+        String startingBalance = "100000";
+        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
+
+        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person);
+        userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -165,54 +183,48 @@ public class PersonApiController {
         JSONObject responseObject = new JSONObject();
         responseObject.put("response",personDto.getEmail() + " is created successfully");
 
-        String reponseString = responseObject.toString();
-
-        return new ResponseEntity<>(reponseString,responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(responseObject.toString(), responseHeaders, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/person/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> updatePerson(Authentication authentication, @RequestBody final PersonDto personDto) {
+        // Get the email of the current user from the authentication context
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername(); // Assuming email is used as the username in Spring Security
 
+        // Find the person by email
+        Optional<Person> optionalPerson = Optional.ofNullable(repository.findByEmail(email));
+        if (optionalPerson.isPresent()) {
+            Person existingPerson = optionalPerson.get();
 
+            // Update fields only if they're provided in personDto
+            if (personDto.getEmail() != null) {
+                existingPerson.setEmail(personDto.getEmail());
+            }
+            if (personDto.getPassword() != null) {
+                existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
 
+            }
+        
+            if (personDto.getName() != null) {
+                existingPerson.setName(personDto.getName());
+            }
+            if (personDto.getPfp() != null) {
+                existingPerson.setPfp(personDto.getPfp());
+            }
+            if (personDto.getKasmServerNeeded() != null) {
+                existingPerson.setKasmServerNeeded(personDto.getKasmServerNeeded());
+            }
+            // Save the updated person back to the repository
+            Person updatedPerson = repository.save(existingPerson);
 
-@PostMapping(value = "/person/update", produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<Object> updatePerson(Authentication authentication, @RequestBody final PersonDto personDto) {
-    // Get the email of the current user from the authentication context
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-    String email = userDetails.getUsername(); // Assuming email is used as the username in Spring Security
-
-    // Find the person by email
-    Optional<Person> optionalPerson = Optional.ofNullable(repository.findByEmail(email));
-    if (optionalPerson.isPresent()) {
-        Person existingPerson = optionalPerson.get();
-
-        // Update fields only if they're provided in personDto
-        if (personDto.getEmail() != null) {
-            existingPerson.setEmail(personDto.getEmail());
+            // Return the updated person entity
+            return new ResponseEntity<>(updatedPerson, HttpStatus.OK);
         }
-        if (personDto.getPassword() != null) {
-            existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
 
-        }
-    
-        if (personDto.getName() != null) {
-            existingPerson.setName(personDto.getName());
-        }
-        if (personDto.getPfp() != null) {
-            existingPerson.setPfp(personDto.getPfp());
-        }
-        if (personDto.getKasmServerNeeded() != null) {
-            existingPerson.setKasmServerNeeded(personDto.getKasmServerNeeded());
-        }
-        // Save the updated person back to the repository
-        Person updatedPerson = repository.save(existingPerson);
-
-        // Return the updated person entity
-        return new ResponseEntity<>(updatedPerson, HttpStatus.OK);
+        // Return NOT_FOUND if person not found
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
-    // Return NOT_FOUND if person not found
-    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-}
 
 
     /**
@@ -224,6 +236,14 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
      *         search term.
      */
 
+    /**
+     * Search for a Person entity by name or email.
+     * 
+     * @param map of a key-value (k,v), the key is "term" and the value is the
+     *            search term.
+     * @return A ResponseEntity containing a list of Person entities that match the
+     *         search term.
+     */
     @PostMapping(value = "/people/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> personSearch(@RequestBody final Map<String, String> map) {
         // extract term from RequestEntity
@@ -310,6 +330,29 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
         // Return NOT_FOUND if the person with the given ID does not exist
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    
+    /**
+     * Retrieves the balance of a Person entity by its ID.
+     *
+     * @param id The ID of the Person entity whose balance is to be fetched.
+     * @return A ResponseEntity containing the balance if found, or a NOT_FOUND status if the person does not exist.
+     */
+    @GetMapping("/person/{id}/balance")
+    public ResponseEntity<Object> getBalance(@PathVariable long id) {
+        Optional<Person> optional = repository.findById(id);
+        if (optional.isPresent()) {
+            Person person = optional.get();
+
+        // Assuming there is a getBalance() method or a balance field in Person
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", person.getId());
+            response.put("name", person.getName());
+            response.put("balance", person.getBalance()); // Replace with actual logic if needed
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Person not found", HttpStatus.NOT_FOUND);
+    }
 
     /**
      * Adds stats to the Person table
@@ -379,6 +422,4 @@ public ResponseEntity<Object> updatePerson(Authentication authentication, @Reque
         // return Bad ID
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
 }
-

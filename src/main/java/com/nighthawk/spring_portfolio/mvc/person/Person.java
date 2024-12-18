@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -7,6 +8,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,22 +22,31 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.persistence.CascadeType;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 
+import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
 
 /**
  * Person is a POJO, Plain Old Java Object.
@@ -52,7 +63,7 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Convert(attributeName = "person", converter = JsonType.class)
-public class Person {
+public class Person implements Comparable<Person> {
 
     /** Automatic unique identifier for Person record 
      * --- Id annotation is used to specify the identifier property of the entity.
@@ -67,6 +78,9 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // @OneToMany(mappedBy="student")
+    // private List<SynergyGrade> grades;
+    
     @ManyToMany(fetch = EAGER)
     @JoinTable(
         name = "person_person_sections",  // unique name to avoid conflicts
@@ -87,9 +101,15 @@ public class Person {
      * allowing all elements to be accessed using an integer index.
      * --- PersonRole is a POJO, Plain Old Java Object.
      */
-    @ManyToMany(fetch = EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Collection<PersonRole> roles = new ArrayList<>();
 
+    @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
+    private Tinkle timeEntries;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private StudentInfo studentInfo;
     /**
      * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
@@ -112,7 +132,7 @@ public class Person {
 
     /**
      * name, dob are attributes to describe the person
-     * --- @NonNull annotation is used to generate a constructor with
+     * --- @NonNull annotation is used to generate a constructor witha
      * AllArgsConstructor Lombox annotation.
      * --- @Size annotation is used to validate that the annotated field is between
      * the specified boundaries, in this case between 2 and 30 characters.
@@ -132,7 +152,24 @@ public class Person {
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
-    
+
+    /**
+     * user_stocks and balance describe properties used by the gamify application
+     */
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private userStocksTable user_stocks;
+
+    @Column
+    private String balance;
+    public double getBalanceDouble() {
+        var balance_tmp = getBalance();
+        return Double.parseDouble(balance_tmp);
+    }
+    public String setBalanceString(double updatedBalance) {
+        this.balance = String.valueOf(updatedBalance); // Update the balance as a String
+        return this.balance; // Return the updated balance as a String
+    }
     /**
      * stats is used to store JSON for daily stats
      * --- @JdbcTypeCode annotation is used to specify the JDBC type code for a
@@ -151,23 +188,39 @@ public class Person {
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
 
-    /**
-     * Custom constructor for Person when building a new Person object from an API
-     * call
+    /** Custom constructor for Person when building a new Person object from an API call
+     * @param email, a String
+     * @param password, a String
+     * @param name, a String
+     * @param balance,
+     * @param dob, a Date
      */
-    public Person(String email, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
+    public Person(String email, String password, String name, Date dob, String pfp, String balance,  Boolean kasmServerNeeded, PersonRole role) {
         this.email = email;
         this.password = password;
         this.name = name;
         this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
         this.pfp = pfp;
+        this.balance = balance;
         this.roles.add(role);
+    }
+
+    public boolean hasRoleWithName(String roleName) {
+        for (PersonRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * Custom getter to return age from dob attribute
      */
+    /** Custom getter to return age from dob attribute
+     * @return int, the age of the person
+    */
     public int getAge() {
         if (this.dob != null) {
             LocalDate birthDay = this.dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -176,31 +229,40 @@ public class Person {
         return -1;
     }
 
-    /**
-     * 1st telescoping method to create a Person object with USER role
-     * 
+    /** Custom compareTo method to compare Person objects by name
+     * @param other, a Person object
+     * @return int, the result of the comparison
+     */
+    @Override
+    public int compareTo(Person other) {
+        return this.name.compareTo(other.name);
+    }
+
+    /** 1st telescoping method to create a Person object with USER role
      * @param name
      * @param email
      * @param password
+     * @param balance
      * @param dob
      * @return Person
      */
-    public static Person createPerson(String name, String email, String password, Boolean kasmServerNeeded, String dob) {
+    public static Person createPerson(String name, String email, String password, Boolean kasmServerNeeded, String balance, String dob) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, email, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
+        return createPerson(name, email, password, null, kasmServerNeeded, balance, dob, Arrays.asList("ROLE_USER", "ROLE_STUDENT"));
     }
-
+    
     /**
      * 2nd telescoping method to create a Person object with parameterized roles
      * 
      * @param roles
      */
-    public static Person createPerson(String name, String email, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
+    public static Person createPerson(String name, String email, String password, String pfp, Boolean kasmServerNeeded, String balance, String dob, List<String> roleNames) {
         Person person = new Person();
         person.setName(name);
         person.setEmail(email);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
+        person.setBalance(balance);
         person.setPfp(pfp);
         try {
             Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
@@ -215,24 +277,33 @@ public class Person {
             roles.add(role);
         }
         person.setRoles(roles);
-
+        
         return person;
     }
     
     /**
      * Static method to initialize an array list of Person objects
-     * 
+     * Uses createPerson method to create Person objects
+     * Sorts the list of Person objects using Collections.sort which uses the compareTo method 
      * @return Person[], an array of Person objects
      */
+    public static String startingBalance = "100000";
     public static Person[] init() {
-        ArrayList<Person> persons = new ArrayList<>();
-        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        persons.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, "01-01-1847", Arrays.asList("ROLE_USER")));
-        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, "01-01-1850", Arrays.asList("ROLE_USER")));
-        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, "01-01-1860", Arrays.asList("ROLE_USER")));
-        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, "12-09-1906", Arrays.asList("ROLE_USER")));
-        persons.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
-        return persons.toArray(new Person[0]);
+        ArrayList<Person> people = new ArrayList<>();
+        people.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", "pfp1", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        people.add(createPerson("Alexander Graham Bell", "lexb@gmail.com", "123lex", "pfp2", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", "pfp3", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", "pfp4", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", "pfp5", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("John Mortensen", "jm1021@gmail.com", "123Qwerty!", "pfp6", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
+        
+        Collections.sort(people);
+        for (Person person : people) {
+            userStocksTable stock = new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person);
+            person.setUser_stocks(stock);
+        }
+
+        return people.toArray(new Person[0]);
     }
 
     /**
@@ -246,7 +317,8 @@ public class Person {
 
         // iterate using "enhanced for loop"
         for (Person person : persons) {
-            System.out.println(person); // print object
+            System.out.println(person);  // print object
+            System.out.println();
         }
     }
 }

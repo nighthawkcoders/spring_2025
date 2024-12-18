@@ -1,0 +1,253 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+    <title>View Grades</title>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 1em;
+            text-align: center;
+            min-width: 8em;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .container {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .grade-cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5em;
+        }
+        .grade-input {
+            width: 4em;
+            text-align: right;
+            padding: 0.25em;
+        }
+        .points-separator {
+            margin: 0 0.25em;
+        }
+        .total-points {
+            color: #666;
+        }
+        .assignment-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+        }
+        .assignment-name {
+            font-weight: bold;
+        }
+        .assignment-points {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+<th:block layout:fragment="body" th:remove="tag">
+
+    <h2>View Grades</h2>
+    <button class="save-btn btn btn-primary" type="button" id="save-btn">Save Grades</button>
+
+    <div class="scrollable-table">
+        <form id="grade-form">
+            <div class="column-search-container">
+                <label for="column-search">Search Assignments: </label>
+                <input type="text" id="column-search" placeholder="Search for an assignment" />
+            </div>            
+            
+            <table id="edit-grades-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th:block th:each="assignment : ${assignments}">
+                            <th>
+                                <div class="assignment-header">
+                                    <span class="assignment-name" th:text="${assignment.name}">Assignment Name</span>
+                                    <span class="assignment-points" th:text="'out of ' + ${assignment.points}">out of X</span>
+                                </div>
+                            </th>
+                        </th:block>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="student : ${students}">
+                        <td th:text="${student.name}">Student Name</td>
+                        <td th:each="assignment : ${assignments}">
+                            <div class="grade-cell">
+                                <input 
+                                    type="number"
+                                    min="0"
+                                    step="any"
+                                    class="grade-input"
+                                    th:name="'grades[' + ${assignment.id} + '][' + ${student.id} + ']'" 
+                                    th:value="${grades[assignment.id][student.id] != null ? grades[assignment.id][student.id] : ''}" 
+                                    th:placeholder="${grades[assignment.id][student.id] != null ? '' : 'N/A'}"
+                                />
+                                <span class="points-separator">/</span>
+                                <span class="total-points" th:text="${assignment.points}">100</span>
+
+                                <th:block th:with="requestKey=${assignment.id + '-' + student.id}">
+                                    <th:block th:with="pendingRequests=${pendingRequestsMap.get(requestKey)}">
+                                        <button type="button"
+                                            class="btn btn-warning btn-sm"
+                                            th:if="${pendingRequests != null and not pendingRequests.isEmpty()}"
+                                            th:onclick="'showGradeRequestModal(' + ${assignment.id} + ', ' + ${student.id} + ')'"
+                                        >⚠️</button>
+                                    </th:block>
+                                </th:block> 
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="gradeRequestModal" tabindex="-1" role="dialog" aria-labelledby="gradeRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="gradeRequestModalLabel">Pending Grade Requests</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="gradeRequestsContainer"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+
+<th:block layout:fragment="script" th:remove="tag">
+<script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+<script th:inline="javascript">
+    // Initialize datatable to provide sorting and searching features
+    $(document).ready(function () {
+        const table = $('#edit-grades-table').DataTable();
+        table.column(0).visible(true);
+
+        // Add event listener for column search input
+        $('#column-search').on('keyup', function () {
+            const searchTerm = this.value.toLowerCase();
+
+            // Search all columns and hide/show them based on the search term
+            table.columns().every(function (index) {
+                if (index === 0) {
+                    // Make sure that the "Student Name" column is visible
+                    this.visible(true);
+                    return;
+                }
+
+                const columnHeader = this.header();
+                const columnText = $(columnHeader).text().toLowerCase();
+
+                if (columnText.includes(searchTerm)) {
+                    this.visible(true);
+                } else {
+                    this.visible(false);
+                }
+            });
+        });
+    });
+
+
+    // Function to display the modal for the grade request
+    function showGradeRequestModal(assignmentId, studentId) {
+        const requestKey = `${assignmentId}-${studentId}`;
+        const requests = /*[[${pendingRequestsMap}]]*/ {}; // this is how you access thymeleaf model data from js
+
+        const requestsForStudent = requests[requestKey] || [];
+
+        const container = document.getElementById('gradeRequestsContainer');
+        container.innerHTML = ''; // Clear previous requests
+
+        // Create the modal information
+        requestsForStudent.forEach(request => {
+            const requestCard = document.createElement('div');
+            requestCard.classList.add('border', 'p-2', 'mb-2');
+            requestCard.innerHTML = `
+                <div><strong>Grader:</strong> ${request.graderName}</div>
+                <div><strong>Suggested Grade:</strong> ${request.gradeSuggestion.toFixed(2)}/1 (${(request.gradeSuggestion * 100).toFixed(1)}%)</div>
+                <div><strong>Explanation:</strong> ${request.explanation}</div>
+                <div class="d-flex justify-content-between mt-2">
+                    <button onclick="submitGradeRequest(${request.id}, true)" class="btn btn-success btn-sm">Accept</button>
+                    <button onclick="submitGradeRequest(${request.id}, false)" class="btn btn-danger btn-sm">Reject</button>
+                </div>
+            `;
+            container.appendChild(requestCard);
+        });
+
+        // Show the modal
+        $('#gradeRequestModal').modal('show');
+    }
+
+    // Submits a grade request, either rejects or accepts based on parameter 2
+    function submitGradeRequest(requestId, accepted) {
+        const url = accepted ? '/api/synergy/grade/requests/accept' : '/api/synergy/grade/requests/reject';
+        
+        fetch(url, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ requestId: requestId })
+        }).then(async response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                console.error('Error submitting grade request');
+                alert('Failed to process grade request');
+            }
+        }).catch(error => {
+            console.error('Fetch error:', error);
+            alert('An error occurred');
+        });
+    }
+
+    // Save button
+    document.getElementById('save-btn').addEventListener('click', async function () {
+        const form = document.getElementById('grade-form');
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/api/synergy/grades', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Grades saved successfully!');
+            } else {
+                alert('Failed to save grades. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('An error occurred. Please try again.');
+        }
+    });
+</script>
+</th:block>
+
+</html>
