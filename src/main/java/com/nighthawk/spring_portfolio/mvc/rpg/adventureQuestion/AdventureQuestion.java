@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.mvc.rpg.question;
+package com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion;
 
 
 
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Question {
+public class AdventureQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,7 +40,7 @@ public class Question {
     */
 
     // Constructor
-    public Question(String title, String content, int points) {
+    public AdventureQuestion(String title, String content, int points) {
         this.title = title;
         this.content = content;
         this.points = points;
@@ -57,8 +57,8 @@ public class Question {
         }
     }
     */
-    public static Question createQuestion(String title, String content, int points) {
-        Question question = new Question();
+    public static AdventureQuestion createQuestion(String title, String content, int points) {
+        AdventureQuestion question = new AdventureQuestion();
         question.setTitle(title);
         question.setContent(content);
         question.setPoints(points);
@@ -66,8 +66,8 @@ public class Question {
         return question;
     }
 
-    public static Question[] init() {
-        ArrayList<Question> questions = new ArrayList<>();
+    public static AdventureQuestion[] init() {
+        ArrayList<AdventureQuestion> questions = new ArrayList<>();
         
         // byte[] badgeIcon = loadImageAsByteArray("path/to/your/image.png");
         questions.add(createQuestion("Unit 1 Popcorn Hack 1", """
@@ -165,6 +165,6 @@ public class Question {
         //
         , 10000));
 
-        return questions.toArray(new Question[0]);
+        return questions.toArray(new AdventureQuestion[0]);
     }
 }
