@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,11 +26,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
 import lombok.Getter;
+
 /**
  * This class provides RESTful API endpoints for managing Person entities.
  * It includes endpoints for creating, retrieving, updating, and deleting Person
@@ -74,7 +76,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);
+        Person person = repository.findByEmail(email);  
 
         // Return the person if found
         if (person != null) {
@@ -91,33 +93,24 @@ public class PersonApiController {
      */
     @GetMapping("/people")
     public ResponseEntity<List<Person>> getPeople() {
-        return new ResponseEntity<>(repository.findAllByOrderByNameAsc(), HttpStatus.OK);
+        return new ResponseEntity<>( repository.findAllByOrderByNameAsc(), HttpStatus.OK);
     }
 
     /**
      * Retrieves a Person entity by its ID.
      *
-     * @param identifier The ID of the Person entity to retrieve OR their email
+     * @param id The ID of the Person entity to retrieve.
      * @return A ResponseEntity containing the Person entity if found, or a
      *         NOT_FOUND status if not found.
      */
-    @GetMapping("/person/{identifier}")
-    public ResponseEntity<Person> getPerson(@PathVariable String identifier) {
-        Optional<Person> optionalPerson;
-
-        // Check if the identifier is numeric (for ID) or a string (for email)
-        if (identifier.matches("\\d+")) { // Regex to check if it's all digits
-            long id = Long.parseLong(identifier);
-            optionalPerson = repository.findById(id);
-        } else {
-            optionalPerson = Optional.ofNullable(repository.findByEmail(identifier));
+    @GetMapping("/person/{id}")
+    public ResponseEntity<Person> getPerson(@PathVariable long id) {
+        Optional<Person> optional = repository.findById(id);
+        if (optional.isPresent()) { // Good ID
+            Person person = optional.get(); // value from findByID
+            return new ResponseEntity<>(person, HttpStatus.OK); // OK HTTP response: status code, headers, and body
         }
-
-        // Respond based on the presence of the person
-        if (optionalPerson.isPresent()) {
-            return new ResponseEntity<>(optionalPerson.get(), HttpStatus.OK);
-        }
-
+        // Bad ID
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -140,6 +133,7 @@ public class PersonApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+
     @Autowired
     private UserStocksRepository userStocksRepository;
 
@@ -154,7 +148,8 @@ public class PersonApiController {
         private String name;
         private String dob;
         private String pfp;
-        private Boolean kasmServerNeeded;
+        private double balance;
+        private Boolean kasmServerNeeded; 
     }
 
     /**
@@ -174,19 +169,19 @@ public class PersonApiController {
             return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
         }
         // A person object WITHOUT ID will create a new record in the database
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER",
-                true, personDetailsService.findRole("USER"));
+        String startingBalance = "100000";
+        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
-        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", person);
+        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person);
         userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject responseObject = new JSONObject();
-        responseObject.put("response", personDto.getEmail() + " is created successfully");
+        responseObject.put("response",personDto.getEmail() + " is created successfully");
 
         return new ResponseEntity<>(responseObject.toString(), responseHeaders, HttpStatus.OK);
     }
@@ -210,7 +205,7 @@ public class PersonApiController {
                 existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
 
             }
-
+        
             if (personDto.getName() != null) {
                 existingPerson.setName(personDto.getName());
             }
@@ -230,6 +225,7 @@ public class PersonApiController {
         // Return NOT_FOUND if person not found
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
 
     /**
      * Search for a Person entity by name or email.
@@ -260,71 +256,66 @@ public class PersonApiController {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-    // @PostMapping(value = "/person/setSections", produces =
-    // MediaType.APPLICATION_JSON_VALUE)
-    // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails
-    // userDetails, @RequestBody final List<SectionDTO> sections) {
-    // // Check if the authentication object is null
-    // if (userDetails == null) {
-    // return ResponseEntity
-    // .status(HttpStatus.UNAUTHORIZED)
-    // .body("Error: Authentication object is null. User is not authenticated.");
+    // @PostMapping(value = "/person/setSections", produces = MediaType.APPLICATION_JSON_VALUE)
+    // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final List<SectionDTO> sections) {
+    //     // Check if the authentication object is null
+    //     if (userDetails == null) {
+    //         return ResponseEntity
+    //                 .status(HttpStatus.UNAUTHORIZED)
+    //                 .body("Error: Authentication object is null. User is not authenticated.");
+    //     }
+        
+    //     String email = userDetails.getUsername();
+        
+    //     // Manually wrap the result in Optional.ofNullable
+    //     Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
+    //     if (optional.isPresent()) {
+    //         Person person = optional.get();
+
+    //         // Get existing sections and ensure it is not null
+    //         Collection<PersonSections> existingSections = person.getSections();
+    //         if (existingSections == null) {
+    //             existingSections = new ArrayList<>();
+    //         }
+
+    //         // Add  sections
+    //         for (SectionDTO sectionDTO : sections) {
+    //             if (!existingSections.stream().anyMatch(s -> s.getName().equals(sectionDTO.getName()))) {
+    //                 PersonSections newSection = new PersonSections(sectionDTO.getName(), sectionDTO.getAbbreviation(), sectionDTO.getYear());
+    //                 existingSections.add(newSection);
+    //             } else {
+    //                 return ResponseEntity
+    //                         .status(HttpStatus.CONFLICT)
+    //                         .body("Error: Section with name '" + sectionDTO.getName() + "' already exists.");
+    //             }
+    //         }
+
+    //         // Persist updated sections
+    //         person.setSections(existingSections);
+    //         repository.save(person);
+
+    //         // Return updated Person
+    //         return ResponseEntity.ok(person);
+    //     }
+
+    //     // Person not found
+    //     return ResponseEntity
+    //             .status(HttpStatus.NOT_FOUND)
+    //             .body("Error: Person not found with email: " + email);
     // }
 
-    // String email = userDetails.getUsername();
-
-    // // Manually wrap the result in Optional.ofNullable
-    // Optional<Person> optional =
-    // Optional.ofNullable(repository.findByEmail(email));
-    // if (optional.isPresent()) {
-    // Person person = optional.get();
-
-    // // Get existing sections and ensure it is not null
-    // Collection<PersonSections> existingSections = person.getSections();
-    // if (existingSections == null) {
-    // existingSections = new ArrayList<>();
-    // }
-
-    // // Add sections
-    // for (SectionDTO sectionDTO : sections) {
-    // if (!existingSections.stream().anyMatch(s ->
-    // s.getName().equals(sectionDTO.getName()))) {
-    // PersonSections newSection = new PersonSections(sectionDTO.getName(),
-    // sectionDTO.getAbbreviation(), sectionDTO.getYear());
-    // existingSections.add(newSection);
-    // } else {
-    // return ResponseEntity
-    // .status(HttpStatus.CONFLICT)
-    // .body("Error: Section with name '" + sectionDTO.getName() + "' already
-    // exists.");
-    // }
-    // }
-
-    // // Persist updated sections
-    // person.setSections(existingSections);
-    // repository.save(person);
-
-    // // Return updated Person
-    // return ResponseEntity.ok(person);
-    // }
-
-    // // Person not found
-    // return ResponseEntity
-    // .status(HttpStatus.NOT_FOUND)
-    // .body("Error: Person not found with email: " + email);
-    // }
 
     @PutMapping("/person/{id}")
     public ResponseEntity<Object> updatePerson(@PathVariable long id, @RequestBody PersonDto personDto) {
         Optional<Person> optional = repository.findById(id);
-        if (optional.isPresent()) { // If the person with the given ID exists
+        if (optional.isPresent()) {  // If the person with the given ID exists
             Person existingPerson = optional.get();
 
             // Update the existing person's details
             existingPerson.setEmail(personDto.getEmail());
             existingPerson.setPassword(personDto.getPassword());
             existingPerson.setName(personDto.getName());
-
+            
             // Optional: Update other fields if they exist in Person
             existingPerson.setPfp(personDto.getPfp());
             existingPerson.setKasmServerNeeded(personDto.getKasmServerNeeded());
@@ -339,27 +330,49 @@ public class PersonApiController {
         // Return NOT_FOUND if the person with the given ID does not exist
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    
+    /**
+     * Retrieves the balance of a Person entity by its ID.
+     *
+     * @param id The ID of the Person entity whose balance is to be fetched.
+     * @return A ResponseEntity containing the balance if found, or a NOT_FOUND status if the person does not exist.
+     */
+    @GetMapping("/person/{id}/balance")
+    public ResponseEntity<Object> getBalance(@PathVariable long id) {
+        Optional<Person> optional = repository.findById(id);
+        if (optional.isPresent()) {
+            Person person = optional.get();
+
+        // Assuming there is a getBalance() method or a balance field in Person
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", person.getId());
+            response.put("name", person.getName());
+            response.put("balance", person.getBalance()); // Replace with actual logic if needed
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Person not found", HttpStatus.NOT_FOUND);
+    }
 
     /**
      * Adds stats to the Person table
      * 
      * @param stat_map is a JSON object, example format:
-     *                 {"health":
-     *                 {"date": "2021-01-01",
-     *                 "measurements":
-     *                 {
-     *                 "weight": "150",
-     *                 "height": "70",
-     *                 "bmi": "21.52"
-     *                 }
-     *                 }
-     *                 }
+        {"health":
+            {"date": "2021-01-01",
+            "measurements":
+                {   
+                    "weight": "150",
+                    "height": "70",
+                    "bmi": "21.52"
+                }
+            }
+        }
      * @return A ResponseEntity containing the Person entity with updated stats, or
      *         a NOT_FOUND status if not found.
      */
     @PostMapping(value = "/person/setStats", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Person> personStats(Authentication authentication,
-            @RequestBody final Map<String, Object> stat_map) {
+    public ResponseEntity<Person> personStats(Authentication authentication, @RequestBody final Map<String,Object> stat_map) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
