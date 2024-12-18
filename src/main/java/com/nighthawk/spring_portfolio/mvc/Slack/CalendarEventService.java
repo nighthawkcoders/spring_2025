@@ -26,18 +26,6 @@ public class CalendarEventService {
         return calendarEventRepository.findByDate(date);
     }
 
-    public boolean updateEventByTitle(String title, String newTitle, String description) {
-        CalendarEvent event = getEventByTitle(title);
-        if (event != null) {
-            event.setTitle(newTitle);
-            event.setDescription(description);
-            calendarEventRepository.save(event);
-            return true;
-        }
-        return false;
-    }
-    
-
     // Get events within a date range
     public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {
         return calendarEventRepository.findByDateBetween(startDate, endDate);
@@ -47,14 +35,6 @@ public class CalendarEventService {
     public List<CalendarEvent> getAllEvents() {
         return calendarEventRepository.findAll();
     }
-    public CalendarEvent getEventByTitle(String title) {
-        return calendarEventRepository.findAll()
-            .stream()
-            .filter(event -> event.getTitle().equals(title)) // Exact match
-            .findFirst()
-            .orElse(null);
-    }
-    
 
     // Method to parse a Slack message and create calendar events
     public void parseSlackMessage(Map<String, String> jsonMap, LocalDate weekStartDate) {

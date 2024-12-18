@@ -1,19 +1,14 @@
 package com.nighthawk.spring_portfolio.mvc.Slack;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,31 +57,6 @@ public class CalendarEventController {
         return calendarEventService.getEventsByDate(localDate);
     }
 
-    @PutMapping("/edit/{title}")
-    public ResponseEntity<String> editEvent(@PathVariable String title, @RequestBody Map<String, String> payload) {
-        // Decode the title to handle multi-word or special character titles
-        String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
-        String newTitle = payload.get("newTitle");
-        String description = payload.get("description");
-
-        if (newTitle == null || newTitle.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("New title cannot be null or empty.");
-        }
-        if (description == null || description.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Description cannot be null or empty.");
-        }
-
-        try {
-            boolean updated = calendarEventService.updateEventByTitle(decodedTitle, newTitle, description);
-            if (!updated) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
-            }   
-            return ResponseEntity.ok("Event updated successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-        }
-    }
-
     @GetMapping("/events")
     public List<CalendarEvent> getAllEvents() {
         return calendarEventService.getAllEvents();
@@ -98,16 +68,4 @@ public class CalendarEventController {
         LocalDate endDate = LocalDate.parse(end);
         return calendarEventService.getEventsWithinDateRange(startDate, endDate);
     }
-
-
-    @GetMapping("/events/next-day")
-    public List<CalendarEvent> getNextDayEvents() {
-        // Get the current date and the next day
-        LocalDate today = LocalDate.now();
-        LocalDate nextDay = today.plusDays(1);
-
-        // Fetch events for the next day
-        return calendarEventService.getEventsByDate(nextDay);
-    }
-
 }
