@@ -3,7 +3,12 @@ package com.nighthawk.spring_portfolio.mvc.assignments;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Entity;
+import lombok.Data;
+
 // New Queue class to represent the three lists
+@Data
+@Entity
 public class AssignmentQueue {
     private List<String> haventGone;
     private List<String> queue;
@@ -13,31 +18,6 @@ public class AssignmentQueue {
         this.haventGone = new ArrayList<>();
         this.queue = new ArrayList<>();
         this.done = new ArrayList<>();
-    }
-
-    // Getters and setters for the lists
-    public List<String> getHaventGone() {
-        return haventGone;
-    }
-
-    public void setHaventGone(List<String> haventGone) {
-        this.haventGone = haventGone;
-    }
-
-    public List<String> getQueue() {
-        return queue;
-    }
-
-    public void setQueue(List<String> queue) {
-        this.queue = queue;
-    }
-
-    public List<String> getDone() {
-        return done;
-    }
-
-    public void setDone(List<String> done) {
-        this.done = done;
     }
 
     public void reset() {
