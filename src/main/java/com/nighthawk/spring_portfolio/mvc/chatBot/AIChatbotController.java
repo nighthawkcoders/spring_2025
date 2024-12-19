@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.web.bind.annotation.RestController;
-import com.nighthawk.spring_portfolio.mvc.person.PersonApiController;
 
 // AI Chat Bot Controller based on Chat GPT 3.5 API
 @RestController
@@ -41,9 +40,6 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonApiController;
 public class AIChatbotController {
 	@Autowired
 	ChatJpaRepository chatJpaRepository;
-
-	@Autowired
-	PersonApiController personApiController;
 	
 	// storing part of gpt key string inside .env
 	static Dotenv dotenv = Dotenv.load();
