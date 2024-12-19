@@ -40,13 +40,15 @@
 
                 <div class="collapse navbar-collapse" id="navbarNavDarkDropdown2">
                     <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
+                        <!-- Check if the user is authenticated -->
+                        <li class="nav-item dropdown"  sec:authorize="isAuthenticated()">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Database
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
                                 <li><a class="dropdown-item" th:href="@{/mvc/person/read}">SQL Person</a></li>
                                 <li><a class="dropdown-item" th:href="@{/mvc/person/search}">SQL Person Search</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/person/person-quiz}">Database Person Quiz</a></li>
                             </ul>
                         </li>
                     </ul>

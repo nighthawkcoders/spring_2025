@@ -5,14 +5,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -29,6 +37,14 @@ public class StudentInfo {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @OneToOne
+    @JoinColumn(name = "person_id") // No UNIQUE constraint added here
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private Person person;
+    
+
+
     private String username;
 
     private int tableNumber;
@@ -43,9 +59,12 @@ public class StudentInfo {
 
     private int period;
     
+    @Column
+    private String person_name;
     
 
-    public StudentInfo(String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int trimester, int period) {
+    public StudentInfo(Person person, String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int trimester, int period) {
+        this.person = person;
         this.username = username;
         this.tableNumber = tableNumber;
         this.course = course;
@@ -53,33 +72,49 @@ public class StudentInfo {
         this.completed = completed;
         this.trimester = trimester;
         this.period = period;
+        this.person_name = person.getName();
     }
 
+    public static StudentInfo[] init(Person[] persons)
+    {
+        ArrayList<StudentInfo> studentInfos = new ArrayList<>();
+        for(Person person: persons)
+        {
+            studentInfos.add(new StudentInfo(person, "temp", 0, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 0, 0));
+
+        }
+        return studentInfos.toArray(new StudentInfo[0]);
+    }
     @Service
     public static class StudentService {
 
         @Autowired
         private StudentInfoJPARepository studentJPARepository;
 
-        @PostConstruct
-        public void initializeData() { 
+        public void initialization(Person[] persons) { 
             if (studentJPARepository == null) {
                 throw new RuntimeException("studentJPARepository is not initialized!");
             }
             List<StudentInfo> students = new ArrayList<>();
-            students.add(new StudentInfo("nitinsandiego", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 1));
-            students.add(new StudentInfo("Akhil353", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 3));
-            students.add(new StudentInfo("SrinivasNampalli", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 1));
-            students.add(new StudentInfo("adityasamavedam", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 3));
+            //students.add(new StudentInfo("nitinsandiego", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 1));
+            //students.add(new StudentInfo("Akhil353", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 3));
+            //students.add(new StudentInfo("SrinivasNampalli", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 1));
+            //students.add(new StudentInfo("adityasamavedam", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 3));
 
             for (StudentInfo student : students) {
             Optional<StudentInfo> existingStudent = studentJPARepository.findByUsername(student.getUsername());
+            
+            for (Person person: persons) {
+                students.add(new StudentInfo(person, "temp", 0, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 0, 0));
+            };
+            
+            
             
             if (existingStudent.isEmpty()) {
                 studentJPARepository.save(student);
             }
         }
-        }
+    }
 
         public Iterable<StudentInfo> findAll() {
             return studentJPARepository.findAll();

@@ -8,7 +8,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nighthawk.spring_portfolio.mvc.user.User;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Blackjack {
@@ -26,8 +27,8 @@ public class Blackjack {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "person_id")
+    private Person person;
 
     private String status;
 
@@ -37,15 +38,18 @@ public class Blackjack {
     @Column(columnDefinition = "TEXT")
     private String gameState;
 
-    private transient Map<String, Object> gameStateMap = new HashMap<>();
+    @Transient
+    private Map<String, Object> gameStateMap = new HashMap<>();
 
+    // Initialize deck and shuffle cards
     public void initializeDeck() {
         List<String> deck = generateDeck();
         Collections.shuffle(deck);
         gameStateMap.put("deck", deck);
-        persistGameState(); // Save the deck into the gameState JSON
+        persistGameState();
     }
 
+    // Deal initial hands
     public void dealInitialHands() {
         List<String> deck = (List<String>) gameStateMap.get("deck");
         List<String> playerHand = new ArrayList<>();
@@ -63,54 +67,60 @@ public class Blackjack {
         persistGameState();
     }
 
+    // Calculate the score of a hand
     public int calculateScore(List<String> hand) {
         int score = 0;
         int aces = 0;
+
         for (String card : hand) {
-            String rank = card.substring(0, card.length() - 1); // Get rank only, ignoring suit
+            String rank = card.substring(0, card.length() - 1);
             switch (rank) {
-                case "A" -> { 
-                    aces++; 
-                    score += 11; // Initially count Ace as 11
-                }
-                case "K", "Q", "J" -> score += 10; // Face cards count as 10
-                default -> score += Integer.parseInt(rank); // Number cards
+                case "A":
+                    aces++;
+                    score += 11; // Ace initially counts as 11
+                    break;
+                case "K", "Q", "J":
+                    score += 10; // Face cards count as 10
+                    break;
+                default:
+                    score += Integer.parseInt(rank); // Number cards
             }
         }
-        // Adjust for Aces if score exceeds 21
+
+        // Adjust score if it exceeds 21 and there are aces
         while (score > 21 && aces > 0) {
             score -= 10;
             aces--;
         }
+
         return score;
     }
-    
 
+    // Generate a new deck
     private List<String> generateDeck() {
         String[] suits = {"H", "D", "C", "S"};
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
         List<String> deck = new ArrayList<>();
+
         for (String suit : suits) {
             for (String rank : ranks) {
                 deck.add(rank + suit);
             }
         }
+
         return deck;
     }
 
+    // Load game state from JSON string
     public void loadGameState() {
         if (this.gameStateMap.isEmpty() && this.gameState != null) {
             this.gameStateMap = fromJsonString(this.gameState);
         }
     }
 
+    // Persist game state as JSON string
     public void persistGameState() {
         this.gameState = toJsonString(this.gameStateMap);
-    }
-
-    public void setGameStateMap(Map<String, Object> gameStateMap) {
-        this.gameStateMap = gameStateMap;
-        persistGameState();
     }
 
     private String toJsonString(Map<String, Object> map) {
@@ -132,12 +142,48 @@ public class Blackjack {
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public double getBetAmount() { return betAmount; }
-    public void setBetAmount(double betAmount) { this.betAmount = betAmount; }
-    public Map<String, Object> getGameStateMap() { return gameStateMap; }
+    public Long getId() {
+        return id;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public double getBetAmount() {
+        return betAmount;
+    }
+
+    public void setBetAmount(double betAmount) {
+        this.betAmount = betAmount;
+    }
+
+    public String getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(String gameState) {
+        this.gameState = gameState;
+    }
+
+    public Map<String, Object> getGameStateMap() {
+        return gameStateMap;
+    }
+
+    public void setGameStateMap(Map<String, Object> gameStateMap) {
+        this.gameStateMap = gameStateMap;
+        persistGameState();
+    }
 }

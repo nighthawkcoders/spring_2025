@@ -21,6 +21,10 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import jakarta.transaction.Transactional;
 
+/**
+ * REST API Controller for managing assignment submissions.
+ * Provides endpoints for CRUD operations on assignment submissions.
+ */
 @RestController
 @RequestMapping("/api/submissions")
 public class AssignmentSubmissionAPIController {
@@ -34,16 +38,11 @@ public class AssignmentSubmissionAPIController {
     @Autowired
     private PersonJpaRepository personRepo;
 
-    // @GetMapping
-    // public ResponseEntity<?> getAllSubmissions() {
-    //     List<Submission> submissions = submissionRepo.findAll();
-    //     return new ResponseEntity<>(submissions, HttpStatus.OK);
-    // }
-
-
-    /*
-     * Returns all of the submissions
-     * Note there are no parameters needed to be passed in here
+    /**
+     * Get all submissions for a specific student.
+     * 
+     * @param studentId the ID of the student whose submissions are to be fetched
+     * @return a ResponseEntity containing a list of submissions for the given student ID
      */
     @Transactional
     @GetMapping("/getSubmissions/{studentId}")
@@ -53,19 +52,34 @@ public class AssignmentSubmissionAPIController {
         return responseEntity;
     }
 
-     @PostMapping("/Submit")
+    /**
+     * Create a new assignment submission.
+     * 
+     * @param submission the AssignmentSubmission object to be created
+     * @return a ResponseEntity containing the created submission and HTTP status CREATED
+     */
+    @PostMapping("/Submit")
     public ResponseEntity<AssignmentSubmission> createAssignment(@RequestBody AssignmentSubmission submission) {
         submissionRepo.save(submission);
         return new ResponseEntity<>(submission, HttpStatus.CREATED);
     }
 
+    /**
+     * Submit an assignment for a student.
+     * 
+     * @param assignmentId the ID of the assignment being submitted
+     * @param studentId    the ID of the student submitting the assignment
+     * @param content      the content of the submission
+     * @param comment      any comments related to the submission
+     * @return a ResponseEntity containing the created submission or an error if the assignment is not found
+     */
     @PostMapping("/submit/{assignmentId}")
     public ResponseEntity<?> submitAssignment(
             @PathVariable Long assignmentId,
             @RequestParam Long studentId,
             @RequestParam String content,
             @RequestParam String comment
-            ) {
+    ) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
@@ -77,58 +91,51 @@ public class AssignmentSubmissionAPIController {
         error.put("error", "Assignment not found");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-    
 
+    /**
+     * Grade an existing assignment submission.
+     * 
+     * @param submissionId the ID of the submission to be graded
+     * @param grade        the grade to be assigned to the submission
+     * @param feedback     optional feedback for the submission
+     * @return a ResponseEntity indicating success or an error if the submission is not found
+     */
     @Transactional
     @PostMapping("/grade/{submissionId}")
     public ResponseEntity<?> gradeSubmission(
             @PathVariable Long submissionId,
             @RequestParam Double grade,
-            @RequestParam(required = false) String feedback) {
-        
+            @RequestParam(required = false) String feedback
+    ) {
         AssignmentSubmission submission = submissionRepo.findById(submissionId).orElse(null);
-        submission.setGrade(grade);
-        submission.setFeedback(feedback);
-        
-        /*if (submission != null) {
+        if (submission != null) {
             submission.setGrade(grade);
             submission.setFeedback(feedback);
-            
-            Submission updatedSubmission = submissionRepo.save(submission);
-            
-            return new ResponseEntity<>(updatedSubmission, HttpStatus.OK);
+            submissionRepo.save(submission);
+            return new ResponseEntity<>(submission, HttpStatus.OK);
         }
-        
         Map<String, String> error = new HashMap<>();
         error.put("error", "Submission not found");
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);*/
-        return new ResponseEntity<>("All good", HttpStatus.OK);
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-    
 
-
-
+    /**
+     * Get all submissions for a specific assignment.
+     * 
+     * @param assignmentId the ID of the assignment whose submissions are to be fetched
+     * @return a ResponseEntity containing a list of submissions or an error if the assignment is not found
+     */
     @Transactional
     @GetMapping("/assignment/{assignmentId}")
     public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId) {
-        // Log the incoming request
-
-        // Verify the assignment exists first
-        Assignment assignment = assignmentRepo.findById(assignmentId)
-            .orElse(null);
-        
+        Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         if (assignment == null) {
             return new ResponseEntity<>(
                 Collections.singletonMap("error", "Assignment not found"), 
                 HttpStatus.NOT_FOUND
             );
         }
-
-        // Find submissions for this assignment
-        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);        
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
-
-
-
 }

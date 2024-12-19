@@ -25,9 +25,14 @@ public class MiningUser {
     private String currentPool = "nicehash";
     private int shares = 0;
     private double currentHashrate = 0.0;
+    private double dailyRevenue;
+    private double powerCost;
     
     @ManyToMany
     private List<GPU> ownedGPUs = new ArrayList<>();
+
+    @ManyToMany
+    private List<GPU> activeGPUs = new ArrayList<>();
 
     public MiningUser(Person person) {
         this.person = person;
@@ -47,12 +52,16 @@ public class MiningUser {
         if (ownedGPUs == null) {
             ownedGPUs = new ArrayList<>();
         }
+        if (activeGPUs == null) {
+            activeGPUs = new ArrayList<>();
+        }
         ownedGPUs.add(gpu);
+        activeGPUs.add(gpu);
         updateHashrate();
     }
 
     private void updateHashrate() {
-        this.currentHashrate = ownedGPUs.stream()
+        this.currentHashrate = activeGPUs.stream()
             .mapToDouble(GPU::getHashRate)
             .sum();
     }
@@ -72,6 +81,66 @@ public class MiningUser {
 
     public double getCurrentHashrate() {
         if (!isMining) return 0.0;
-        return this.currentHashrate;
+        return activeGPUs.stream()
+            .mapToDouble(GPU::getHashRate)
+            .sum();
+    }
+
+    public boolean ownsGPU(GPU gpu) {
+        return this.ownedGPUs.contains(gpu);
+    }
+
+    public boolean ownsGPUById(Long gpuId) {
+        return this.ownedGPUs.stream()
+            .anyMatch(gpu -> gpu.getId().equals(gpuId));
+    }
+
+    public boolean toggleGPU(GPU gpu) {
+        if (!ownedGPUs.contains(gpu)) {
+            throw new RuntimeException("You don't own this GPU");
+        }
+
+        boolean isActive = activeGPUs.contains(gpu);
+        if (isActive) {
+            activeGPUs.remove(gpu);
+        } else {
+            activeGPUs.add(gpu);
+        }
+        updateHashrate();
+        return !isActive; // returns new state
+    }
+
+    public boolean isGPUActive(GPU gpu) {
+        return activeGPUs.contains(gpu);
+    }
+
+    public List<GPU> getActiveGPUs() {
+        return this.activeGPUs;
+    }
+
+    public void setMining(boolean mining) {
+        this.isMining = mining;
+        if (!mining) {
+            this.currentHashrate = 0.0;
+        } else {
+            updateHashrate();
+        }
+    }
+    
+
+    public double getDailyRevenue() {
+        return dailyRevenue;
+    }
+
+    public void setDailyRevenue(double dailyRevenue) {
+        this.dailyRevenue = dailyRevenue;
+    }
+
+    public double getPowerCost() {
+        return powerCost;
+    }
+
+    public void setPowerCost(double powerCost) {
+        this.powerCost = powerCost;
     }
 }
