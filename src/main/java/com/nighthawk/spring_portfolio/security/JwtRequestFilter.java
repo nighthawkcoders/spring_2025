@@ -168,7 +168,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		} else {
 			logger.warn("Session request: " + buildRequestLogMessage(request));
 			handleSessionRequest(request, response,chain);
-			return;
 		}
 	}
 	
