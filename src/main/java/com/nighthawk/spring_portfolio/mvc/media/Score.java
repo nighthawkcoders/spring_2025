@@ -25,4 +25,10 @@ public class Score {
         this.id = id;
         this.score = score;
     }
+
+    public Score init() {
+        Score score = new Score("John Doe", 100);
+        mediaJpaRepository.save(score);
+        return score;
+    }
 }
