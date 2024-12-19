@@ -5,6 +5,7 @@
 <head>
     <title>View Grades</title>
 
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
     <style>
         table {
             width: 100%;
@@ -66,7 +67,12 @@
 
     <div class="scrollable-table">
         <form id="grade-form">
-            <table>
+            <div class="column-search-container">
+                <label for="column-search">Search Assignments: </label>
+                <input type="text" id="column-search" placeholder="Search for an assignment" />
+            </div>            
+            
+            <table id="edit-grades-table">
                 <thead>
                     <tr>
                         <th>Student Name</th>
@@ -135,18 +141,49 @@
 </body>
 
 <th:block layout:fragment="script" th:remove="tag">
+<script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
 <script th:inline="javascript">
+    // Initialize datatable to provide sorting and searching features
+    $(document).ready(function () {
+        const table = $('#edit-grades-table').DataTable();
+        table.column(0).visible(true);
+
+        // Add event listener for column search input
+        $('#column-search').on('keyup', function () {
+            const searchTerm = this.value.toLowerCase();
+
+            // Search all columns and hide/show them based on the search term
+            table.columns().every(function (index) {
+                if (index === 0) {
+                    // Make sure that the "Student Name" column is visible
+                    this.visible(true);
+                    return;
+                }
+
+                const columnHeader = this.header();
+                const columnText = $(columnHeader).text().toLowerCase();
+
+                if (columnText.includes(searchTerm)) {
+                    this.visible(true);
+                } else {
+                    this.visible(false);
+                }
+            });
+        });
+    });
+
+
+    // Function to display the modal for the grade request
     function showGradeRequestModal(assignmentId, studentId) {
         const requestKey = `${assignmentId}-${studentId}`;
-        const requests = /*[[${pendingRequestsMap}]]*/ {};
-        console.log(requests);
+        const requests = /*[[${pendingRequestsMap}]]*/ {}; // this is how you access thymeleaf model data from js
 
         const requestsForStudent = requests[requestKey] || [];
-        console.log(requestsForStudent);
 
         const container = document.getElementById('gradeRequestsContainer');
         container.innerHTML = ''; // Clear previous requests
 
+        // Create the modal information
         requestsForStudent.forEach(request => {
             const requestCard = document.createElement('div');
             requestCard.classList.add('border', 'p-2', 'mb-2');
@@ -162,9 +199,11 @@
             container.appendChild(requestCard);
         });
 
+        // Show the modal
         $('#gradeRequestModal').modal('show');
     }
 
+    // Submits a grade request, either rejects or accepts based on parameter 2
     function submitGradeRequest(requestId, accepted) {
         const url = accepted ? '/api/synergy/grade/requests/accept' : '/api/synergy/grade/requests/reject';
         
@@ -187,6 +226,7 @@
         });
     }
 
+    // Save button
     document.getElementById('save-btn').addEventListener('click', async function () {
         const form = document.getElementById('grade-form');
         const formData = new FormData(form);

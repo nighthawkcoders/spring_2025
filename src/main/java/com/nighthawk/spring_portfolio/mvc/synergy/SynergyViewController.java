@@ -105,9 +105,7 @@ public class SynergyViewController {
                     pendingRequestsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(new SynergyGradeRequestDto(request));
                 }
             }
-
-            System.out.println("PendingRequestsMap: " + pendingRequestsMap);
-
+            
             // Pass in information to thymeleaf template
             model.addAttribute("assignments", assignments);
             model.addAttribute("students", students);
