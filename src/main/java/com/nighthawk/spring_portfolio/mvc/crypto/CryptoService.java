@@ -15,7 +15,7 @@ public class CryptoService {
 
     private final String apiKey = "1f492999-fe80-4dba-8a81-c6993505b5b7"; // Replace with your actual CoinMarketCap API key
     private final String url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
-    
+
     // Method to fetch current crypto data from CoinMarketCap
     public Crypto[] getCryptoData() {
         try {
@@ -58,7 +58,7 @@ public class CryptoService {
         }
     }
 
-    // Method to fetch the price of a specific cryptocurrency by symbol
+    // Method to fetch the price of a specific cryptocurrency by symbol or name
     public double getCryptoPrice(String cryptoId) {
         Crypto[] cryptoData = this.getCryptoData();
     
@@ -68,8 +68,8 @@ public class CryptoService {
         }
     
         for (Crypto crypto : cryptoData) {
-            // Compare the symbol field instead of the name
-            if (crypto.getSymbol().equalsIgnoreCase(cryptoId)) {
+            // Compare both the symbol and name fields to support input flexibility
+            if (crypto.getSymbol().equalsIgnoreCase(cryptoId) || crypto.getName().equalsIgnoreCase(cryptoId)) {
                 return crypto.getPrice(); // Return the price if found
             }
         }
@@ -81,21 +81,36 @@ public class CryptoService {
     // Method to fetch historical data from CoinGecko
     public List<Double> getCryptoHistoricalData(String cryptoId, int days) {
         try {
+            // Resolve cryptoId to full name if needed
+            Crypto[] liveData = getCryptoData();
+            String cryptoName = null;
+            for (Crypto crypto : liveData) {
+                if (crypto.getSymbol().equalsIgnoreCase(cryptoId) || crypto.getName().equalsIgnoreCase(cryptoId)) {
+                    cryptoName = crypto.getName().toLowerCase();
+                    break;
+                }
+            }
+    
+            if (cryptoName == null) {
+                System.err.println("Crypto ID not found: " + cryptoId);
+                return null;
+            }
+    
             // CoinGecko URL for historical data
-            String url = "https://api.coingecko.com/api/v3/coins/" + cryptoId + "/market_chart?vs_currency=usd&days=" + days;
+            String url = "https://api.coingecko.com/api/v3/coins/" + cryptoName + "/market_chart?vs_currency=usd&days=" + days;
             RestTemplate restTemplate = new RestTemplate();
             String response = restTemplate.getForObject(url, String.class);
-
+    
             // Parse the JSON response
             JSONParser parser = new JSONParser();
             JSONObject jsonResponse = (JSONObject) parser.parse(response);
             JSONArray pricesArray = (JSONArray) jsonResponse.get("prices");
-
+    
             if (pricesArray == null || pricesArray.isEmpty()) {
-                System.err.println("No price data returned for cryptoId: " + cryptoId);
+                System.err.println("No price data returned for cryptoId: " + cryptoName);
                 return null;
             }
-
+    
             List<Double> prices = new ArrayList<>();
             for (Object priceObj : pricesArray) {
                 JSONArray priceArray = (JSONArray) priceObj;
@@ -103,14 +118,12 @@ public class CryptoService {
                 prices.add(price);
             }
             return prices;
-        } catch (ParseException e) {
-            System.err.println("Error parsing JSON response from CoinGecko API for cryptoId: " + cryptoId);
-            e.printStackTrace();
-            return null;
         } catch (Exception e) {
-            System.err.println("Failed to fetch trend data from CoinGecko API for cryptoId: " + cryptoId);
+            System.err.println("Error fetching trend data for cryptoId: " + cryptoId);
             e.printStackTrace();
             return null;
         }
     }
+    
+
 }
