@@ -74,25 +74,30 @@ public class Assignment {
         assignmentQueue.reset();
     }
 
+    // Initialize working list with all provided people
     public void initQueue(List<String> people) {
-        assignmentQueue.getHaventGone().addAll(people);
+        assignmentQueue.getWorking().addAll(people);
     }
 
+    // Add person to waiting and remove from working
     public void addQueue(String person) {
-        assignmentQueue.getHaventGone().remove(person);
-        assignmentQueue.getQueue().add(person);
+        assignmentQueue.getWorking().remove(person);
+        assignmentQueue.getWaiting().add(person);
     }
 
+    // Remove person from waiting and add to working
     public void removeQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getHaventGone().add(person);
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getWorking().add(person);
     }
 
+    // Remove person from waiting and add to completed
     public void doneQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getDone().add(person);
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getCompleted().add(person);
     }
 
+    // Constructor.
     public Assignment(String name, String type, String description, Double points, String dueDate) {
         this.name = name;
         this.type = type;
@@ -100,7 +105,8 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        this.assignmentQueue = new AssignmentQueue();
+        // This line is not needed as converter will reset to null after it takes in an empty queue 
+        // this.assignmentQueue = new AssignmentQueue();
     }
 
     public static Assignment[] init() {

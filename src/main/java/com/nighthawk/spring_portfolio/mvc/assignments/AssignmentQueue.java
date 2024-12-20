@@ -6,23 +6,24 @@ import java.util.List;
 import jakarta.persistence.Entity;
 import lombok.Data;
 
-// New Queue class to represent the three lists
 @Data
 @Entity
 public class AssignmentQueue {
-    private List<String> haventGone;
-    private List<String> queue;
-    private List<String> done;
+    private List<String> working;
+    private List<String> waiting;
+    private List<String> completed;
 
+    // New queues will be initialized as three empty lists.
     public AssignmentQueue() {
-        this.haventGone = new ArrayList<>();
-        this.queue = new ArrayList<>();
-        this.done = new ArrayList<>();
+        this.working = new ArrayList<>();
+        this.waiting = new ArrayList<>();
+        this.completed = new ArrayList<>();
     }
 
+    // Reset queue: clears all three lists in queue.
     public void reset() {
-        this.haventGone.clear();
-        this.queue.clear();
-        this.done.clear();
+        this.working.clear();
+        this.waiting.clear();
+        this.completed.clear();
     }
 }
