@@ -15,27 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.web.client.RestTemplate;
-import java.util.Map;
-import java.util.List;
-import com.nighthawk.spring_portfolio.mvc.Slack.CalendarEventController;
+
+import io.github.cdimascio.dotenv.Dotenv;
 
 @RestController
 public class SlackController {
-
-    /* 
-    My slack bot's API key :(
-    I would never actually leak my api key if it were for something more serious like a paid service or
-    something more linked to account security, but to save me and the rest of the class from having to
-    paste the key in their .envs manually I put my key here publicly
-    */
-    private String slackToken = "xoxp-7892664186276-7887305704597-7924387129461-e2333e0f3c20a3ddb2ba833ec37f4e52";
-    
-    // Rest template for API handling
-    @Autowired
-    private CalendarEventController calendarEventController;
-    
-    @Autowired
+    Dotenv dotenv = Dotenv.load();
+    private final String slackToken = dotenv.get("SLACK_TOKEN");
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -92,32 +78,35 @@ public class SlackController {
             return ResponseEntity.ok(payload.getChallenge());
         }
     
-    
         try {
             SlackEvent.Event messageEvent = payload.getEvent();
             String eventType = messageEvent.getType();
-    
     
             // Distinguishing messages from other events
             if ("message".equals(eventType)) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String messageContent = objectMapper.writeValueAsString(messageEvent);
-    
-                // Mapping the message's content to key-value pairs
-                Map<String, String> messageData = objectMapper.readValue(messageContent, Map.class);
-    
-                // Saving message to DB
+
+                // Save the message to the database
                 messageService.saveMessage(messageContent);
                 System.out.println("Message saved to database: " + messageContent);
-    
-                // Direct call to the CalendarEventController method
-                calendarEventController.addEventsFromSlackMessage(messageData);
-                System.out.println("Message processed by CalendarEventController");
-            }
+
+                // Send the message to the calendar service
+                String calendarUrl = "http://localhost:8085/api/calendar/add";
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Content-Type", "application/json");
+
+                HttpEntity<String> calendarEntity = new HttpEntity<>(messageContent, headers);
+                ResponseEntity<String> calendarResponse = restTemplate.postForEntity(calendarUrl, calendarEntity, String.class);
+
+                System.out.println("Message sent to calendar service: " + calendarResponse.getBody());
+
+                // Send the message to the AI calendar service
+                // sendToAICalendar(messageContent);
+            };
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
     
         return ResponseEntity.ok("OK");
     }
