@@ -61,15 +61,24 @@ public class PersonViewController {
             @AllArgsConstructor
             @Convert(attributeName = "person", converter = JsonType.class)
             class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
-                private String id;        
+                private String id;  
+                private String age;       
                 private String email;
                 private String password;
                 private String name;
-                private boolean kasmServerNeeded;
+                private String kasmServerNeeded;
                 private String pfp;
             }
             //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp());
+            PersonAdjacent personAdjacent = new PersonAdjacent(
+                "user", 
+                String.valueOf(person.getAge()), // Assuming `getAge()` returns an integer, convert to string
+                person.getEmail(),
+                person.getPassword(),
+                person.getName(),
+                person.getKasmServerNeeded() != null ? person.getKasmServerNeeded().toString() : "false", // Convert Boolean to String
+                person.getPfp()
+            );
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
             model.addAttribute("list", list);  // Add the list to the model for the view 
         }
