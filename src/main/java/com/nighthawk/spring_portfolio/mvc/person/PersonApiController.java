@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
+
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
@@ -144,6 +144,7 @@ public class PersonApiController {
     @Getter
     public static class PersonDto {
         private String email;
+        private String uid;
         private String password;
         private String name;
         private String dob;
@@ -170,7 +171,7 @@ public class PersonApiController {
         }
         // A person object WITHOUT ID will create a new record in the database
         String startingBalance = "100000";
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 

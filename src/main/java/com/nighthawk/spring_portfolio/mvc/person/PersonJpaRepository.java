@@ -37,11 +37,15 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
     List<Person> findAllByOrderByNameAsc();
 
     List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
+    // List<Person> findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(String name, String uid);
     
     Person findByEmailAndPassword(String email, String password);
 
     boolean existsByEmail(String email);
+    // Person findByUid(String uid);
+    // Person findByUidAndPassword(String uid, String password); // Adjusted to use UID for authentication
 
+    // boolean existsByUid(String uid); // Check existence by UID
     /**
      * Custom JPA query using the @Query annotation.
      * This allows for more complex queries that can't be expressed through the method name.
