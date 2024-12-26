@@ -206,6 +206,10 @@ public class PersonApiController {
                 existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
 
             }
+            if (personDto.getUid() != null) {
+                existingPerson.setUid(personDto.getUid());
+
+            }
         
             if (personDto.getName() != null) {
                 existingPerson.setName(personDto.getName());
