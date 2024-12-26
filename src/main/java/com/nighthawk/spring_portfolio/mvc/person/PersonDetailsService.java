@@ -36,17 +36,17 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
      * Security
      */
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Person person = personJpaRepository.findByEmail(email); // setting variable user equal to the method finding the username in the database
+    public UserDetails loadUserByUsername(String uid) throws UsernameNotFoundException {
+        Person person = personJpaRepository.findByUid(uid); // setting variable user equal to the method finding the username in the database
         if (person == null) {
-			throw new UsernameNotFoundException("User not found with username: " + email);
+			throw new UsernameNotFoundException("User not found with username: " + uid);
         }
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         person.getRoles().forEach(role -> { //loop through roles
             authorities.add(new SimpleGrantedAuthority(role.getName())); //create a SimpleGrantedAuthority by passed in role, adding it all to the authorities list, list of roles gets past in for spring security
         });
         // train spring security to User and Authorities
-        User user = new User(person.getEmail(), person.getPassword(), authorities);
+        User user = new User(person.getUid(), person.getPassword(), authorities);
         return user;
     }
 
@@ -57,13 +57,13 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
     }
 
     // custom query to find match to name or email
-    public List<Person> list(String name, String email) {
-        return personJpaRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(name, email);
+    public List<Person> list(String name, String uid) {
+        return personJpaRepository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(name, uid);
     }
 
     // custom query to find anything containing term in name or email ignoring case
     public List<Person> listLike(String term) {
-        return personJpaRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(term, term);
+        return personJpaRepository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(term, term);
     }
 
     // custom query to find anything containing term in name or email ignoring case
@@ -84,8 +84,8 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
                 : null;
     }
 
-    public Person getByEmail(String email) {
-        return (personJpaRepository.findByEmail(email));
+    public Person getByUid(String uid) {
+        return (personJpaRepository.findByUid(uid));
     }
 
     public void delete(long id) {
@@ -133,7 +133,7 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
         }
     }
 
-    public boolean existsByEmail(String email) {  // check if email in db
-        return personJpaRepository.existsByEmail(email);
+    public boolean existsByUid(String uid) {  // check if email in db
+        return personJpaRepository.existsByUid(uid);
     }
 }

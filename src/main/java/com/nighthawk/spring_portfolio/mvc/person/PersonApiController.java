@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import static com.nighthawk.spring_portfolio.mvc.person.Person.startingBalance;
+
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
@@ -76,7 +76,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);  
+        Person person = repository.findByUid(email);  
 
         // Return the person if found
         if (person != null) {
@@ -144,6 +144,7 @@ public class PersonApiController {
     @Getter
     public static class PersonDto {
         private String email;
+        private String uid;
         private String password;
         private String name;
         private String dob;
@@ -170,7 +171,7 @@ public class PersonApiController {
         }
         // A person object WITHOUT ID will create a new record in the database
         String startingBalance = "100000";
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
@@ -191,9 +192,9 @@ public class PersonApiController {
         // Get the email of the current user from the authentication context
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Assuming email is used as the username in Spring Security
-
+        System.out.println(email);
         // Find the person by email
-        Optional<Person> optionalPerson = Optional.ofNullable(repository.findByEmail(email));
+        Optional<Person> optionalPerson = Optional.ofNullable(repository.findByUid(email));
         if (optionalPerson.isPresent()) {
             Person existingPerson = optionalPerson.get();
 
@@ -377,7 +378,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
+        Optional<Person> optional = Optional.ofNullable(repository.findByUid(email));
         if (optional.isPresent()) { // Good ID
             Person person = optional.get(); // value from findByID
 

@@ -44,9 +44,9 @@ public class JwtApiController {
 	@CrossOrigin(origins = "http://localhost:4100")
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
-		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+		authenticate(authenticationRequest.getUid(), authenticationRequest.getPassword());
 		final UserDetails userDetails = personDetailsService
-				.loadUserByUsername(authenticationRequest.getEmail());
+				.loadUserByUsername(authenticationRequest.getUid());
 
 		// Get the roles of the user
 		List<String> roles = userDetails.getAuthorities().stream()
@@ -68,7 +68,7 @@ public class JwtApiController {
 			.sameSite("None; Secure")
 			.build();
 
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getEmail() + " was authenticated successfully");
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getUid() + " was authenticated successfully");
 	}
 
 	private void authenticate(String username, String password) throws Exception {
