@@ -56,20 +56,21 @@ public class PersonViewController {
             model.addAttribute("list", list);  // Add the list to the model for the view
         }
         else {
-            Person person = repository.getByEmail(userDetails.getUsername());  // Fetch the person by email
+            Person person = repository.getByUid(userDetails.getUsername());  // Fetch the person by email
             @Data
             @AllArgsConstructor
             @Convert(attributeName = "person", converter = JsonType.class)
             class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
                 private String id;        
                 private String email;
+                private String uid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
                 private String pfp;
             }
             //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp());
+            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(), person.getUid(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
             model.addAttribute("list", list);  // Add the list to the model for the view 
         }
@@ -96,7 +97,7 @@ public class PersonViewController {
             return "person/create";
         }
         repository.save(person);
-        repository.addRoleToPerson(person.getEmail(), "ROLE_STUDENT");
+        repository.addRoleToPerson(person.getUid(), "ROLE_STUDENT");
         // Redirect to next step
         return "redirect:/mvc/person/read";
     }
@@ -110,12 +111,12 @@ public class PersonViewController {
     @GetMapping("/update/user")
     public String personUpdate(Authentication authentication, Model model) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        model.addAttribute("person", repository.getByEmail(userDetails.getUsername()));  // Add the person to the model
+        model.addAttribute("person", repository.getByUid(userDetails.getUsername()));  // Add the person to the model
         return "person/update";  // Return the template for the update form
     }
     @Getter
     public static class PersonRoleDto {
-        private String email;
+        private String uid;
         private String roleName;
     }
 
@@ -128,19 +129,19 @@ public class PersonViewController {
      */
     @PostMapping("/update/role")
     public ResponseEntity<Object> personRoleUpdateSave(@RequestBody PersonRoleDto roleDto) {
-        Person personToUpdate = repository.getByEmail(roleDto.getEmail());
+        Person personToUpdate = repository.getByUid(roleDto.getUid());
         if (personToUpdate == null) {
             return new ResponseEntity<>(personToUpdate, HttpStatus.CONFLICT);  // Return error if person not found
         }
 
-        repository.addRoleToPerson(roleDto.getEmail(), roleDto.getRoleName());  // Add the role to the person
+        repository.addRoleToPerson(roleDto.getUid(), roleDto.getRoleName());  // Add the role to the person
 
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
     }
 
     @Getter
     public static class PersonRolesDto {
-        private String email;
+        private String uid;
         private List<String> roleNames;
     }
 
@@ -152,14 +153,14 @@ public class PersonViewController {
      */
     @PostMapping("/update/roles")
     public ResponseEntity<Object> personRolesUpdateSave(@RequestBody PersonRolesDto rolesDto) {
-        Person personToUpdate = repository.getByEmail(rolesDto.getEmail());
+        Person personToUpdate = repository.getByUid(rolesDto.getUid());
         if (personToUpdate == null) {
             return new ResponseEntity<>(personToUpdate, HttpStatus.CONFLICT);  // Return error if person not found
         }
 
         // Add all roles to the person
         for (String roleName : rolesDto.getRoleNames()) {
-            repository.addRoleToPerson(rolesDto.getEmail(), roleName);
+            repository.addRoleToPerson(rolesDto.getUid(), roleName);
         }
 
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
@@ -175,7 +176,7 @@ public class PersonViewController {
     @GetMapping("/delete/user")
     public String personDelete(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        repository.delete(repository.getByEmail(userDetails.getUsername()).getId());  // Delete the person by ID
+        repository.delete(repository.getByUid(userDetails.getUsername()).getId());  // Delete the person by ID
         return "redirect:/logout";  // logout the user
     }
 
@@ -190,7 +191,7 @@ public class PersonViewController {
         //don't redirect to read page if you delete yourself
         //check before deleting from database to avoid imploding the backend
         boolean deletingYourself = false;
-        if (repository.getByEmail(((UserDetails)authentication.getPrincipal()).getUsername()).getId() == id){
+        if (repository.getByUid(((UserDetails)authentication.getPrincipal()).getUsername()).getId() == id){
             deletingYourself = true;
         }
         repository.delete(id);  // Delete the person by ID
@@ -214,14 +215,14 @@ public String personUpdateSave(Authentication authentication, @Valid Person pers
             .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
     // Retrieve the person to update by email
-    Person personToUpdate = repository.getByEmail(person.getEmail());
+    Person personToUpdate = repository.getByUid(person.getUid());
     if (personToUpdate == null) {
         return "redirect:/e#email_does_not_exist"; // Redirect if the person does not exist
     }
 
     // If the user is not an admin, ensure they are updating their own record
     if (!isAdmin) {
-        Person currentUser = repository.getByEmail(userDetails.getUsername());
+        Person currentUser = repository.getByUid(userDetails.getUsername());
         if (currentUser == null || !currentUser.getId().equals(personToUpdate.getId())) {
             return "redirect:/e#unauthorized"; // Redirect if not authorized
         }
@@ -245,13 +246,6 @@ public String personUpdateSave(Authentication authentication, @Valid Person pers
         updated = true;
     }
 
-    if (person.getEmail() != null && !person.getEmail().isEmpty()) {
-        // Check if the new email already exists to avoid conflicts
-        Person existingPerson = repository.getByEmail(person.getEmail());
-        if (existingPerson != null && !existingPerson.getId().equals(personToUpdate.getId())) {
-            return "redirect:/e#email_already_in_use"; // Redirect if email is already taken
-        }
-    }
 
     if (person.getDob() != null) {
         personToUpdate.setDob(person.getDob());
@@ -282,21 +276,22 @@ public String person(Authentication authentication, @PathVariable("id") int id, 
         List<Person> list = Arrays.asList(person);  // Convert the single person into a list for consistency
         model.addAttribute("list", list);  // Add the list to the model for the view 
     }
-    else if(repository.getByEmail(userDetails.getUsername()).getId() == id){
-        Person person = repository.getByEmail(userDetails.getUsername());  // Fetch the person by email
+    else if(repository.getByUid(userDetails.getUsername()).getId() == id){
+        Person person = repository.getByUid(userDetails.getUsername());  // Fetch the person by email
         @Data
         @AllArgsConstructor
         @Convert(attributeName = "person", converter = JsonType.class)
         class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
             private String id;        
             private String email;
+            private String uid;
             private String password;
             private String name;
             private boolean kasmServerNeeded;
             private String pfp;
         }
         //populate personAdajacent, id is replaced by "user"
-        PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp()); 
+        PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(), person.getUid(), person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp()); 
         List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
         model.addAttribute("list", list);  // Add the list to the model for the view 
     }
