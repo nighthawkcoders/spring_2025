@@ -37,7 +37,7 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
     List<Person> findAllByOrderByNameAsc();
 
     List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
-    // List<Person> findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(String name, String uid);
+    List<Person> findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(String name, String uid);
     
     Person findByEmailAndPassword(String email, String password);
 
