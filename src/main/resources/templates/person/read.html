@@ -24,8 +24,8 @@
                     <thead>
                     <tr>
                         <th>ID</th>
-                        <th>User ID</th>
-                        <th>Person</th>
+                        <th>User Github ID</th>
+                        <th>Person Email</th>
                         <th>Age</th>
                         <th>Kasm Server Needed</th>
                         <th>Profile Picture</th>
@@ -35,7 +35,8 @@
                     <tbody>
                     <tr th:each="person : ${list}">
                         <td th:text="${person.id}">Person ID</td>
-                        <td th:text="${person.email}">User ID</td>
+                        <td th:text="${person.uid}">Github ID</td>
+                        <td th:text="${person.email}">User Email</td>
                         <td th:text="${person.name}">Name</td>
                         <td th:if="${person.getAge() != -1}" th:text="${person.getAge()}">Age</td>
                         <td th:unless="${person.getAge() != -1}" th:text="Unknown">Unknown Age</td>
