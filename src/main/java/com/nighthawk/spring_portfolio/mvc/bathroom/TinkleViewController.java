@@ -1,22 +1,20 @@
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 public class TinkleViewController {
@@ -43,7 +41,7 @@ public class TinkleViewController {
 
         // Get the logged-in user's email
         String email = userDetails.getUsername();
-        Person user = personRepository.findByEmail(email);
+        Person user = personRepository.findByUid(email);
 
         // Check if the user exists and has ROLE_ADMIN
         if (user == null || !user.hasRoleWithName("ROLE_ADMIN")) {

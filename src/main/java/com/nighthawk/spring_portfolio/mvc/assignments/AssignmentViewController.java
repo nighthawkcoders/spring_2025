@@ -128,7 +128,7 @@ public class AssignmentViewController {
             @AuthenticationPrincipal UserDetails userDetails) {
         
         String email = userDetails.getUsername();
-        Person user = personRepository.findByEmail(email);
+        Person user = personRepository.findByUid(email);
         
         if (user == null || (!user.hasRoleWithName("ROLE_TEACHER") && !user.hasRoleWithName("ROLE_ADMIN"))) {
             throw new ResponseStatusException(
