@@ -116,7 +116,7 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
 
     
     public void addRoleToPerson(String email, String roleName) { // by passing in the two strings you are giving the user that certain role
-        Person person = personJpaRepository.findByEmail(email);
+        Person person = personJpaRepository.findByUid(email);
         if (person != null) { // verify person
             PersonRole role = personRoleJpaRepository.findByName(roleName);
             if (role != null) { // verify role
