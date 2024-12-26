@@ -76,7 +76,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Person person = repository.findByEmail(email);  
+        Person person = repository.findByUid(email);  
 
         // Return the person if found
         if (person != null) {
@@ -192,9 +192,9 @@ public class PersonApiController {
         // Get the email of the current user from the authentication context
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername(); // Assuming email is used as the username in Spring Security
-
+        System.out.println(email);
         // Find the person by email
-        Optional<Person> optionalPerson = Optional.ofNullable(repository.findByEmail(email));
+        Optional<Person> optionalPerson = Optional.ofNullable(repository.findByUid(email));
         if (optionalPerson.isPresent()) {
             Person existingPerson = optionalPerson.get();
 
@@ -378,7 +378,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Email is mapped/unmapped to username for Spring Security
 
         // Find a person by username
-        Optional<Person> optional = Optional.ofNullable(repository.findByEmail(email));
+        Optional<Person> optional = Optional.ofNullable(repository.findByUid(email));
         if (optional.isPresent()) { // Good ID
             Person person = optional.get(); // value from findByID
 
