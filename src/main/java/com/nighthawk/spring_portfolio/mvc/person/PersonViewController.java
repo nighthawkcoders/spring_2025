@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+import java.net.PasswordAuthentication;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.crypto.password.*;
 
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
@@ -207,8 +209,7 @@ public class PersonViewController {
         Person personToUpdate = repository.getByGhid(person.getGhid());
         
         //if the user is not an admin, then check if they are updating themself
-        if(isAdmin == false){
-            
+        if(!isAdmin){
             //if not then return Unauthorized
             if(! Long.valueOf(personToUpdate.getId()).equals((repository.getByGhid(userDetails.getUsername())).getId())){
                 return "redirect:/e#Unauthorized";
@@ -220,25 +221,27 @@ public class PersonViewController {
         }
 
         boolean updated = false;
+        boolean samePassword = true;
 
         // Update fields if the new values are provided
-        if (person.getPassword() != null && person.getPassword().isBlank() == false) {
+        if ((person.getPassword() != null) && (person.getPassword().isBlank() == false)) {
             personToUpdate.setPassword(person.getPassword());
             updated = true;
+            samePassword = false;
         }
-        if (person.getName() != null && person.getName().isBlank() == false) {
+        if ((person.getName() != null) && (person.getName().isBlank() == false) && ((personToUpdate.getName() == null) || (!person.getName().equals(personToUpdate.getName())))) {
             personToUpdate.setName(person.getName());
             updated = true;
         }
-        if (person.getDob() != null) {
+        if ((person.getDob() != null) && ((personToUpdate.getDob() == null) || (!person.getDob().equals(personToUpdate.getDob())))) {
             personToUpdate.setDob(person.getDob());
             updated = true;
         }
-        if (person.getPfp() != null && person.getPfp().isBlank() == false) {
+        if ((person.getPfp() != null) &&  (person.getPfp().isBlank() == false) &&  ((personToUpdate.getPfp() == null) || (!person.getPfp().equals(personToUpdate.getPfp())))) {
             personToUpdate.setPfp(person.getPfp());
             updated = true;
         }
-        if (person.getKasmServerNeeded() != null) {
+        if ((person.getDob() != null) && ((personToUpdate.getKasmServerNeeded() == null) || (!person.getKasmServerNeeded().equals(personToUpdate.getKasmServerNeeded())))) {
             personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
             updated = true;
         }
@@ -248,8 +251,9 @@ public class PersonViewController {
             return "redirect:/e#no_changes_detected";
         }
 
+       
         // Save the updated person
-        repository.save(personToUpdate);
+        repository.save(personToUpdate,samePassword);
 
         // Ensure the roles are correctly assigned
         repository.addRoleToPerson(person.getGhid(), "ROLE_USER");

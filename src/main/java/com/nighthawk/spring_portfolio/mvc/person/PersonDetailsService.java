@@ -111,6 +111,13 @@ public class PersonDetailsService implements UserDetailsService {
         personJpaRepository.save(person); // Save person to the database
     }
 
+    public void save(Person person, Boolean samePassword) {
+        if(!samePassword){
+            person.setPassword(passwordEncoder.encode(person.getPassword())); // Encode the password before saving
+        }
+        personJpaRepository.save(person); // Save person to the database
+    }
+
     /**
      * Retrieves a Person entity by its ID.
      *
