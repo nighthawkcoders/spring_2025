@@ -208,8 +208,9 @@ public class PersonViewController {
         
         //if the user is not an admin, then check if they are updating themself
         if(isAdmin == false){
+            
             //if not then return Unauthorized
-            if( personToUpdate.getId() !=(repository.getByGhid(userDetails.getUsername())).getId()){
+            if(! Long.valueOf(personToUpdate.getId()).equals((repository.getByGhid(userDetails.getUsername())).getId())){
                 return "redirect:/e#Unauthorized";
             }
         }
