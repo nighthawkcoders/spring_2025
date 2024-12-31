@@ -222,11 +222,11 @@ public class PersonViewController {
         boolean updated = false;
 
         // Update fields if the new values are provided
-        if (person.getPassword() != null) {
+        if (person.getPassword() != null && person.getPassword().isBlank() == false) {
             personToUpdate.setPassword(person.getPassword());
             updated = true;
         }
-        if (person.getName() != null) {
+        if (person.getName() != null && person.getName().isBlank() == false) {
             personToUpdate.setName(person.getName());
             updated = true;
         }
@@ -234,7 +234,7 @@ public class PersonViewController {
             personToUpdate.setDob(person.getDob());
             updated = true;
         }
-        if (person.getPfp() != null) {
+        if (person.getPfp() != null && person.getPfp().isBlank() == false) {
             personToUpdate.setPfp(person.getPfp());
             updated = true;
         }
