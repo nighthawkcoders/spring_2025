@@ -3,79 +3,101 @@
 
 <head>
     <title>Update Account</title>
+    <style>
+        /* Basic Styling for Form */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+        }
+        .jumbotron {
+            background-color: #f7f7f7;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        4 {
+            margin-bottom: 20px;
+            color: #cfcece;
+            background-color: #181818;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* Role Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            text-align: left;
+            padding: 10px;
+            background-color: #181818;
+            border-bottom: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        /* Button Styling */
+        .btn-custom {
+            background-color: #28a745; /* Same green color for both buttons */
+            color: black;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-custom:hover {
+            background-color: #218838; /* Darker green for hover effect */
+        }
+
+        /* Error Messages */
+        .error {
+            color: red;
+            font-size: 12px;
+        }
+        /* Footer info styling */
+        #footerInfo {
+            font-size: 14px;
+            font-weight: 5px;
+        }
+    </style>
+
     <script>
-        // Function to handle image file input
-        function previewImage(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const base64Image = e.target.result;
-                document.getElementById("pfp_preview").src = base64Image; // Set the preview image
-                document.getElementById("pfp").value = base64Image; // Set the base64 string in the hidden field
-            };
-            if (file) {
-                reader.readAsDataURL(file); // Read the image file as base64
-            }
-        }
-        /**
-         * @Function encodeImageFileAsURL(); //Function to encode image files into Base64 String and set pfp field
-         * @Param @File || @Blob fileToConvert, image file to convert into base64
-        **/
-        function encodeImageFileAsURL(fileToConvert) { //currently unneeded, maybe add image upload?
-            const file = fileToConvert;
-            var reader = new FileReader();
-            reader.onloadend = function() {
-                console.log('RESULT', reader.result)
-                document.getElementById("pfp").value = reader.result;
-            }
-            reader.readAsDataURL(file);
-        }
-
-        window.addEventListener("load",()=>{ //wait for window to load everything
-            /**
-             *  @Function CheckImage(); // Function to attempt to load profile picture
-             *  @Param @String pfpSrc, string representing the image src to set; Should be in base64 in this case
-             *  @Param @Function success, response function on loading success
-             *  @Param @Function error, response function on loading error
-             **/
-            function checkImage(pfpSrc,success,error){
-                document.getElementById("github_pfp").onload = success;
-                document.getElementById("github_pfp").onerror = error;
-                document.getElementById("github_pfp").src = pfpSrc; //attempt to load image
-            }
-            checkImage(document.getElementById("pfp").value,()=>{
-                document.getElementById("github_pfp").style.display = "block"; //unhide image
-            }, ()=>{
-                console.warn("Couldn't load profile picture"); //warning, this will exist after generated error when image failed
-            })
-
-            document.getElementById("addRoleButton").addEventListener("click",()=>{
+        // JavaScript functions remain the same
+        window.addEventListener("load", () => {
+            document.getElementById("addRoleButton").addEventListener("click", () => {
                 var roleNames = [];
 
-                if(document.getElementById("addRole1").checked == true){
+                if (document.getElementById("addRole1").checked == true) {
                     roleNames.push("ROLE_USER");
                 }
-                if(document.getElementById("addRole2").checked == true){
+                if (document.getElementById("addRole2").checked == true) {
                     roleNames.push("ROLE_ADMIN");
                 }
-                if(document.getElementById("addRole3").checked == true){
+                if (document.getElementById("addRole3").checked == true) {
                     roleNames.push("ROLE_TESTER");
                 }
-                if(document.getElementById("addRole4").checked == true){
+                if (document.getElementById("addRole4").checked == true) {
                     roleNames.push("ROLE_TEACHER");
                 }
-                if(document.getElementById("addRole5").checked == true){
+                if (document.getElementById("addRole5").checked == true) {
                     roleNames.push("ROLE_STUDENT");
                 }
 
-
-                if (roleNames.length == 0){return};
+                if (roleNames.length == 0) { return; }
                 var body = {
-                        ghid:document.getElementById("ghid").value,
-                        roleNames:roleNames,
-                    }
-                fetch("/mvc/person/update/roles",{
+                    ghid: document.getElementById("ghid").value,
+                    roleNames: roleNames,
+                }
+                fetch("/mvc/person/update/roles", {
                     method: "POST",
                     credentials: "include",
                     body: JSON.stringify(body),
@@ -83,14 +105,14 @@
                     headers: new Headers({
                         "content-type": "application/json"
                     })
-                }).then(function(response){
+                }).then(function (response) {
                     if (response.status !== 200) {
                         const errorMsg = 'Database response error: ' + response.status;
                         console.error(errorMsg);
                         document.getElementById("footerInfo").style.color = "red";
                         document.getElementById("footerInfo").innerText = "Failed to update roles.";
-                        if(response.status = 403){
-                            document.getElementById("footerInfo").innerText = "Unauthorized, You must be an admin to update roles.";
+                        if (response.status = 403) {
+                            document.getElementById("footerInfo").innerText = "Unauthorized action, you must be an admin to update roles.";
                         }
                         return;
                     }
@@ -101,146 +123,95 @@
                     }
                 })
             })
-        })
-
-        /**
-         * @Function validateForm(); // Function to validate the form (password confirmation)
-         * @Param @Event event, form Submission event
-        **/
-        
-        function validateForm(event) {
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirm_password").value;
-
-            // Check if passwords match
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                event.preventDefault(); // Prevent form submission
-                return;
-            }
-        }
+        });
     </script>
+
 </head>
 
 <body>
     <th:block layout:fragment="body" th:remove="tag">
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col8">
-                    <div class="jumbotron text-light">
-                        <h3>Update Account</h3>
-                        <!-- Form submits the data to the backend for account creation -->
-                        <form class="form-inline" action="#" th:action="@{/mvc/person/update}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
-                            
-                            <!-- GitHub Username Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <input type="text" th:field="*{ghid}" id="ghid" hidden>
-                                <small th:if="${#fields.hasErrors('ghid')}" th:errors="*{ghid}">GitHub Username Error</small>
-                            </div>
 
-                            <!-- GitHub Profile Picture -->
-                            <div id="github_pfp_container" class="form-group mb-2 mr-sm-2">
-                                <img id="github_pfp" src="" alt="GitHub Profile Picture" style="max-width: 100px; display: none;">
-                                <input  th:field="*{pfp}" id="pfp" hidden>
-                                <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Pfp Error</small>
-                            </div>
+        <div class="container py-4">
+            <!-- Header Section -->
+            <header class="pb-3 mb-4 border-bottom border-primary text-light">
+                <span class="fs-4">Update Account</span>
+            </header>
 
-                            <!-- GitHub Username Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <label for="name">Name:</label>
-                                <input type="text" th:field="*{name}" id="name" placeholder="Enter Custom Username">
-                                <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</small>
-                            </div>
+            <div class="container py-4 text-light bg-primary rounded">
+                <div class="container bg-secondary py-4 rounded">
+                    <div class="container">
+                        <div class="row justify-content-md-center">
+                            <div class="col8">
+                                <div class="p-5 mb-4 bg-success text-light rounded-3">
+                                    <h3>Update Info</h3> <!-- Header for Update Info section -->
+                                    <form class="form-inline" action="#" th:action="@{/mvc/person/update}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
+                                        
+                                        <!-- Form Fields for Account Update -->
+                                        <div class="input-group mb-2 mr-sm-2">
+                                            <input type="text" th:field="*{ghid}" id="ghid" hidden>
+                                        </div>
 
-                            <!-- Password Input -->
-                            <div class="form-group mb-2 mr-sm-2">
-                                <label for="password">Password:</label>
-                                <input type="password" th:field="*{password}" id="password">
-                                <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</small>
-                            </div>
+                                        <div class="form-group mb-2 mr-sm-2">
+                                            <input type="text" th:field="*{name}" id="name" placeholder="Display Name">
+                                        </div>
 
-                            <!-- Confirm Password Input -->
-                            <div class="form-group mb-2 mr-sm-2">
-                                <label for="confirm_password">Confirm Password:</label>
-                                <input type="password" id="confirm_password">
-                            </div>
+                                        <div class="form-group mb-2 mr-sm-2">
+                                            <input type="password" th:field="*{password}" id="password" placeholder="Password">
+                                        </div>
 
-                            <!-- Date of Birth Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <label for="dob">Birth Date:</label>
-                                <input type="date" th:field="*{dob}" id="dob">
-                                <small th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}">Birth Date Error</small>
-                            </div>
+                                        <div class="form-group mb-2 mr-sm-2">
+                                            <input type="password" id="confirm_password" placeholder="Confirm Password">
+                                        </div>
 
-                            <!-- Checkbox: Kasm Server Needed -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <label for="kasmServerNeeded">Kasm Server Needed:</label>
-                                <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
-                                <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
+                                        <div class="input-group mb-2 mr-sm-2">
+                                            <input type="date" th:field="*{dob}" id="dob">
+                                        </div>
+
+                                        <div class="input-group mb-2 mr-sm-2">
+                                            <label for="kasmServerNeeded">Request Kasm Server:</label>
+                                            <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
+                                        </div>
+
+                                        <button type="button" class="btn-custom">Update Account</button>
+                                    </form>
+                                </div>
+                                <hr>
+                                <!-- Roles Input Section -->
+                                <div class="p-5 mb-4 bg-success text-light rounded-3">
+                                    <h3>Add Roles</h3> <!-- Header for Roles section -->
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td>User</td>
+                                                <td><input type="checkbox" id="addRole1"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Admin</td>
+                                                <td><input type="checkbox" id="addRole2"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Tester</td>
+                                                <td><input type="checkbox" id="addRole3"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Teacher</td>
+                                                <td><input type="checkbox" id="addRole4"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Student</td>
+                                                <td><input type="checkbox" id="addRole5"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button class="btn-custom" type="button" id="addRoleButton">Add Roles</button>
+                                    <div id="footerInfo"></div>
+                                </div>
                             </div>
-                            <!-- I am hiding this file upload for changing pfp.
-                            <div class="input-group mb-2 mr-sm-2"></div>
-                                <input type="file" id="pfp_input" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
-                            </div>
-                            -->
-                            <!-- Submit Button -->
-                            <button type="submit" class="btn btn-light">Update Account</button>
-                        </form>
-                    </div>
-                    <hr>
-                    <!-- Roles Input -->
-                    <div  class="jumbotron">
-                        <h3>Add Roles:</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th> Role </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td> User </td>
-                                    <td>
-                                        <input type="checkbox" id="addRole1">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td> Admin </td>
-                                    <td>
-                                        <input type="checkbox" id="addRole2">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td> Tester </td>
-                                    <td>
-                                        <input type="checkbox" id="addRole3">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td> Teacher </td>
-                                    <td>
-                                        <input type="checkbox" id="addRole4">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td> Student </td>
-                                    <td>
-                                        <input type="checkbox" id="addRole5">
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th> 
-                                        <button class = "btn btn-light" type="button" id="addRoleButton">Add Roles</button>
-                                    </th> 
-                                    <th id="footerInfo"></th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </th:block>
 </body>
