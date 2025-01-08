@@ -3104,7 +3104,7 @@ textarea.form-control-lg {
 }
 
 .btn-warning {
-  color: #000;
+  color: #000000;
   background-color: #ffc107;
   border-color: #ffc107;
 }
@@ -3134,7 +3134,7 @@ textarea.form-control-lg {
 }
 
 .btn-danger {
-  color: #fff;
+  color: #000000;
   background-color: #dc3545;
   border-color: #dc3545;
 }
