@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-// import spring dependencies for annotations and response handling
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,25 +15,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// import jackson for json parsing and custom node creation
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-// import custom entities and repositories for database access
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 
-// import dotenv for environment variable management
 import io.github.cdimascio.dotenv.Dotenv;
-
-// import lombok for automatic getter generation
 import lombok.Getter;
-
-// import okhttp for http requests and responses
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -177,9 +168,10 @@ public class AdventureAnswerApiController {
         AdventureAnswer answer = new AdventureAnswer(answerDto.getContent(), question, person, chatScore);
         answerJpaRepository.save(answer); // save the answer to the database
 
-        // update the person's balance by adding the question points
         double questionPoints = question.getPoints();
-        person.setBalance(person.getBalance() + questionPoints);
+        double updatedBalance = person.getBalanceDouble() + questionPoints;
+        person.setBalanceString(updatedBalance);
+        
         personJpaRepository.save(person); // save the updated person object
 
         // return the saved answer with an ok status

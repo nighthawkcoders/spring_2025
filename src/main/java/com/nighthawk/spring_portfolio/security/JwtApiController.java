@@ -44,9 +44,9 @@ public class JwtApiController {
 	@CrossOrigin(origins = "http://localhost:4100")
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
-		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+		authenticate(authenticationRequest.getUid(), authenticationRequest.getPassword());
 		final UserDetails userDetails = personDetailsService
-				.loadUserByUsername(authenticationRequest.getEmail());
+				.loadUserByUsername(authenticationRequest.getUid());
 
 		// Get the roles of the user
 		List<String> roles = userDetails.getAuthorities().stream()
@@ -65,11 +65,10 @@ public class JwtApiController {
 			.secure(true)
 			.path("/")
 			.maxAge(3600)
-			.domain("nighthawkcoders.github.io")
 			.sameSite("None; Secure")
 			.build();
 
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getEmail() + " was authenticated successfully");
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getUid() + " was authenticated successfully");
 	}
 
 	private void authenticate(String username, String password) throws Exception {
@@ -98,7 +97,6 @@ public class JwtApiController {
 				.httpOnly(false)
 				.secure(true)
 				.path("/")
-				.domain("nighthawkcoders.github.io")
 				.maxAge(0)  // Set maxAge to 0 to expire the cookie immediately
 				.sameSite("None; Secure")
 				.build();
