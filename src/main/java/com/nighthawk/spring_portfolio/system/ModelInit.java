@@ -19,6 +19,8 @@ import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
+import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
@@ -36,10 +38,10 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
 
@@ -62,6 +64,7 @@ public class ModelInit {
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
     @Autowired StudentInfoJPARepository studentInfoJPA;
+    @Autowired StudentQueueJPARepository studentQueueJPA;
 
     @Bean
     @Transactional
@@ -83,6 +86,7 @@ public class ModelInit {
                     questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
+            
             List<Comment> Comments = Comment.init();
             for (Comment Comment : Comments) {
                 List<Comment> CommentFound = CommentJPA.findByAssignment(Comment.getAssignment()); 
@@ -153,6 +157,14 @@ public class ModelInit {
                 Optional<BathroomQueue> queueFound = queueJPA.findByTeacherEmail(queue.getTeacherEmail());
                 if(queueFound.isEmpty()) {
                     queueJPA.save(queue);
+                }
+            }
+
+            StudentQueue[] studentQueueArray = StudentQueue.init();
+            for(StudentQueue queue: studentQueueArray) {
+                Optional<StudentQueue> queueFound = studentQueueJPA.findByTeacherEmail(queue.getTeacherEmail());
+                if(queueFound.isEmpty()) {
+                    studentQueueJPA.save(queue);
                 }
             }
 
