@@ -4,6 +4,14 @@
 
 <head>
     <title>Person List</title>
+    <style>
+        /* Make sure images are sized appropriately */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -39,7 +47,11 @@
                             <a th:href="'https://github.com/' + ${person.ghid}" target="_blank" th:text="${person.ghid}">User ghid</a>
                         </td>
                         <td th:text="${person.name}">Name</td>
-                        <td th:text="${person.kasmServerNeeded}">Kasm Server Needed</td>
+                        <!-- Custom KSM Image Checkbox -->
+                        <td>
+                            <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 
+                                 class="custom-checkbox" alt="KSM Status" />
+                        </td>
                         <!-- Profile Picture Column -->
                         <td>
                             <div th:if="${person.pfp != null}">
