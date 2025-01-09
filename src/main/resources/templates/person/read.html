@@ -1,6 +1,22 @@
 <!DOCTYPE HTML>
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+    <title>Person List</title>
+    <style>
+        /* Make sure images are sized appropriately */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        /* Highlight the sorted column */
+        th.sortable:hover {
+            cursor: pointer;
+            color: #007bff;
+        }
+    </style>
     <script>
         // Function to sort the table
         function sortTable(n) {
@@ -61,28 +77,17 @@
             sortTable(0); // Default to sorting by the "ID" column (index 0)
         }
     </script>
-
-<head>
-    <title>Person Viewer</title> <!-- The title of the page displayed in the browser's title bar -->
-    <style>
-        .custom-checkbox {
-            width: 24px; /* Adjust this width */
-            height: 24px; /* Adjust this height */
-        }
-    </style>
 </head>
 
-<!-- The 'body' section is defined using Thymeleaf's layout fragment. It will replace the 'body' content in the base layout -->
+<body>
 <th:block layout:fragment="body" th:remove="tag">
-
-    <!-- Main container for the login page with padding and spacing -->
-    <div class="container py-4">
-        <!-- Header section, with a border and styling -->
-        <header class="pb-3 mb-4 border-bottom border-primary text-light">
-            <span class="fs-4">Database SQL Person</span> <!-- Title of the page displayed inside the header -->
+    <div class="container py-4 bg-primary">
+        <!-- Page specific body additions -->
+        <header class="pb-3 mb-4 border-bottom">
+            <a href="#" class="d-flex align-items-center text-light text-decoration-none">
+                <span class="fs-4">Database SQL Person</span>
+            </a>
         </header>
-    </div>
-        <div class="container py-4 bg-primary rounded">
 
         <div class="container py-4 text-light bg-success">
             <h2>Person Viewer</h2>
