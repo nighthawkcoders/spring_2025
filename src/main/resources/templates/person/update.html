@@ -15,13 +15,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        4 {
-            margin-bottom: 20px;
-            color: #cfcece;
-            background-color: #181818;
-            padding: 10px;
-            border-radius: 4px;
-        }
 
         /* Role Table Styling */
         table {
@@ -71,7 +64,40 @@
     </style>
 
     <script>
-        // JavaScript functions remain the same
+        // JavaScript to handle form validation and prevent empty fields
+        function validateForm(event) {
+            // Prevent form submission
+            event.preventDefault();
+
+            var form = event.target;
+
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirm_password').value;
+
+            // If both password fields are filled, check that they match
+            if (password && confirmPassword) {
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match.");
+                    return; // Prevent form submission if passwords don't match
+                }
+            }
+            // If both password fields are empty, it's valid (no validation)
+            else if (password || confirmPassword) {
+                // If only one password field is filled, it's an error
+                alert("Both password fields must be filled to update the password.");
+                return; // Prevent form submission
+            }
+
+            // Check if name is empty and prevent overwriting with a blank value
+            var name = document.getElementById('name').value;
+            if (name === "") {
+                form.querySelector('[name="name"]').value = null; // Do not update name if empty
+            }
+
+            // Continue with form submission after validation
+            form.submit();
+        }
+
         window.addEventListener("load", () => {
             document.getElementById("addRoleButton").addEventListener("click", () => {
                 var roleNames = [];
