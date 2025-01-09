@@ -1,14 +1,12 @@
 <!DOCTYPE HTML>
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/base}" lang="en">
 
-<!-- Container for the header section of the page -->
 <div class="container py-4">
     <header class="pb-3 mb-4 border-bottom border-primary text-light">
-        <span class="fs-4">Create Account</span> <!-- Page title for creating an account -->
+        <span class="fs-4">Create Account</span>
     </header>
 </div>
 
-<!-- Fragment for rendering dynamic content, the tag will be removed -->
 <th:block layout:fragment="body" th:remove="tag">
 
     <div class="container py-4">
@@ -20,74 +18,75 @@
 <head>
     <title>Create Account</title>
     <script>
-        // @Boolean validatedGithub, false until the user validates their GitHub username
         var validatedGithub = false;
+        var lastApiCallTime = 0;  // To throttle API requests
+        var typingTimer;          // Timer for debouncing user input
+        const debounceDelay = 5000; // 5 seconds debounce delay
+        const throttleInterval = 5000; // 5 seconds throttle interval
 
-        /**
-         * Function to encode an image file to Base64 format
-         * @param {File|Blob} fileToConvert - Image file to convert into base64
-         */
+        // Function to encode an image file to Base64 format
         function encodeImageFileAsURL(fileToConvert) {
             const file = fileToConvert;
             var reader = new FileReader();
             reader.onloadend = function() {
-                console.log('RESULT', reader.result)  // Log the base64 string for debugging
-                document.getElementById("pfp").value = reader.result; // Set the encoded string to the hidden input field
+                console.log('RESULT', reader.result);
+                document.getElementById("pfp").value = reader.result;
             }
-            reader.readAsDataURL(file); // Trigger reading the file as a base64 string
+            reader.readAsDataURL(file);
         }
 
-        /**
-         * Function to validate the form before submission
-         * @param {Event} event - The form submission event
-         */
+        // Function to validate the form before submission
         function validateForm(event) {
-            // Check if the GitHub account has been validated
             if(!validatedGithub) {
-                alert("You must validate your Github Username!"); // Show alert if GitHub username is not validated
-                event.preventDefault(); // Prevent form submission
+                alert("You must validate your Github Username!");
+                event.preventDefault();
                 return;
             }
 
             const password = document.getElementById("password").value;
             const confirmPassword = document.getElementById("confirm_password").value;
             
-            // Check if passwords match
             if (password !== confirmPassword) {
-                alert("Passwords do not match!"); // Show alert if passwords do not match
-                event.preventDefault(); // Prevent form submission
+                alert("Passwords do not match!");
+                event.preventDefault();
                 return;
             }
         }
 
-        /**
-         * Function to check if the GitHub username exists using GitHub's API
-         * @param {string} githubUsername - The GitHub username entered by the user
-         */
+        // Function to check if the GitHub username exists using GitHub's API
         function checkGitHubUsername() {
             const githubUsername = document.getElementById("ghid").value;
             const url = `https://api.github.com/users/${githubUsername}`;
+
+            const currentTime = Date.now();
+            // Throttle the API requests (once every 5 seconds)
+            if (currentTime - lastApiCallTime < throttleInterval) {
+                return; // Skip this call if it's within the throttle interval
+            }
+            
+            // Update last API call time
+            lastApiCallTime = currentTime;
 
             // Fetch data from GitHub API to validate the username
             fetch(url)
                 .then(response => {
                     if (response.ok) {
-                        return response.json(); // Parse the response as JSON if the username is valid
+                        return response.json(); // Parse response as JSON
                     } else {
-                        throw new Error('Invalid GitHub username.'); // Throw error if the username is invalid
+                        throw new Error('Invalid GitHub username.');
                     }
                 })
                 .then(data => {
                     // Display the GitHub user's profile picture
                     const pfpImage = document.getElementById("github_pfp");
-                    pfpImage.src = data.avatar_url; // Set the profile picture source to the GitHub avatar URL
-                    pfpImage.style.display = "block"; // Make the profile picture visible
+                    pfpImage.src = data.avatar_url;
+                    pfpImage.style.display = "block";
 
                     // Fetch the profile picture as a Blob to convert it into base64
                     fetch(data.avatar_url)
-                        .then(res => res.blob()) // Fetch the image as a Blob
+                        .then(res => res.blob())
                         .then(blob => {
-                          encodeImageFileAsURL(blob); // Encode the image Blob into base64
+                            encodeImageFileAsURL(blob); // Encode the image Blob into base64
                     });
 
                     validatedGithub = true; // Mark the GitHub username as validated
@@ -96,79 +95,70 @@
                     alert(error.message); // Display error if the GitHub username is invalid
                 });
         }
+
+        // Debounced function to handle input from user
+        function handleTyping() {
+            clearTimeout(typingTimer); // Clear the previous timer
+            typingTimer = setTimeout(checkGitHubUsername, debounceDelay); // Set a new timer for 5 seconds
+        }
     </script>
 </head>
 
 <body>
-        <!-- Main container for the form -->
-        <div class="container py-4 text-light bg-primary rounded">
+    <div class="container py-4 text-light bg-primary rounded">
+        <div class="container bg-secondary py-4 rounded">
+            <div class="p-5 mb-4 bg-success text-light rounded-3">
 
-            <div class="container bg-secondary py-4 rounded">
-                <div class="p-5 mb-4 bg-success text-light rounded-3">
+                <div class="container">
+                    <div class="row justify-content-md-center">
+                        <div class="col8">
+                            <div class="jumbotron">
+                                <h3>Create New Account</h3>
+                                <form class="form-inline" action="#" th:action="@{/mvc/person/create}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <input type="text" th:field="*{ghid}" id="ghid" placeholder="Enter GitHub ID" oninput="handleTyping()">
+                                        <small th:if="${#fields.hasErrors('ghid')}" th:errors="*{ghid}">GitHub ID Error</small>
+                                    </div>
 
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col8">
-                <!-- Centering the form for consistency with other pages -->
-                    
-                    <div class="jumbotron">
-                        <h3>Create New Account</h3>
-                        <!-- Form to submit data for creating a new account -->
-                        <form class="form-inline" action="#" th:action="@{/mvc/person/create}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
-                            
-                            <!-- GitHub Username Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <input type="text" th:field="*{ghid}" id="ghid" placeholder="Enter GitHub ID">
-                                <small th:if="${#fields.hasErrors('ghid')}" th:errors="*{ghid}">GitHub ID Error</small> <!-- Error message for GitHub ID -->
+                                    <div id="github_pfp_container" style="margin-top: 10px;">
+                                        <img id="github_pfp" src="" alt="GitHub Profile Picture" style="max-width: 100px; display: none;">
+                                        <input th:field="*{pfp}" id="pfp" hidden>
+                                        <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Pfp Error</small>
+                                    </div>
+
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <input type="text" th:field="*{name}" id="name" placeholder="Display Name">
+                                        <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Username Error</small>
+                                    </div>
+
+                                    <div class="form-group mb-2 mr-sm-2">
+                                        <input type="password" th:field="*{password}" id="password" placeholder="Password">
+                                        <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</small>
+                                    </div>
+
+                                    <div class="form-group mb-2 mr-sm-2">
+                                        <input type="password" id="confirm_password" placeholder="Confirm Password">
+                                    </div>
+
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <label for="kasmServerNeeded"> Request Kasm Server: </label>
+                                        <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
+                                        <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
+                                    </div>
+
+                                    <!-- Create Account Button -->
+                                    <button type="submit" class="btn btn-secondary">Create Account</button>
+
+                                    <!-- Log In Button aligned to the right -->
+                                    <a th:href="@{/login}">Log In</a>
+                                </form>
                             </div>
-
-                            <!-- GitHub Profile Picture -->
-                            <div id="github_pfp_container" style="margin-top: 10px;">
-                                <img id="github_pfp" src="" alt="GitHub Profile Picture" style="max-width: 100px; display: none;"> <!-- GitHub profile picture display -->
-                                <input th:field="*{pfp}" id="pfp" hidden> <!-- Hidden input field to store profile picture in base64 -->
-                                <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Pfp Error</small> <!-- Error message for profile picture -->
-                            </div>
-
-                            <!-- Display Name Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <input type="text" th:field="*{name}" id="name" placeholder="Display Name">
-                                <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Username Error</small> <!-- Error message for display name -->
-                            </div>
-
-                            <!-- Password Input -->
-                            <div class="form-group mb-2 mr-sm-2">
-                                <input type="password" th:field="*{password}" id="password" placeholder="Password">
-                                <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</small> <!-- Error message for password -->
-                            </div>
-
-                            <!-- Confirm Password Input -->
-                            <div class="form-group mb-2 mr-sm-2">
-                                <input type="password" id="confirm_password" placeholder="Confirm Password">
-                            </div>
-
-                            <!-- Checkbox for requesting a Kasm server -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <label for="kasmServerNeeded"> Request Kasm Server: </label>
-                                <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
-                                <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small> <!-- Error message for Kasm server -->
-                            </div>
-
-                            <!-- Button to Verify GitHub Username -->
-                            <button type="button" class="btn btn-secondary" onclick="checkGitHubUsername()">Verify Github ID</button>
-
-                            <!-- Submit Button for Account Creation -->
-                            <button type="submit" class="btn btn-primary">Create Account</button>
-                        </form>
-                        <!-- Link to login page -->
-                        <tr><td><a th:href="@{/login}">Log In</a></td></tr>
-
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div><!-- End of form container -->
-</div> <!-- End of body fragment -->
 </body>
 
 </html>
