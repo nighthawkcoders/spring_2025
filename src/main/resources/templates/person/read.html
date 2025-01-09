@@ -11,7 +11,72 @@
             height: 20px;
             cursor: pointer;
         }
+        /* Highlight the sorted column */
+        th.sortable:hover {
+            cursor: pointer;
+            color: #007bff;
+        }
     </style>
+    <script>
+        // Function to sort the table
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.querySelector("table");
+            switching = true;
+            dir = "asc"; // Set the sorting direction to ascending
+
+            // Keep looping until no switching is needed
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+
+                // Loop through all table rows (except the first, which contains the headers)
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    // Convert text to number for the "ID" column (index 0)
+                    var xValue = x.innerHTML;
+                    var yValue = y.innerHTML;
+
+                    if (n === 0) {
+                        // For the "ID" column (numeric sorting)
+                        xValue = parseInt(xValue, 10);
+                        yValue = parseInt(yValue, 10);
+                    }
+
+                    // Check if the two rows should switch place, based on the direction
+                    if (dir == "asc") {
+                        if (xValue > yValue) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (xValue < yValue) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc"; // If no switching has been done and the direction is "asc", set it to "desc"
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        // Sort the table by ID when the page loads
+        window.onload = function() {
+            sortTable(0); // Default to sorting by the "ID" column (index 0)
+        }
+    </script>
 </head>
 
 <body>
@@ -32,10 +97,10 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>User ID</th>
-                        <th>Person</th>
-                        <th>Kasm</th>
+                        <th class="sortable" onclick="sortTable(0)">User ID</th>
+                        <th class="sortable" onclick="sortTable(1)">Github ID</th>
+                        <th class="sortable" onclick="sortTable(2)">Username</th>
+                        <th class="sortable" onclick="sortTable(3)">Kasm</th>
                         <th>Profile Picture</th>
                         <th>Action</th>
                     </tr>
@@ -52,14 +117,14 @@
                             <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 
                                  class="custom-checkbox" alt="KSM Status" />
                         </td>
-                        <!-- Profile Picture Column -->
+                        <!-- Profile Picture Column (No sorting) -->
                         <td>
                             <div th:if="${person.pfp != null}">
                                 <img th:src="${person.pfp}" alt="Profile Picture" style="width: 64px; height: 64px; border-radius: 50%;" />
                             </div>
                         </td>
 
-                        <!-- Actions Column -->
+                        <!-- Actions Column (No sorting) -->
                         <td>
                             <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}" class="btn btn-warning btn-sm">Update</a>
                             <a th:href="@{/mvc/person/delete/{id}(id = ${person.id})}" class="btn btn-danger btn-sm">Delete</a>
