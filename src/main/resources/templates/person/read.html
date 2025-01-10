@@ -141,12 +141,12 @@
                         </td>
                         <!-- Profile Picture Column -->
                         <td>
-                            <div th:if="${person.pfp != null}" class="profile-picture-container">
-                                <!-- Attempt to load GitHub profile image -->
+                            <div class="profile-picture-container">
+                                <!-- Check if person has a profile picture -->
                                 <a th:href="'https://github.com/' + ${person.ghid} + '.png'" target="_blank">
-                                    <img th:src="'https://github.com/' + ${person.ghid} + '.png'"
+                                    <img th:src="|https://github.com/${person.ghid}.png|"
                                          alt="Profile Picture"
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/64';" />
+                                         onerror="this.onerror=null; this.src='https://cdn.iconscout.com/icon/free/png-256/free-cancel-icon-download-in-svg-png-gif-file-formats--close-delete-remove-user-interface-pack-icons-1300531.png?f=webp&w=256';" />
                                 </a>
                             </div>
                         </td>
