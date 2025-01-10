@@ -73,10 +73,9 @@ public class PersonViewController {
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
-                private String pfp;
             }
             //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getGhid(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp());
+            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getGhid(),person.getPassword(),person.getName(),person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
             model.addAttribute("list", list);  // Add the list to the model for the view 
         }
@@ -117,10 +116,9 @@ public class PersonViewController {
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
-                private String pfp;
             }
             //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getGhid(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp()); 
+            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getGhid(),person.getPassword(),person.getName(),person.getKasmServerNeeded()); 
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
             model.addAttribute("list", list);  // Add the list to the model for the view 
         }
@@ -237,10 +235,7 @@ public class PersonViewController {
             personToUpdate.setDob(person.getDob());
             updated = true;
         }
-        if ((person.getPfp() != null) &&  (person.getPfp().isBlank() == false) &&  ((personToUpdate.getPfp() == null) || (!person.getPfp().equals(personToUpdate.getPfp())))) {
-            personToUpdate.setPfp(person.getPfp());
-            updated = true;
-        }
+        
         if ((person.getDob() != null) && ((personToUpdate.getKasmServerNeeded() == null) || (!person.getKasmServerNeeded().equals(personToUpdate.getKasmServerNeeded())))) {
             personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
             updated = true;

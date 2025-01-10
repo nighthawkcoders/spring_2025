@@ -119,7 +119,6 @@ public class PersonApiController {
         private String password;
         private String name;
         private String dob;
-        private String pfp;
         private Boolean kasmServerNeeded; 
     }
 
@@ -140,7 +139,7 @@ public class PersonApiController {
         }
 
         // Create a new Person entity without an ID (it will be auto-generated in the database)
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER", true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER", personDetailsService.findRole("USER"));
         personDetailsService.save(person); // Save the new person entity to the database
 
         // Prepare JSON response with success message
@@ -181,9 +180,6 @@ public class PersonApiController {
             }
             if (personDto.getName() != null) {
                 existingPerson.setName(personDto.getName());
-            }
-            if (personDto.getPfp() != null) {
-                existingPerson.setPfp(personDto.getPfp());
             }
             if (personDto.getKasmServerNeeded() != null) {
                 existingPerson.setKasmServerNeeded(personDto.getKasmServerNeeded());

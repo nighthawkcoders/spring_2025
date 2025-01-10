@@ -24,17 +24,6 @@
         const debounceDelay = 5000; // 5 seconds debounce delay
         const throttleInterval = 5000; // 5 seconds throttle interval
 
-        // Function to encode an image file to Base64 format
-        function encodeImageFileAsURL(fileToConvert) {
-            const file = fileToConvert;
-            var reader = new FileReader();
-            reader.onloadend = function() {
-                console.log('RESULT', reader.result);
-                document.getElementById("pfp").value = reader.result;
-            }
-            reader.readAsDataURL(file);
-        }
-
         // Function to validate the form before submission
         function validateForm(event) {
             if(!validatedGithub) {
@@ -77,18 +66,7 @@
                     }
                 })
                 .then(data => {
-                    // Display the GitHub user's profile picture
-                    const pfpImage = document.getElementById("github_pfp");
-                    pfpImage.src = data.avatar_url;
-                    pfpImage.style.display = "block";
-
-                    // Fetch the profile picture as a Blob to convert it into base64
-                    fetch(data.avatar_url)
-                        .then(res => res.blob())
-                        .then(blob => {
-                            encodeImageFileAsURL(blob); // Encode the image Blob into base64
-                    });
-
+                    // Mark the GitHub username as validated
                     validatedGithub = true; // Mark the GitHub username as validated
                 })
                 .catch(error => {
@@ -118,12 +96,6 @@
                                     <div class="input-group mb-2 mr-sm-2">
                                         <input type="text" th:field="*{ghid}" id="ghid" placeholder="Enter GitHub ID" oninput="handleTyping()">
                                         <small th:if="${#fields.hasErrors('ghid')}" th:errors="*{ghid}">GitHub ID Error</small>
-                                    </div>
-
-                                    <div id="github_pfp_container" style="margin-top: 10px;">
-                                        <img id="github_pfp" src="" alt="GitHub Profile Picture" style="max-width: 100px; display: none;">
-                                        <input th:field="*{pfp}" id="pfp" hidden>
-                                        <small th:if="${#fields.hasErrors('pfp')}" th:errors="*{pfp}">Pfp Error</small>
                                     </div>
 
                                     <div class="input-group mb-2 mr-sm-2">

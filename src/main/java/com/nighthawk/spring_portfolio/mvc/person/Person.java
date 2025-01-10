@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,7 +36,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import com.nighthawk.spring_portfolio.mvc.person.ImageStrings.*;
 
 /**
  * Person is a POJO, Plain Old Java Object.
@@ -125,12 +123,6 @@ public class Person {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dob;
 
-    /** Profile picture (pfp) in base64 */
-    @Lob
-    @Column(nullable = true)
-    private String pfp;
-    
-
     /** Kasm Server Needed (ksns) in True/false */
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
@@ -166,13 +158,12 @@ public class Person {
      * Custom constructor for Person when building a new Person object from an API
      * call
      */
-    public Person(String ghid, String password, String name, Date dob, String pfp, Boolean kasmServerNeeded, PersonRole role) {
+    public Person(String ghid, String password, String name, Date dob, Boolean kasmServerNeeded, PersonRole role) {
         this.ghid = ghid;
         this.password = password;
         this.name = name;
         this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
-        this.pfp = pfp;
         this.balance = Float.valueOf(0);
         this.roles.add(role);
     }
@@ -199,7 +190,7 @@ public class Person {
      */
     public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded, String dob) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, ghid, password, null, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
+        return createPerson(name, ghid, password, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
 
     /**
@@ -207,13 +198,12 @@ public class Person {
      * 
      * @param roles
      */
-    public static Person createPerson(String name, String ghid, String password, String pfp, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
+    public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded, String dob, List<String> roleNames) {
         Person person = new Person();
         person.setName(name);
         person.setGhid(ghid);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
-        person.setPfp(pfp);
         person.setBalance(Float.valueOf(0));
         try {
             Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
@@ -239,12 +229,11 @@ public class Person {
      */
     public static Person[] init() {
         ArrayList<Person> persons = new ArrayList<>();
-        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", TobyImage.imageString, true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", MortImage.imageString, false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
-        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", NikoImage.imageString, true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", CurieImage.imageString, true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", HopperImage.imageString, true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-
+        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER")));
+        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         return persons.toArray(new Person[0]);
     }
 

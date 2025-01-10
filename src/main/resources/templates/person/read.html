@@ -40,64 +40,39 @@
         }
     </style>
     <script>
-        // Function to sort the table
-        function sortTable(n) {
-            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            table = document.querySelector("table");
-            switching = true;
-            dir = "asc"; // Set the sorting direction to ascending
+        // Function to check if an image exists
+        function imageExists(url) {
+            var img = new Image();
+            img.onload = function() {
+                return true;
+            };
+            img.onerror = function() {
+                return false;
+            };
+            img.src = url;
+        }
 
-            // Keep looping until no switching is needed
-            while (switching) {
-                switching = false;
-                rows = table.rows;
+        // Function to update the profile picture link dynamically
+        function updateProfilePicture(personId) {
+            var imgUrl = 'https://github.com/' + personId + '.png';
+            var link = document.getElementById('profile-link-' + personId);
+            var img = document.getElementById('profile-img-' + personId);
 
-                // Loop through all table rows (except the first, which contains the headers)
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                    // Convert text to number for the "ID" column (index 0)
-                    var xValue = x.innerHTML;
-                    var yValue = y.innerHTML;
-
-                    if (n === 0) {
-                        // For the "ID" column (numeric sorting)
-                        xValue = parseInt(xValue, 10);
-                        yValue = parseInt(yValue, 10);
-                    }
-
-                    // Check if the two rows should switch place, based on the direction
-                    if (dir == "asc") {
-                        if (xValue > yValue) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else if (dir == "desc") {
-                        if (xValue < yValue) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    }
-                }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchcount++;
-                } else {
-                    if (switchcount == 0 && dir == "asc") {
-                        dir = "desc"; // If no switching has been done and the direction is "asc", set it to "desc"
-                        switching = true;
-                    }
-                }
+            if (imageExists(imgUrl)) {
+                link.href = imgUrl; // Set link to GitHub profile picture if image exists
+            } else {
+                link.removeAttribute('href'); // Remove link if no profile picture
             }
         }
 
-        // Sort the table by ID when the page loads
         window.onload = function() {
-            sortTable(0); // Default to sorting by the "ID" column (index 0)
-        }
+            // Update all profile pictures when the page loads
+            var personIds = document.querySelectorAll('[data-person-id]');
+            personIds.forEach(function(element) {
+                var personId = element.getAttribute('data-person-id');
+                updateProfilePicture(personId);
+            });
+        };
     </script>
 </head>
 
@@ -143,8 +118,8 @@
                         <td>
                             <div class="profile-picture-container">
                                 <!-- Check if person has a profile picture -->
-                                <a th:href="'https://github.com/' + ${person.ghid} + '.png'" target="_blank">
-                                    <img th:src="|https://github.com/${person.ghid}.png|"
+                                <a id="profile-link-${person.id}" data-person-id="${person.id}" target="_blank">
+                                    <img id="profile-img-${person.id}" th:src="|https://github.com/${person.ghid}.png|"
                                          alt="Profile Picture"
                                          onerror="this.onerror=null; this.src='https://cdn.iconscout.com/icon/free/png-256/free-cancel-icon-download-in-svg-png-gif-file-formats--close-delete-remove-user-interface-pack-icons-1300531.png?f=webp&w=256';" />
                                 </a>
