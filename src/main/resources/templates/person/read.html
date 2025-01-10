@@ -16,6 +16,28 @@
             cursor: pointer;
             color: #007bff;
         }
+
+        /* Styling for profile picture container */
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Initial style for profile picture */
+        .profile-picture-container img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            opacity: 1;
+            transform-origin: bottom center; /* Set anchor point to bottom center */
+        }
+
+        /* Enlarged image when hovering */
+        .profile-picture-container:hover img {
+            transform: scale(2); /* Enlarges the image */
+            opacity: 1;
+        }
     </style>
     <script>
         // Function to sort the table
@@ -117,10 +139,15 @@
                             <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 
                                  class="custom-checkbox" alt="KSM Status" />
                         </td>
-                        <!-- Profile Picture Column (No sorting) -->
+                        <!-- Profile Picture Column -->
                         <td>
-                            <div th:if="${person.pfp != null}">
-                                <img th:src="${person.pfp}" alt="Profile Picture" style="width: 64px; height: 64px; border-radius: 50%;" />
+                            <div th:if="${person.pfp != null}" class="profile-picture-container">
+                                <!-- Attempt to load GitHub profile image -->
+                                <a th:href="'https://github.com/' + ${person.ghid} + '.png'" target="_blank">
+                                    <img th:src="'https://github.com/' + ${person.ghid} + '.png'"
+                                         alt="Profile Picture"
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/64';" />
+                                </a>
                             </div>
                         </td>
 
