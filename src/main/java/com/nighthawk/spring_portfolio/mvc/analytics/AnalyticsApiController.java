@@ -20,11 +20,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 @RestController
 @RequestMapping("/api/analytics")
 @CrossOrigin(origins = "http://localhost:8080")  // Enable CORS for the frontend URL
 public class AnalyticsApiController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AnalyticsApiController.class);
     @Autowired
     private AssignmentJpaRepository assignmentJpaRepository;
 
@@ -96,32 +101,44 @@ public class AnalyticsApiController {
         @PathVariable("assignment_id") Long assignmentId, 
         @PathVariable("student_email") String studentEmail
     ) {
-        
+        logger.info("Starting grade retrieval process for assignmentId: {} and studentEmail: {}", assignmentId, studentEmail);
+
         // Lookup user by email (using PersonJpaRepository, not SynergyGradeJpaRepository)
+        logger.info("Looking up user by email: {}", studentEmail);
         Person user = personJpaRepository.findByEmail(studentEmail);
         
         if (user == null) {
+            logger.error("User not found with email: {}", studentEmail);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + studentEmail);
         }
 
         // Get the student ID
         Long studentId = user.getId();
+        logger.info("Retrieved studentId: {}", studentId);
 
         // Ensure the assignment exists
+        logger.info("Looking up assignment by ID: {}", assignmentId);
         Optional<Assignment> assignment = assignmentJpaRepository.findById(assignmentId);
         if (assignment.isEmpty()) {
+            logger.error("Assignment not found with ID: {}", assignmentId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
         }
 
+        logger.info("Assignment found: {}", assignment.get().toString());
 
         // Find the grade using the gradeJpaRepository (SynergyGradeJpaRepository)
+        logger.info("Looking up grade for assignmentId: {} and studentId: {}", assignmentId, studentId);
         Optional<SynergyGrade> synergyGrade = gradeJpaRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
         if (synergyGrade.isEmpty()) {
+            logger.warn("No grade found for assignmentId: {} and studentId: {}", assignmentId, studentId);
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No grade found for this student on this assignment.");
         }
 
+        logger.info("Grade retrieved: {}", synergyGrade.get().getGrade());
+
         return new ResponseEntity<>(synergyGrade.get().getGrade(), HttpStatus.OK);
     }
+
 
 
     // Helper method to calculate mean
