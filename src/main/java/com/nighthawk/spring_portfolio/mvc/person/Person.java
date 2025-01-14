@@ -1,13 +1,8 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +22,6 @@ import jakarta.validation.constraints.Size;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
