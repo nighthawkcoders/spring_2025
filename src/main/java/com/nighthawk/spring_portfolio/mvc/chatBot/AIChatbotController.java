@@ -38,6 +38,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/aichatbot")
 public class AIChatbotController {
+
+    public static String getAssistantId() {
+        return assistantId;
+    }
+
+    public static String getThreadId() {
+        return threadId;
+    }
 	@Autowired
 	ChatJpaRepository chatJpaRepository;
 	
@@ -46,10 +54,10 @@ public class AIChatbotController {
 
 	// create chat GPT assistant id. both values are split strings, with 1 half in this file and 1 half in .env so stealing key is more difficult
 	//you could also use base64 encoding to obscure these values 
-	private static String assistantId = "asst_" + dotenv.get("ai_asst_id");
+	private static final String assistantId = "asst_" + dotenv.get("ai_asst_id");
 
 	// create chat GTP thread id
-	private static String threadId  =  "thread_" + dotenv.get("ai_thread_id");
+	private static final String threadId  =  "thread_" + dotenv.get("ai_thread_id");
 
 	// basic hello greeting
 	@GetMapping("")
@@ -66,7 +74,7 @@ public class AIChatbotController {
 			// user sends a message that is sent to chat gpt and a response is returned
 			System.out.println("Message: " + message);
 			if(message == null) {
-				return new ResponseEntity<String>("Message is null, replace your key or add your GPT key to .env if you haven't done so", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("Message is null, replace your key or add your GPT key to .env if you haven't done so", HttpStatus.BAD_REQUEST);
 			}
 			String response = getResponseFromAI(message);
 			// getResponseFromAI method is used to send actual request.
@@ -75,10 +83,9 @@ public class AIChatbotController {
 			Chat chat = new Chat(message, response, new Date(System.currentTimeMillis()), personid);
 			Chat chatUpdated = chatJpaRepository.save(chat);
 			System.out.println("Chat saved in db: " + chatUpdated.getId());
-			return new ResponseEntity<Chat>(chatUpdated, HttpStatus.OK);
+			return new ResponseEntity<>(chatUpdated, HttpStatus.OK);
 			//return response
 		} catch (Exception e) {
-			e.printStackTrace();
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -291,7 +298,6 @@ class JSONResponseHandler implements HttpClientResponseHandler<JSONObject> {
 				try {
 					return (JSONObject) parser.parse(EntityUtils.toString(entity));
 				} catch (ParseException | org.json.simple.parser.ParseException | IOException e) {
-					e.printStackTrace();
 					return null;
 				}
 			}
