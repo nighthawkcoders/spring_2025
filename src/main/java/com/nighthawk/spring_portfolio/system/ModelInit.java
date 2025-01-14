@@ -38,6 +38,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
@@ -62,6 +64,7 @@ public class ModelInit {
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
     @Autowired StudentInfoJPARepository studentInfoJPA;
+    @Autowired SynergyGradeJpaRepository gradeJpaRepository;
 
     @Bean
     @Transactional
@@ -184,6 +187,22 @@ public class ModelInit {
                     submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission","test comment"));
                 }
             }
+
+            // Now call the non-static init() method
+            String[][] gradeArray = SynergyGrade.init();
+            for (String[] gradeInfo : gradeArray) {
+                Double gradeValue = Double.parseDouble(gradeInfo[0]);
+                Assignment assignment = assignmentJpaRepository.findByName(gradeInfo[1]);
+                Person student = personJpaRepository.findByUid(gradeInfo[2]);
+
+                SynergyGrade gradeFound = gradeJpaRepository.findByAssignmentAndStudent(assignment, student);
+                if (gradeFound == null) { // If the grade doesn't exist
+                    SynergyGrade newGrade = new SynergyGrade(gradeValue, assignment, student);
+                    gradeJpaRepository.save(newGrade);
+                }
+            }
+
+
         };
     }
 }
