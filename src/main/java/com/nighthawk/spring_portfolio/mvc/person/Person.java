@@ -120,9 +120,6 @@ public class Person {
     @Size(min = 2, max = 30, message = "Name (2 to 30 chars)")
     private String name;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date dob;
-
     /** Kasm Server Needed (ksns) in True/false */
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
@@ -158,25 +155,13 @@ public class Person {
      * Custom constructor for Person when building a new Person object from an API
      * call
      */
-    public Person(String ghid, String password, String name, Date dob, Boolean kasmServerNeeded, PersonRole role) {
+    public Person(String ghid, String password, String name, Boolean kasmServerNeeded, PersonRole role) {
         this.ghid = ghid;
         this.password = password;
         this.name = name;
-        this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
         this.balance = Float.valueOf(0);
         this.roles.add(role);
-    }
-
-    /**
-     * Custom getter to return age from dob attribute
-     */
-    public int getAge() {
-        if (this.dob != null) {
-            LocalDate birthDay = this.dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            return Period.between(birthDay, LocalDate.now()).getYears();
-        }
-        return -1;
     }
 
     /**
@@ -185,10 +170,9 @@ public class Person {
      * @param name
      * @param ghid
      * @param password
-     * @param dob
      * @return Person
      */
-    public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded, String dob) {
+    public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
         return createPerson(name, ghid, password, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
@@ -205,13 +189,6 @@ public class Person {
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
         person.setBalance(Float.valueOf(0));
-        try {
-            Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
-            person.setDob(date);
-        } catch (Exception e) {
-            // handle exception
-        }
-
         List<PersonRole> roles = new ArrayList<>();
         for (String roleName : roleNames) {
             PersonRole role = new PersonRole(roleName);

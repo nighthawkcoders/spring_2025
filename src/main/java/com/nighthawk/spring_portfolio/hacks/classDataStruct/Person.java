@@ -15,13 +15,12 @@ public class Person extends Generics{
     private static String classType = "Person";
     public static KeyTypes key = KeyType.title;  // static initializer
 	public static void setOrder(KeyTypes key) {Person.key = key;}
-	public enum KeyType implements KeyTypes {title, uid, name, dob, age}
+	public enum KeyType implements KeyTypes {title, uid, name, age}
 
     // Instance data
     private String uid;  // user / person id
     private String password;
     private String name;
-    private Date dob;
     
 
     // Constructor with zero arguments
@@ -30,12 +29,11 @@ public class Person extends Generics{
     }
 
     // Constructor used when building object from an API
-    public Person(String uid, String password, String name, Date dob) {
+    public Person(String uid, String password, String name) {
         this();  // runs zero argument constructor
         this.uid = uid;
         this.password = password;
         this.name = name;
-        this.dob = dob;
     }
 
     /* 'Generics' requires getKey to help enforce KeyTypes usage */
@@ -85,22 +83,6 @@ public class Person extends Generics{
         this.name = name;
     }
 
-    public Date getDob() {
-        return dob;
-    }
-
-    public void setDob(Date dob) {
-        this.dob = dob;
-    }
-
-    // A custom getter to return age from dob attribute
-    public int getAge() {
-        if (this.dob != null) {
-            LocalDate birthDay = this.dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            return Period.between(birthDay, LocalDate.now()).getYears(); }
-        return -1;
-    }
-
     // Initialize static test data 
     public static Person[] init() {
 
@@ -109,14 +91,6 @@ public class Person extends Generics{
         p1.setName("Thomas Edison");
         p1.setUid("toby@gmail.com");
         p1.setPassword("123Toby!");
-        // adding Note to notes collection
-        try {  // All data that converts formats could fail
-            Date d = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-1840");
-            p1.setDob(d);
-        } catch (Exception e) {
-            // no actions as dob default is good enough
-        }
-
         // Array definition and data initialization
         Person persons[] = {p1};
         return(persons);

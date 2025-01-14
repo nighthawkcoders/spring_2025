@@ -118,7 +118,6 @@ public class PersonApiController {
         private String email;
         private String password;
         private String name;
-        private String dob;
         private Boolean kasmServerNeeded; 
     }
 
@@ -130,14 +129,6 @@ public class PersonApiController {
      */
     @PostMapping("/person/create")
     public ResponseEntity<Object> postPerson(@RequestBody PersonDto personDto) {
-        Date dob;
-        try {
-            // Parse the date of birth from the DTO (expected format MM-dd-yyyy)
-            dob = new SimpleDateFormat("MM-dd-yyyy").parse(personDto.getDob());
-        } catch (Exception e) {
-            return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
-        }
-
         // Create a new Person entity without an ID (it will be auto-generated in the database)
         Person person = new Person();
         personDetailsService.save(person); // Save the new person entity to the database

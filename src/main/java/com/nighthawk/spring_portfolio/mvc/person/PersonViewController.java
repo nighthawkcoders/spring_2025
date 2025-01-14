@@ -231,15 +231,6 @@ public class PersonViewController {
             personToUpdate.setName(person.getName());
             updated = true;
         }
-        if ((person.getDob() != null) && ((personToUpdate.getDob() == null) || (!person.getDob().equals(personToUpdate.getDob())))) {
-            personToUpdate.setDob(person.getDob());
-            updated = true;
-        }
-        
-        if ((person.getDob() != null) && ((personToUpdate.getKasmServerNeeded() == null) || (!person.getKasmServerNeeded().equals(personToUpdate.getKasmServerNeeded())))) {
-            personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
-            updated = true;
-        }
 
         // If no attributes were updated, inform the user
         if (!updated) {
