@@ -125,6 +125,7 @@ public class PersonApiController {
      * @param personDto A DTO containing the information for the new person.
      * @return A ResponseEntity containing a success message or a BAD_REQUEST status if input is invalid.
      */
+    @SuppressWarnings("unchecked")
     @PostMapping("/person/create")
     public ResponseEntity<Object> postPerson(@RequestBody PersonDto personDto) {
         // Create a new Person entity without an ID (it will be auto-generated in the database)
