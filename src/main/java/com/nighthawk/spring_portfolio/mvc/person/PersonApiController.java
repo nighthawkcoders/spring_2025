@@ -139,7 +139,7 @@ public class PersonApiController {
         }
 
         // Create a new Person entity without an ID (it will be auto-generated in the database)
-        Person person = new Person(personDto.getEmail(), personDto.getPassword(), personDto.getName(), dob, "USER", personDetailsService.findRole("USER"));
+        Person person = new Person();
         personDetailsService.save(person); // Save the new person entity to the database
 
         // Prepare JSON response with success message
