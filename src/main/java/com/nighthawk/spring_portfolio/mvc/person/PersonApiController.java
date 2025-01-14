@@ -223,6 +223,7 @@ public class PersonApiController {
 
             // Iterate over the incoming stats and update accordingly
             for (String key : stat_map.keySet()) {
+                @SuppressWarnings("unchecked")
                 Map<String, Object> incomingStats = (Map<String, Object>) stat_map.get(key);
                 String date = (String) incomingStats.get("date");
                 Map<String, Object> attributeMap = new HashMap<>(incomingStats);
@@ -234,6 +235,7 @@ public class PersonApiController {
                 }
 
                 if (existingStats.get(key).containsKey(date)) {
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> existingAttributes = (Map<String, Object>) existingStats.get(key).get(date);
                     existingAttributes.putAll(attributeMap); // Update existing attributes
                 } else {
