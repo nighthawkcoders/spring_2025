@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.vladmihalcea.hibernate.type.json.JsonType;
-
 
 import jakarta.persistence.Convert;
 import jakarta.validation.Valid;
@@ -47,35 +45,30 @@ public class PersonViewController {
      */
     @GetMapping("/read")
     public String person(Authentication authentication, Model model) {
-        //check user authority
-        UserDetails userDetails = (UserDetails)authentication.getPrincipal(); 
-        boolean isAdmin = false;
-        for (GrantedAuthority authority : userDetails.getAuthorities()) {
-            if(String.valueOf("ROLE_ADMIN").equals(authority.getAuthority())){
-                isAdmin = true;
-                break;
-            }
-        }
-        if (isAdmin == true){
+        // Check user authority
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (isAdmin) {
             List<Person> list = repository.listAll();  // Fetch all persons
             model.addAttribute("list", list);  // Add the list to the model for the view
-        }
-        else {
+        } else {
             Person person = repository.getByGhid(userDetails.getUsername());  // Fetch the person by ghid
             @Data
             @AllArgsConstructor
             @Convert(attributeName = "person", converter = JsonType.class)
-            class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
-                private String id;        
+            class PersonAdjacent {
+                private String id;
                 private String ghid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
             }
-            //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getGhid(),person.getPassword(),person.getName(),person.getKasmServerNeeded());
+            // Populate personAdjacent, id is replaced by "user"
+            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
-            model.addAttribute("list", list);  // Add the list to the model for the view 
+            model.addAttribute("list", list);  // Add the list to the model for the view
         }
         return "person/read";  // Return the template for displaying persons
     }
@@ -89,36 +82,31 @@ public class PersonViewController {
      */
     @GetMapping("/read/{id}")
     public String person(Authentication authentication, @PathVariable("id") int id, Model model) {
-        //check user authority
-        UserDetails userDetails = (UserDetails)authentication.getPrincipal(); 
-        boolean isAdmin = false;
-        for (GrantedAuthority authority : userDetails.getAuthorities()) {
-            if(String.valueOf("ROLE_ADMIN").equals(authority.getAuthority())){
-                isAdmin = true;
-                break;
-            }
-        }
-        if (isAdmin == true){
+        // Check user authority
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (isAdmin) {
             Person person = repository.get(id);  // Fetch the person by ID
             List<Person> list = Arrays.asList(person);  // Convert the single person into a list for consistency
-            model.addAttribute("list", list);  // Add the list to the model for the view 
-        }
-        else if(repository.getByGhid(userDetails.getUsername()).getId() == id){
+            model.addAttribute("list", list);  // Add the list to the model for the view
+        } else if (repository.getByGhid(userDetails.getUsername()).getId() == id) {
             Person person = repository.getByGhid(userDetails.getUsername());  // Fetch the person by ghid
             @Data
             @AllArgsConstructor
             @Convert(attributeName = "person", converter = JsonType.class)
-            class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
-                private String id;        
+            class PersonAdjacent {
+                private String id;
                 private String ghid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
             }
-            //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getGhid(),person.getPassword(),person.getName(),person.getKasmServerNeeded()); 
+            // Populate personAdjacent, id is replaced by "user"
+            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
-            model.addAttribute("list", list);  // Add the list to the model for the view 
+            model.addAttribute("list", list);  // Add the list to the model for the view
         }
         return "person/read";  // Return the template for displaying the person
     }
@@ -191,41 +179,28 @@ public class PersonViewController {
      */
     @PostMapping("/update")
     public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult) {
-        
-        //check user authority
-        UserDetails userDetails = (UserDetails)authentication.getPrincipal(); 
-        boolean isAdmin = false;
-        for (GrantedAuthority authority : userDetails.getAuthorities()) {
-            if(String.valueOf("ROLE_ADMIN").equals(authority.getAuthority())){
-                isAdmin = true;
-                break;
-            }
-        }
+        // Check user authority
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
         Person personToUpdate = repository.getByGhid(person.getGhid());
-        
-        //if the user is not an admin, then check if they are updating themself
-        if(!isAdmin){
-            //if not then return Unauthorized
-            if(! personToUpdate.getId().equals((repository.getByGhid(userDetails.getUsername())).getId())){
-                return "redirect:/e#Unauthorized";
-            }
-        }
 
-        if (personToUpdate == null)     {
-            return "redirect:/e#email_does_not_exist";  // Redirect to error page if the person does not exist
+        // If the user is not an admin, then check if they are updating themselves
+        if (!isAdmin && !personToUpdate.getId().equals(repository.getByGhid(userDetails.getUsername()).getId())) {
+            return "redirect:/e#Unauthorized";
         }
 
         boolean updated = false;
         boolean samePassword = true;
 
         // Update fields if the new values are provided
-        if ((person.getPassword() != null) && (person.getPassword().isBlank() == false)) {
+        if (!person.getPassword().isBlank()) {
             personToUpdate.setPassword(person.getPassword());
             updated = true;
             samePassword = false;
         }
-        if ((person.getName() != null) && (person.getName().isBlank() == false) && ((personToUpdate.getName() == null) || (!person.getName().equals(personToUpdate.getName())))) {
+        if (!person.getName().isBlank() && !person.getName().equals(personToUpdate.getName())) {
             personToUpdate.setName(person.getName());
             updated = true;
         }
@@ -235,9 +210,8 @@ public class PersonViewController {
             return "redirect:/e#no_changes_detected";
         }
 
-       
         // Save the updated person
-        repository.save(personToUpdate,samePassword);
+        repository.save(personToUpdate, samePassword);
 
         // Ensure the roles are correctly assigned
         repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
@@ -292,17 +266,15 @@ public class PersonViewController {
         }
 
         // Add all roles to the person
-        for (String roleName : rolesDto.getRoleNames()) {
-            repository.addRoleToPerson(rolesDto.getGhid(), roleName);
-        }
+        rolesDto.getRoleNames().forEach(roleName -> repository.addRoleToPerson(rolesDto.getGhid(), roleName));
 
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
     }
 
     @GetMapping("/person-quiz")
-    public String personQuiz(Model model){
+    public String personQuiz(Model model) {
         List<Person> list = repository.listAll();  // Fetch all persons
-        model.addAttribute("person", list.get((int)(Math.random()*list.size())));  // Add the list to the model for the view
+        model.addAttribute("person", list.get((int) (Math.random() * list.size())));  // Add the list to the model for the view
         return "person/person-quiz";
     }
 
@@ -313,7 +285,7 @@ public class PersonViewController {
         return "redirect:/logout";  // logout the user
     }
 
-    /**sq
+    /**
      * Deletes a person by ID.
      *
      * @param id the ID of the person to delete
@@ -321,17 +293,11 @@ public class PersonViewController {
      */
     @GetMapping("/delete/{id}")
     public String personDelete(Authentication authentication, @PathVariable("id") long id) {
-        //don't redirect to read page if you delete yourself
-        //check before deleting from database to avoid imploding the backend
-        boolean deletingYourself = false;
-        if (repository.getByGhid(((UserDetails)authentication.getPrincipal()).getUsername()).getId() == id){
-            deletingYourself = true;
-        }
+        boolean deletingYourself = repository.getByGhid(((UserDetails) authentication.getPrincipal()).getUsername()).getId() == id;
         repository.delete(id);  // Delete the person by ID
-        if(deletingYourself){
-            return "redirect:/logout"; //logout the user
+        if (deletingYourself) {
+            return "redirect:/logout"; // Logout the user
         }
-        
         return "redirect:/mvc/person/read";  // Redirect to the read page after deletion
     }
 
