@@ -15,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -42,6 +43,7 @@ public class JwtApiController {
 	@Autowired
 	private PersonDetailsService personDetailsService;
 
+	@SuppressWarnings("unchecked")
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
 		authenticate(authenticationRequest.getGhid(), authenticationRequest.getPassword());
@@ -92,7 +94,7 @@ public class JwtApiController {
 			throw new Exception("USER_DISABLED", e);
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
-		} catch (Exception e) {
+		} catch (AuthenticationException e) {
 			throw new Exception(e);
 		}
 	}
