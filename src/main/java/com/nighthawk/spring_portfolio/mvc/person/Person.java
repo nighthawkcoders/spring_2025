@@ -206,7 +206,7 @@ public class Person {
         persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        return persons.toArray(new Person[0]);
+        return persons.toArray(Person[]::new);
     }
 
     /**
