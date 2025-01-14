@@ -1,11 +1,5 @@
 package com.nighthawk.spring_portfolio.hacks.classDataStruct;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
-import java.util.Date;
-
 
 /*
 Adapted from Person POJO, Plain Old Java Object.
@@ -54,11 +48,8 @@ public class Person extends Generics{
 			output += this.uid;
 		} else if (KeyType.name.equals(this.getKey())) {
 			output += this.name;
-		} else if (KeyType.age.equals(this.getKey())) {
-			output += "0000" + this.getAge();  // pads integer 1,100,11,2 to 0001,0100,0011,0002
-			output = output.substring(output.length() - 4);
 		} else {
-			output = super.getType() + ": " + this.uid + ", " + this.name + ", " + this.getAge();
+			output = super.getType() + ": " + this.uid + ", " + this.name;
 		}
 		return output;
 	}

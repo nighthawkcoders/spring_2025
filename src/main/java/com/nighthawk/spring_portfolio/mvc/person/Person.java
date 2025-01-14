@@ -170,11 +170,12 @@ public class Person {
      * @param name
      * @param ghid
      * @param password
+     * @param kasmServerNeeded
      * @return Person
      */
     public static Person createPerson(String name, String ghid, String password, Boolean kasmServerNeeded) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, ghid, password, kasmServerNeeded, dob, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
+        return createPerson(name, ghid, password, kasmServerNeeded, password, Arrays.asList("ROLE_USER", "ROlE_STUDENT"));
     }
 
     /**
