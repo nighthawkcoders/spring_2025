@@ -75,7 +75,6 @@ public class Chat implements Serializable, Comparable<Chat> {
 		try {
 			return objectMapper.writeValueAsString(this);
 		} catch (JsonProcessingException e) {
-			e.printStackTrace();
 			return null;
 		}
 	}
