@@ -13,7 +13,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
 import java.io.Serializable;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Chat class is a model for the chat messages that are stored in the database.
@@ -71,7 +74,7 @@ public class Chat implements Serializable, Comparable<Chat> {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			return objectMapper.writeValueAsString(this);
-		} catch (Exception e) {
+		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			return null;
 		}
