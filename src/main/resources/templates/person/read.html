@@ -38,6 +38,11 @@
             transform: scale(2); /* Enlarges the image */
             opacity: 1;
         }
+
+        /* Styling for the search box */
+        .search-container {
+            margin-bottom: 20px;
+        }
     </style>
     <script>
         // Function to check if an image exists
@@ -65,6 +70,37 @@
             }
         }
 
+        // Function to filter the table based on the search query
+        function filterTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toLowerCase();
+            table = document.getElementById("personTable");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 1; i < tr.length; i++) {  // Start at 1 to skip the header row
+                td = tr[i].getElementsByTagName("td");
+                let matchFound = false;
+
+                // Check if any of the columns contain the search term
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                            matchFound = true;
+                            break; // No need to check other columns if a match is found
+                        }
+                    }
+                }
+
+                if (matchFound) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
         window.onload = function() {
             // Update all profile pictures when the page loads
             var personIds = document.querySelectorAll('[data-person-id]');
@@ -88,8 +124,14 @@
 
         <div class="container py-4 text-light bg-success">
             <h2>Person Viewer</h2>
+
+            <!-- Search box for filtering users -->
+            <div class="search-container">
+                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by GHID">
+            </div>
+
             <div class="row align-items-md-stretch">
-                <table class="table">
+                <table id="personTable" class="table">
                     <thead>
                     <tr>
                         <th class="sortable" onclick="sortTable(0)">User ID</th>
