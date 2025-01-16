@@ -148,7 +148,6 @@ public class PersonViewController {
             return "person/create";  // Return to the form with an error message
         }
 
-        person.setBalance(0f);  // Set the default balance to 0
         repository.save(person);  // Save the new person
         repository.addRoleToPerson(person.getGhid(), "ROLE_USER");  // Assign default roles
         repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");

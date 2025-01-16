@@ -146,14 +146,6 @@ public class Person {
     private Map<String, Map<String, Object>> stats = new HashMap<>();
 
     /**
-     * The person's current balance, represented as a float.
-     * 
-     * @NonNull: Ensures the field is non-null.
-     */
-    @NonNull
-    private Float balance;
-
-    /**
      * Constructor to create a Person object for API calls.
      * This constructor is used to initialize a new person with basic details and a role.
      */
@@ -162,7 +154,6 @@ public class Person {
         this.password = password;
         this.name = name;
         this.kasmServerNeeded = kasmServerNeeded;
-        this.balance = Float.valueOf(0);
         this.roles.add(role);
     }
 
@@ -197,7 +188,6 @@ public class Person {
         person.setGhid(ghid);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
-        person.setBalance(Float.valueOf(0));
         List<PersonRole> roles = new ArrayList<>();
         for (String roleName : roleNames) {
             PersonRole role = new PersonRole(roleName);
