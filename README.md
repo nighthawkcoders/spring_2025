@@ -6,8 +6,6 @@
 
 - Runtime link: https://spring2025.nighthawkcodingsociety.com/
 - JWT Login: https://nighthawkcoders.github.io/APCSA/data/login
-- Jokes endpoint: https://spring.nighthawkcodingsociety.com/api/jokes/
-
 
 
 ## Visual thoughts
