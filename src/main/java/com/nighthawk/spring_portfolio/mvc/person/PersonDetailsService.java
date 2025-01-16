@@ -15,8 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service class for managing Person entities and integrating with Spring Security.
- * It handles loading user details, assigning roles, and managing passwords.
+ * Service class that integrates with Spring Security to manage user authentication and roles.
+ * It handles CRUD operations for the `Person` entity, password encoding, role assignments,
+ * and ensuring users have valid default credentials.
  */
 @Service
 @Transactional
@@ -24,54 +25,55 @@ public class PersonDetailsService implements UserDetailsService {
 
     // Injecting dependencies via Spring's Autowiring
     @Autowired
-    private PersonJpaRepository personJpaRepository; // Repository for Person entity
+    private PersonJpaRepository personJpaRepository; // Repository for accessing and managing Person data
     @Autowired
-    private PersonRoleJpaRepository personRoleJpaRepository; // Repository for PersonRole entity
+    private PersonRoleJpaRepository personRoleJpaRepository; // Repository for managing user roles
     @Autowired
-    private PasswordEncoder passwordEncoder; // For password encoding
+    private PasswordEncoder passwordEncoder; // For securely encoding user passwords
 
     /**
-     * Loads a user by their unique identifier (ghid).
-     * This method is used by Spring Security to authenticate the user.
-     *
-     * @param ghid The unique identifier for the person (used as username in Spring Security).
+     * Loads user details for authentication using Spring Security.
+     * 
+     * @param ghid The unique identifier (username) of the person to load.
      * @return A UserDetails object representing the authenticated user.
-     * @throws UsernameNotFoundException if no user is found with the given ghid.
+     * @throws UsernameNotFoundException If the user is not found.
      */
     @Override
     public UserDetails loadUserByUsername(String ghid) throws UsernameNotFoundException {
-        Person person = personJpaRepository.findByGhid(ghid); // Fetch user from DB by ghid
+        // Fetch the person entity from the database by ghid (used as the username)
+        Person person = personJpaRepository.findByGhid(ghid); 
 
         if (person == null) {
-            throw new UsernameNotFoundException("User not found with username: " + ghid); // Handle case where user is not found
+            // If no person is found, throw a UsernameNotFoundException (this is used by Spring Security)
+            throw new UsernameNotFoundException("User not found with username: " + ghid);
         }
 
-        // Convert the person's roles into Spring Security's SimpleGrantedAuthority objects
+        // Convert the person's roles into Spring Security authorities
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         person.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority(role.getName())); // Add each role as authority
+            authorities.add(new SimpleGrantedAuthority(role.getName())); // Add each role as an authority
         });
 
-        // Create a Spring Security User object with person info and roles
+        // Return a Spring Security User object containing the person's ghid, encoded password, and authorities
         return new User(person.getGhid(), person.getPassword(), authorities);
     }
 
-    /* Person-related CRUD operations */
+    /* CRUD Operations for managing Person entities */
 
     /**
-     * Retrieves all Person entities sorted by name in ascending order.
-     *
+     * Retrieves all Person entities, sorted by name in ascending order.
+     * 
      * @return A list of all Person entities.
      */
     public List<Person> listAll() {
-        return personJpaRepository.findAllByOrderByNameAsc(); // Fetch all persons sorted by name
+        return personJpaRepository.findAllByOrderByNameAsc(); // Fetch all persons, ordered by name
     }
 
     /**
-     * Retrieves Person entities that match the given name or ghid.
-     *
+     * Retrieves a list of Person entities that match the given name or ghid.
+     * 
      * @param name The name to search for.
-     * @param ghid The ghid to search for.
+     * @param ghid The ghid (unique identifier) to search for.
      * @return A list of matching Person entities.
      */
     public List<Person> list(String name, String ghid) {
@@ -79,100 +81,108 @@ public class PersonDetailsService implements UserDetailsService {
     }
 
     /**
-     * Retrieves Person entities that contain the given term in their name or ghid.
+     * Searches for Person entities that contain the given term in their name or ghid.
      * The search is case-insensitive.
-     *
-     * @param term The search term to look for in name or ghid.
-     * @return A list of Person entities containing the search term.
+     * 
+     * @param term The search term to look for.
+     * @return A list of matching Person entities.
      */
     public List<Person> listLike(String term) {
-        return personJpaRepository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(term, term); // Search by term
+        return personJpaRepository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(term, term); // Perform a case-insensitive search by term
     }
 
     /**
-     * Retrieves Person entities using a native query with a LIKE condition.
-     * The search is case-insensitive and allows partial matching.
-     *
-     * @param term The search term to use with a LIKE query.
-     * @return A list of Person entities matching the term.
+     * Retrieves Person entities using a native SQL query with a LIKE condition.
+     * The search is case-insensitive and allows partial matches.
+     * 
+     * @param term The search term for the LIKE query.
+     * @return A list of matching Person entities.
      */
     public List<Person> listLikeNative(String term) {
-        String likeTerm = String.format("%%%s%%", term); // Format term for LIKE query
+        String likeTerm = String.format("%%%s%%", term); // Format the term for a LIKE query
         return personJpaRepository.findByLikeTermNative(likeTerm); // Execute the native query
     }
 
     /**
      * Encodes the person's password and saves the person entity to the database.
-     *
+     * 
      * @param person The person entity to save.
      */
     public void save(Person person) {
-        person.setPassword(passwordEncoder.encode(person.getPassword())); // Encode the password before saving
-        personJpaRepository.save(person); // Save person to the database
-    }
-
-    public void save(Person person, Boolean samePassword) {
-        if(!samePassword){
-            person.setPassword(passwordEncoder.encode(person.getPassword())); // Encode the password before saving
-        }
-        personJpaRepository.save(person); // Save person to the database
+        // Encode the password before saving it to the database
+        person.setPassword(passwordEncoder.encode(person.getPassword())); 
+        personJpaRepository.save(person); // Save the person to the database
     }
 
     /**
-     * Retrieves a Person entity by its ID.
-     *
+     * Saves the person entity, with an optional check for whether the password should be re-encoded.
+     * 
+     * @param person The person entity to save.
+     * @param samePassword A flag indicating whether the password remains unchanged (if true).
+     */
+    public void save(Person person, Boolean samePassword) {
+        if (!samePassword) {
+            // Encode the password only if it's not the same as before
+            person.setPassword(passwordEncoder.encode(person.getPassword()));
+        }
+        personJpaRepository.save(person); // Save the person to the database
+    }
+
+    /**
+     * Retrieves a Person entity by its unique identifier (ID).
+     * 
      * @param id The ID of the person to retrieve.
      * @return The Person entity, or null if not found.
      */
     public Person get(long id) {
-        return personJpaRepository.findById(id).orElse(null); // Return person if found, else null
+        return personJpaRepository.findById(id).orElse(null); // Return the person if found, otherwise null
     }
 
     /**
      * Retrieves a Person entity by its ghid (unique identifier).
-     *
-     * @param ghid The ghid (username) of the person to retrieve.
+     * 
+     * @param ghid The ghid of the person to retrieve.
      * @return The Person entity, or null if not found.
      */
     public Person getByGhid(String ghid) {
-        return personJpaRepository.findByGhid(ghid); // Fetch person by ghid
+        return personJpaRepository.findByGhid(ghid); // Fetch person by their ghid
     }
 
     /**
      * Deletes a Person entity by its ID.
-     *
+     * 
      * @param id The ID of the person to delete.
      */
     public void delete(long id) {
-        personJpaRepository.deleteById(id); // Delete person from the database by ID
+        personJpaRepository.deleteById(id); // Delete the person from the database by ID
     }
 
     /**
-     * Sets default passwords and roles for all Person entities.
-     * This is used to ensure that users have default credentials.
-     *
-     * @param password The default password to set for users without one.
-     * @param roleName The default role to assign to users without roles.
+     * Sets default passwords and roles for all Person entities that lack them.
+     * This method ensures that users without credentials are assigned default values.
+     * 
+     * @param password The default password to assign to users without one.
+     * @param roleName The default role to assign to users without a role.
      */
     public void defaults(String password, String roleName) {
         for (Person person : listAll()) {
-            // Set default password if not already set
-            if (person.getPassword() == null || person.getPassword().isEmpty() || person.getPassword().isBlank()) {
-                person.setPassword(passwordEncoder.encode(password)); // Encode default password
+            // Assign default password if not already set
+            if (person.getPassword() == null || person.getPassword().isEmpty()) {
+                person.setPassword(passwordEncoder.encode(password)); // Encode the default password
             }
-            // Set default role if no role exists
+            // Assign default role if the person has no roles
             if (person.getRoles().isEmpty()) {
                 PersonRole role = personRoleJpaRepository.findByName(roleName);
                 if (role != null) {
-                    person.getRoles().add(role); // Assign default role if found
+                    person.getRoles().add(role); // Add default role to the person
                 }
             }
         }
     }
 
     /**
-     * Retrieves all roles available in the system.
-     *
+     * Retrieves all available roles in the system.
+     * 
      * @return A list of all PersonRole entities.
      */
     public List<PersonRole> listAllRoles() {
@@ -181,7 +191,7 @@ public class PersonDetailsService implements UserDetailsService {
 
     /**
      * Finds a role by its name.
-     *
+     * 
      * @param roleName The name of the role to find.
      * @return The PersonRole entity, or null if not found.
      */
@@ -191,37 +201,29 @@ public class PersonDetailsService implements UserDetailsService {
 
     /**
      * Adds a role to a Person entity identified by ghid.
-     *
-     * @param ghid The ghid of the person to assign the role to.
-     * @param roleName The role to assign to the person.
+     * 
+     * @param ghid The ghid of the person to whom the role should be assigned.
+     * @param roleName The name of the role to assign.
      */
     public void addRoleToPerson(String ghid, String roleName) {
-        Person person = personJpaRepository.findByGhid(ghid); // Find person by ghid
+        // Find the person by their ghid
+        Person person = personJpaRepository.findByGhid(ghid); 
         if (person != null) {
-            PersonRole role = personRoleJpaRepository.findByName(roleName); // Find the role by name
-            if (role != null) {
-                // Add the role to the person if not already assigned
-                boolean addRole = true;
-                for (PersonRole roleObj : person.getRoles()) {
-                    if (roleObj.getName().equals(roleName)) {
-                        addRole = false;
-                        break;
-                    }
-                }
-                if (addRole) {
-                    person.getRoles().add(role); // Add the role if not present
-                }
+            // Find the role by name
+            PersonRole role = personRoleJpaRepository.findByName(roleName); 
+            if (role != null && !person.getRoles().contains(role)) {
+                person.getRoles().add(role); // Add the role if it's not already assigned
             }
         }
     }
 
     /**
-     * Checks if a Person exists by their ghid.
-     *
-     * @param ghid The ghid to check.
+     * Checks if a Person exists based on their ghid.
+     * 
+     * @param ghid The ghid to check for existence.
      * @return true if the person exists, false otherwise.
      */
     public boolean existsByGhid(String ghid) {
-        return personJpaRepository.existsByGhid(ghid); // Check existence of person by ghid
+        return personJpaRepository.existsByGhid(ghid); // Check if a person with the given ghid exists
     }
 }

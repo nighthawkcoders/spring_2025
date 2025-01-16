@@ -26,7 +26,7 @@ import lombok.Getter;
 
 /**
  * PersonApiController handles RESTful API endpoints for managing Person entities.
- * The controller allows for CRUD (Create, Read, Update, Delete) operations on Person data.
+ * The controller supports CRUD (Create, Read, Update, Delete) operations for Person data.
  */
 @RestController
 @RequestMapping("/api")
@@ -46,7 +46,7 @@ public class PersonApiController {
      * Retrieves the current user's Person entity based on the JWT token.
      * 
      * @param authentication The authentication object, typically containing the current user's details.
-     * @return A ResponseEntity with the found Person object or a NOT_FOUND status if the person doesn't exist.
+     * @return A ResponseEntity containing the found Person object or a NOT_FOUND status if the person doesn't exist.
      */
     @GetMapping("/person/get")
     public ResponseEntity<Person> getPerson(Authentication authentication) {
