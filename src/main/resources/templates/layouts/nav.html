@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<!-- Bootstrap Navigation Code -->
 <th:block xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:fragment="header">
     <nav class="navbar navbar-expand-lg navbar-light bg-secondary">
         <div class="container-fluid">
@@ -37,11 +35,8 @@
                                 <li><a class="dropdown-item" th:href="@{/dne}">404 Error</a></li>
                             </ul>
                         </li>
-                    </ul>
-                </div>
 
-                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown2">
-                    <ul class="navbar-nav">
+                        <!-- Database Dropdown moved here to align next to Starters -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Database
