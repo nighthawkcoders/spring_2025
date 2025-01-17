@@ -133,7 +133,7 @@
                     <ul id="studentChecklist">
                         <!-- Dynamically populated list -->
                     </ul>
-                    <button class="btn" onclick="saveAssignedPersons()">Save</button>
+                    <button class="btn" onclick="saveAssignedGraders()">Save</button>
                     <button class="btn" onclick="closeAssignToGradeModal()">Close</button>
                 </div>
             </div>
@@ -480,13 +480,13 @@
         document.getElementById('assignToGradeModal').style.display = 'none';
     }
 
-    function saveAssignedPersons() {
+    function saveAssignedGraders() {
         const modal = document.getElementById('assignToGradeModal');
         const assignmentId = modal.dataset.assignmentId;
         const selectedCheckboxes = Array.from(document.querySelectorAll('#studentChecklist input:checked'));
         const selectedIds = selectedCheckboxes.map(cb => parseInt(cb.dataset.studentId));
 
-        fetch(`/api/assignments/assignPersons/${assignmentId}`, {
+        fetch(`/api/assignments/assignGraders/${assignmentId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(selectedIds),
