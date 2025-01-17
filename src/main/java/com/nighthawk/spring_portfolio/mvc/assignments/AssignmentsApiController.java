@@ -303,8 +303,8 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("/assignPersons/{id}")
-    public ResponseEntity<?> assignPersonsToAssignment( @PathVariable Long id, @RequestBody List<Long> personIds ) {
+    @PostMapping("/assignGraders/{id}")
+    public ResponseEntity<?> assignGradersToAssignment( @PathVariable Long id, @RequestBody List<Long> personIds ) {
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
         if (!assignmentOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
@@ -313,7 +313,7 @@ public class AssignmentsApiController {
         Assignment assignment = assignmentOptional.get();
         List<Person> persons = personRepo.findAllById(personIds);
 
-        assignment.setAssignedPersons(persons);
+        assignment.setAssignedGraders(persons);
 
         assignmentRepo.save(assignment);
 
@@ -321,22 +321,22 @@ public class AssignmentsApiController {
         return ResponseEntity.ok("Persons assigned successfully");
     }
 
-    @GetMapping("/assignedPersons/{id}")
-    public ResponseEntity<?> getAssignedPersons(@PathVariable Long id) {
+    @GetMapping("/assignedGraders/{id}")
+    public ResponseEntity<?> getAssignedGraders(@PathVariable Long id) {
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
         if (!assignmentOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
         }
 
         Assignment assignment = assignmentOptional.get();
-        List<Person> assignedPersons = assignment.getAssignedPersons();
+        List<Person> assignedGraders = assignment.getAssignedGraders();
         
         // Return just the IDs of assigned persons
-        List<Long> assignedPersonIds = assignedPersons.stream()
+        List<Long> assignedGraderIds = assignedGraders.stream()
             .map(Person::getId)
             .collect(Collectors.toList());
             
-        return ResponseEntity.ok(assignedPersonIds);
+        return ResponseEntity.ok(assignedGraderIds);
     }
 
 
