@@ -7,6 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
 import jakarta.persistence.Column;
@@ -15,6 +16,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -59,6 +63,16 @@ public class Assignment {
     @JsonIgnore 
     private List<AssignmentSubmission> submissions;
 
+    @ManyToMany
+    @JoinTable(
+        name = "assignment_person",
+        joinColumns = @JoinColumn(name = "assignment_id"),
+        inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    private List<Person> assignedPersons;
+
+
+
     @OneToMany(mappedBy="assignment")
     private List<SynergyGrade> grades;
 
@@ -74,25 +88,30 @@ public class Assignment {
         assignmentQueue.reset();
     }
 
+    // Initialize working list with all provided people
     public void initQueue(List<String> people) {
-        assignmentQueue.getHaventGone().addAll(people);
+        assignmentQueue.getWorking().addAll(people);
     }
 
+    // Add person to waiting and remove from working
     public void addQueue(String person) {
-        assignmentQueue.getHaventGone().remove(person);
-        assignmentQueue.getQueue().add(person);
+        assignmentQueue.getWorking().remove(person);
+        assignmentQueue.getWaiting().add(person);
     }
 
+    // Remove person from waiting and add to working
     public void removeQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getHaventGone().add(person);
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getWorking().add(person);
     }
 
+    // Remove person from waiting and add to completed
     public void doneQueue(String person) {
-        assignmentQueue.getQueue().remove(person);
-        assignmentQueue.getDone().add(person);
+        assignmentQueue.getWaiting().remove(person);
+        assignmentQueue.getCompleted().add(person);
     }
 
+    // Constructor.
     public Assignment(String name, String type, String description, Double points, String dueDate) {
         this.name = name;
         this.type = type;
@@ -100,7 +119,8 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
-        this.assignmentQueue = new AssignmentQueue();
+        // This line is not needed as converter will reset to null after it takes in an empty queue 
+        // this.assignmentQueue = new AssignmentQueue();
     }
 
     public static Assignment[] init() {
@@ -109,6 +129,15 @@ public class Assignment {
             new Assignment("Sprint 1 Live Review", "Live Review", "The final review for sprint 1", 1.0, "11/2/2024"),
             new Assignment("Seed", "Seed", "The student's seed grade", 1.0, "11/2/2080"),
         };
+    }
+
+    public List<Person> getAssignedPersons() {
+        return assignedPersons;
+    }
+
+    public void setAssignedPersons(List<com.nighthawk.spring_portfolio.mvc.person.Person> persons) {
+        this.assignedPersons = persons;
+        System.out.println("ok bruh");
     }
 
     @Override

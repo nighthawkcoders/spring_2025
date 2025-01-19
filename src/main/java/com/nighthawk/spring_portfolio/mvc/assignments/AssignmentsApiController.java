@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -198,6 +199,11 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
 
+    /**
+     * A GET endpoint to retrieve the queue for an assignment.
+     * @param id The ID of the assignment.
+     * @return Queue for assignment, formatted in JSON
+     */
     @GetMapping("/getQueue/{id}")
     public ResponseEntity<AssignmentQueue> getQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
@@ -208,6 +214,12 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    /**
+     * A PUT endpoint to initialize an empty queue for an assignment.
+     * @param id The ID of the assignment.
+     * @return Queue for assignment, formatted in JSON
+     */
     @PutMapping("/initQueue/{id}")
     public ResponseEntity<Assignment> initQueue(@PathVariable long id, @RequestBody List<String> people) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
@@ -219,7 +231,14 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    @PutMapping("/addQueue/{id}")
+
+    /**
+     * A PUT endpoint to add a user to the waiting list
+     * @param id The ID of the assignment.
+     * @param person Name of person to be added to waiting list in one element array.
+     * @return Updated queue for assignment, formatted in JSON
+     */
+    @PutMapping("/addToWaiting/{id}")
     public ResponseEntity<Assignment> addQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
@@ -230,7 +249,14 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    @PutMapping("/removeQueue/{id}")
+
+    /**
+     * A PUT endpoint to return a user to the working list
+     * @param id The ID of the assignment.
+     * @param person Name of person to be returned to the working list in one element array.
+     * @return Updated queue for assignment, formatted in JSON
+     */
+    @PutMapping("/removeToWorking/{id}")
     public ResponseEntity<Assignment> removeQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
@@ -241,7 +267,14 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    @PutMapping("/doneQueue/{id}")
+
+    /**
+     * A PUT endpoint to move a user to the completed list
+     * @param id The ID of the assignment.
+     * @param person Name of person to be moved to the completed list in one element array.
+     * @return Updated queue for assignment, formatted in JSON
+     */
+    @PutMapping("/doneToCompleted/{id}")
     public ResponseEntity<Assignment> doneQueue(@PathVariable long id, @RequestBody List<String> person) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
@@ -252,6 +285,12 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    /**
+     * A PUT endpoint to reset a queue to its empty form.
+     * @param id The ID of the assignment.
+     * @return Updated queue for assignment, formatted in JSON
+     */
     @PutMapping("/resetQueue/{id}")
     public ResponseEntity<Assignment> resetQueue(@PathVariable long id) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
@@ -263,6 +302,43 @@ public class AssignmentsApiController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    @PostMapping("/assignPersons/{id}")
+    public ResponseEntity<?> assignPersonsToAssignment( @PathVariable Long id, @RequestBody List<Long> personIds ) {
+        Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
+        if (!assignmentOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
+        }
+
+        Assignment assignment = assignmentOptional.get();
+        List<Person> persons = personRepo.findAllById(personIds);
+
+        assignment.setAssignedPersons(persons);
+
+        assignmentRepo.save(assignment);
+
+        System.out.println("hi");
+        return ResponseEntity.ok("Persons assigned successfully");
+    }
+
+    @GetMapping("/assignedPersons/{id}")
+    public ResponseEntity<?> getAssignedPersons(@PathVariable Long id) {
+        Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
+        if (!assignmentOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
+        }
+
+        Assignment assignment = assignmentOptional.get();
+        List<Person> assignedPersons = assignment.getAssignedPersons();
+        
+        // Return just the IDs of assigned persons
+        List<Long> assignedPersonIds = assignedPersons.stream()
+            .map(Person::getId)
+            .collect(Collectors.toList());
+            
+        return ResponseEntity.ok(assignedPersonIds);
+    }
+
 
     
 }
