@@ -8,14 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 @Entity
 public class AssignmentQueue {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Getter
+
     private Long id;
 
     private List<String> working;
