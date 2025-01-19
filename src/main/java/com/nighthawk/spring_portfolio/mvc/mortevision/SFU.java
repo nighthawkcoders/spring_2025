@@ -30,7 +30,6 @@ import dev.onvoid.webrtc.media.MediaStreamTrack;
 public class SFU implements PeerConnectionObserver {
 
     MediaStreamTrack videoTrack;
-    MediaStreamTrack audioTrack;
 
     @PostMapping("/consume")
     public Map<String,String> consumer(@RequestBody String body) {
@@ -69,11 +68,6 @@ public class SFU implements PeerConnectionObserver {
         if(videoTrack != null)
         {
             peerConnection.addTrack(videoTrack, Collections.singletonList(videoTrack.getId()));
-        }
-
-        if(audioTrack != null)
-        {
-            peerConnection.addTrack(audioTrack, Collections.singletonList(audioTrack.getId()));
         }
         
         
@@ -179,12 +173,6 @@ public class SFU implements PeerConnectionObserver {
         {
             videoTrack = receiver.getTrack();
         }
-        /* 
-        else if(receiver.getTrack().getKind().equals("audio"))
-        {
-            audioTrack = receiver.getTrack();
-        }
-            */
     }
     }
 
