@@ -7,6 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
 import jakarta.persistence.Column;
@@ -15,6 +16,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -58,6 +62,16 @@ public class Assignment {
     @OneToMany(mappedBy = "assignment")
     @JsonIgnore 
     private List<AssignmentSubmission> submissions;
+
+    @ManyToMany
+    @JoinTable(
+        name = "assignment_person",
+        joinColumns = @JoinColumn(name = "assignment_id"),
+        inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    private List<Person> assignedPersons;
+
+
 
     @OneToMany(mappedBy="assignment")
     private List<SynergyGrade> grades;
@@ -115,6 +129,15 @@ public class Assignment {
             new Assignment("Sprint 1 Live Review", "Live Review", "The final review for sprint 1", 1.0, "11/2/2024"),
             new Assignment("Seed", "Seed", "The student's seed grade", 1.0, "11/2/2080"),
         };
+    }
+
+    public List<Person> getAssignedPersons() {
+        return assignedPersons;
+    }
+
+    public void setAssignedPersons(List<com.nighthawk.spring_portfolio.mvc.person.Person> persons) {
+        this.assignedPersons = persons;
+        System.out.println("ok bruh");
     }
 
     @Override
