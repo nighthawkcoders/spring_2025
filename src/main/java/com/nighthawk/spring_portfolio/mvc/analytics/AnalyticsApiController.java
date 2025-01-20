@@ -91,17 +91,17 @@ public class AnalyticsApiController {
     }
 
 
-    @GetMapping("/assignment/{assignment_id}/student/{student_email}/grade")
+    @GetMapping("/assignment/{assignment_id}/student/{student_uid}/grade")
     public ResponseEntity<Double> getStudentGradeForAssignment(
         @PathVariable("assignment_id") Long assignmentId, 
-        @PathVariable("student_email") String studentEmail
+        @PathVariable("student_uid") String studentUid
     ) {
         
-        // Lookup user by email (using PersonJpaRepository, not SynergyGradeJpaRepository)
-        Person user = personJpaRepository.findByUid(studentEmail);
+        // Lookup user by uid (using PersonJpaRepository, not SynergyGradeJpaRepository)
+        Person user = personJpaRepository.findByUid(studentUid);
         
         if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + studentEmail);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with uid: " + studentUid);
         }
 
         // Get the student ID
