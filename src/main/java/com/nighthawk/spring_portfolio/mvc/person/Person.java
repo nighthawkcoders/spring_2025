@@ -33,11 +33,13 @@ import jakarta.persistence.CascadeType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
+
+import io.github.cdimascio.dotenv.Dotenv;
+
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 
@@ -300,12 +302,15 @@ public class Person implements Comparable<Person> {
     public static String startingBalance = "100000";
     public static Person[] init() {
         ArrayList<Person> people = new ArrayList<>();
-        people.add(createPerson("Thomas Edison", "toby", "toby@gmail.com", "123toby", "pfp1", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        people.add(createPerson("Alexander Graham Bell", "lex", "lexb@gmail.com", "123lex", "pfp2", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Nikola Tesla", "niko",  "niko@gmail.com",  "123niko", "pfp3", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", "123madam", "pfp4", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", "123hop", "pfp5", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("John Mortensen","jm1021",  "jm1021@gmail.com", "123Qwerty!", "pfp6", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
+        final Dotenv dotenv = Dotenv.load();
+        final String adminPassword = dotenv.get("ADMIN_PASSWORD");
+        final String defaultPassword = dotenv.get("DEFAULT_PASSWORD");
+        people.add(createPerson("Thomas Edison", "toby", "toby@gmail.com", adminPassword, "/images/toby.png", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        people.add(createPerson("Alexander Graham Bell", "lex", "lexb@gmail.com", defaultPassword, "/images/lex.png", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Nikola Tesla", "niko",  "niko@gmail.com",  defaultPassword, "/images/niko.png", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", defaultPassword, "/images/madam.png", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         
         Collections.sort(people);
         for (Person person : people) {

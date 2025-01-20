@@ -169,7 +169,7 @@ public class SynergyApiController {
         @RequestBody SynergyGradeRequestDto requestData
     ) throws ResponseStatusException {
         String email = userDetails.getUsername();
-        Person grader = personRepository.findByEmail(email);
+        Person grader = personRepository.findByUid(email);
         if (grader == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -189,6 +189,21 @@ public class SynergyApiController {
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
     }
 
+    @GetMapping("/grades/requests/seed")
+    public ResponseEntity<?> getGradeRequestsSeed(
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String email = userDetails.getUsername();
+        Person student = personRepository.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        return ResponseEntity.ok(gradeRequestRepository.findByStudentId(student.getId()));
+    }
+
     /**
      * A POST endpoint to create a grade request for seed.
      * @param userDetails The information about the logged in user. Automatically passed in by thymeleaf.
@@ -202,7 +217,7 @@ public class SynergyApiController {
         @RequestBody SynergyGradeRequestSeedDto requestData
     ) throws ResponseStatusException {
         String email = userDetails.getUsername();
-        Person student = personRepository.findByEmail(email);
+        Person student = personRepository.findByUid(email);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -233,7 +248,7 @@ public class SynergyApiController {
         @RequestBody SynergyGradeRequestSelfDto requestData
     ) throws ResponseStatusException {
         String email = userDetails.getUsername();
-        Person student = personRepository.findByEmail(email);
+        Person student = personRepository.findByUid(email);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
