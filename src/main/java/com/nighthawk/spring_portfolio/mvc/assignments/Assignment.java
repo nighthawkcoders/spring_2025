@@ -79,6 +79,8 @@ public class Assignment {
     @NotNull
     private Double points;
 
+    private Long presentationLength;
+
     @Convert(converter = AssignmentQueueConverter.class)
     private AssignmentQueue assignmentQueue;
 
@@ -89,8 +91,9 @@ public class Assignment {
     }
 
     // Initialize working list with all provided people
-    public void initQueue(List<String> people) {
+    public void initQueue(List<String> people, Long duration) {
         assignmentQueue.getWorking().addAll(people);
+        presentationLength = duration;
     }
 
     // Add person to waiting and remove from working

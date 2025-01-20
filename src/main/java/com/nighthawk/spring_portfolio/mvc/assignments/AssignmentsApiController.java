@@ -215,17 +215,28 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @GetMapping("/getPresentationLength/{id}")
+    public ResponseEntity<Long> getPresentationLength(@PathVariable long id) {
+        Optional<Assignment> optional = assignmentRepo.findById(id);
+        if (optional.isPresent()) {
+            Assignment assignment = optional.get();
+            
+            return new ResponseEntity<>(assignment.getPresentationLength(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
     /**
      * A PUT endpoint to initialize an empty queue for an assignment.
      * @param id The ID of the assignment.
      * @return Queue for assignment, formatted in JSON
      */
     @PutMapping("/initQueue/{id}")
-    public ResponseEntity<Assignment> initQueue(@PathVariable long id, @RequestBody List<String> people) {
+    public ResponseEntity<Assignment> initQueue(@PathVariable long id, @RequestBody List<List<String>> people) {
         Optional<Assignment> optional = assignmentRepo.findById(id);
         if (optional.isPresent()) {
             Assignment assignment = optional.get();
-            assignment.initQueue(people);
+            assignment.initQueue(people.get(0), Long.parseLong(people.get(1).get(0)));
             assignmentRepo.save(assignment);
             return new ResponseEntity<>(assignment, HttpStatus.OK);
         }
