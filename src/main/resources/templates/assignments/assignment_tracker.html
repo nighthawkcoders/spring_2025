@@ -129,13 +129,15 @@
                 <div class="modal-content">
                     <span class="close-btn" onclick="closeAssignToGradeModal()">&times;</span>
                     <h2>Assign to Students</h2>
+                    <input type="text" id="studentSearchBar" placeholder="Search students..." oninput="filterStudentList()">
                     <ul id="studentChecklist">
-                        <!-- Dynamically populate this list -->
+                        <!-- Dynamically populated list -->
                     </ul>
                     <button class="btn" onclick="saveAssignedGraders()">Save</button>
                     <button class="btn" onclick="closeAssignToGradeModal()">Close</button>
                 </div>
             </div>
+            
             <table id="assignmentTable">
                 <thead>
                     <tr>
@@ -502,6 +504,20 @@
             alert('An error occurred while saving.');
         });
     }
+    function filterStudentList() {
+    const searchValue = document.getElementById('studentSearchBar').value.toLowerCase();
+    const studentItems = document.querySelectorAll('#studentChecklist li');
+
+    studentItems.forEach(item => {
+        const studentName = item.textContent.toLowerCase();
+        if (studentName.includes(searchValue)) {
+            item.style.display = ''; // Show item
+        } else {
+            item.style.display = 'none'; // Hide item
+        }
+    });
+}
+
 </script>
 </th:block>
 </html>
