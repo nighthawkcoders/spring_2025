@@ -98,7 +98,7 @@ public class AnalyticsApiController {
     ) {
         
         // Lookup user by email (using PersonJpaRepository, not SynergyGradeJpaRepository)
-        Person user = personJpaRepository.findByEmail(studentEmail);
+        Person user = personJpaRepository.findByUid(studentEmail);
         
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + studentEmail);

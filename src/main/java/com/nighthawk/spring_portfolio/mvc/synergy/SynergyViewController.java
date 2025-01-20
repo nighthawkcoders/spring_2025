@@ -66,7 +66,7 @@ public class SynergyViewController {
     public String editGrades(Model model, @AuthenticationPrincipal UserDetails userDetails) throws ResponseStatusException {
         // Load the user
         String email = userDetails.getUsername();
-        Person user = personRepository.findByEmail(email);
+        Person user = personRepository.findByUid(email);
         if (user == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to view this"
