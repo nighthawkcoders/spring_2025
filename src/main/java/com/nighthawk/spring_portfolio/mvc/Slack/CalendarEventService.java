@@ -16,6 +16,9 @@ public class CalendarEventService {
     @Autowired
     private CalendarEventRepository calendarEventRepository;
 
+    @Autowired
+    private SlackService slackService; // Assuming you have a Slack service to send messages
+
     // Save a new event
     public CalendarEvent saveEvent(CalendarEvent event) {
         return calendarEventRepository.save(event);
@@ -26,9 +29,16 @@ public class CalendarEventService {
         return calendarEventRepository.findByDate(date);
     }
 
+    // Update event by title
     public boolean updateEventByTitle(String title, String newTitle, String description) {
         CalendarEvent event = getEventByTitle(title);
         if (event != null) {
+            // Send Slack message before updating
+            String oldEventDetails = "Old Event: " + event.getTitle() + " on " + event.getDate();
+            String newEventDetails = "New Event: " + newTitle + " on " + event.getDate();
+            slackService.sendMessage("Event Updated: " + oldEventDetails + " -> " + newEventDetails);
+            
+            // Perform the update
             event.setTitle(newTitle);
             event.setDescription(description);
             calendarEventRepository.save(event);
@@ -36,7 +46,20 @@ public class CalendarEventService {
         }
         return false;
     }
-    
+
+    // Delete event by title
+    public boolean deleteEventByTitle(String title) {
+        CalendarEvent event = getEventByTitle(title);
+        if (event != null) {
+            // Send Slack message before deleting
+            slackService.sendMessage("Event Deleted: " + event.getTitle() + " on " + event.getDate());
+            
+            // Perform the delete
+            calendarEventRepository.delete(event);
+            return true;
+        }
+        return false;
+    }
 
     // Get events within a date range
     public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {
@@ -47,6 +70,8 @@ public class CalendarEventService {
     public List<CalendarEvent> getAllEvents() {
         return calendarEventRepository.findAll();
     }
+
+    // Get event by title
     public CalendarEvent getEventByTitle(String title) {
         return calendarEventRepository.findAll()
             .stream()
@@ -54,7 +79,6 @@ public class CalendarEventService {
             .findFirst()
             .orElse(null);
     }
-    
 
     // Method to parse a Slack message and create calendar events
     public void parseSlackMessage(Map<String, String> jsonMap, LocalDate weekStartDate) {
