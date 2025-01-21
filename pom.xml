@@ -203,6 +203,13 @@
         </dependency>
     </dependencies>
 
+    <!-- SLF4J and Logback (usually included in Spring Boot Starter) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-logging</artifactId>
+    </dependency>
+
+
     <build>
         <plugins>
             <plugin>

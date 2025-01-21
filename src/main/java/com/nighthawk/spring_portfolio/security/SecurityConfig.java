@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/authenticate").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/analytics/**").permitAll()   
                         .requestMatchers(HttpMethod.POST, "/api/person/**").permitAll()           
                         .requestMatchers(HttpMethod.GET,"/api/person/{id}/balance").permitAll() // Allow unauthenticated access to this endpoint
                         .requestMatchers(HttpMethod.GET, "/api/person/**").authenticated()

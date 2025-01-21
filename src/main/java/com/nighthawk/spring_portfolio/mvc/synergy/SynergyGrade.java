@@ -44,8 +44,24 @@ public class SynergyGrade {
         // Create SynergyGrade objects
         return new String[][] {
             {"0.98", "Sprint 1 Live Review", "toby"},
+            {"0.92", "Sprint 1 Live Review", "madam"},
+            {"0.89", "Sprint 1 Live Review", "lex"},
+            {"0.79", "Sprint 1 Live Review", "hop"},
+            {"0.55", "Sprint 1 Live Review", "niko"},
+
+            {"0.98", "Seed", "toby"},
+            {"0.92", "Seed", "madam"},
             {"0.85", "Seed", "lex"},
-            {"0.92", "Sprint 1 Live Review", "madam"}
+            {"0.79", "Seed", "hop"},
+            {"0.55", "Seed", "niko"},
+
+            {"0.98", "Assignment 1", "toby"},
+            {"0.92", "Assignment 1", "madam"},
+            {"0.89", "Assignment 1", "lex"},
+            {"0.79", "Assignment 1", "hop"},
+            {"0.55", "Assignment 1", "niko"},
+            
+            
         };
     }
 }
