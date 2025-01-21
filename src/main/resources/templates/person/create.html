@@ -130,6 +130,12 @@
                                         <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
                                     </div>
 
+                                    <!-- Confirm Password input field -->
+                                    <div class="form-group mb-2 mr-sm-2">
+                                        <label for="studentId"> Student Id: </label>
+                                        <input type="number" minlength = "1" th:field="*{studentId}" id="studentId" placeholder="0">
+                                    </div>
+
                                     <!-- Create Account Button -->
                                     <button type="submit" class="btn btn-secondary">Create Account</button>
 
