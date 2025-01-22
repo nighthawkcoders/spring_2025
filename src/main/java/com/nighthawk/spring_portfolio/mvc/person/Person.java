@@ -196,7 +196,7 @@ public class Person {
     public static Person createPerson(String name, String email, String ghid, String password, Boolean kasmServerNeeded, String dob, List<String> roleNames, Integer studentId) {
         Person person = new Person();
         person.setName(name);
-        person.SetEmail(email);
+        person.setEmail(email);
         person.setGhid(ghid);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
