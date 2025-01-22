@@ -174,11 +174,15 @@
                                         
                                         <!-- Form Fields for Account Update -->
                                         <div class="input-group mb-2 mr-sm-2">
-                                            <input type="text" th:field="*{ghid}" id="ghid" hidden>
+                                            <input type="ghid" th:field="*{ghid}" id="ghid" hidden>
                                         </div>
 
                                         <div class="form-group mb-2 mr-sm-2">
                                             <input type="text" th:field="*{name}" id="name" placeholder="Display Name">
+                                        </div>
+
+                                        <div class="form-group mb-2 mr-sm-2">
+                                            <input type="email" th:field="*{email}" id="email" placeholder="Email Address" required>
                                         </div>
 
                                         <div class="form-group mb-2 mr-sm-2">
