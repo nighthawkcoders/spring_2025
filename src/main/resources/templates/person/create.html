@@ -100,6 +100,11 @@
                                 <h3>Create New Account</h3>
                                 <form class="form-inline" action="#" th:action="@{/mvc/person/create}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
                                     
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <input type="text" th:field="*{email}" id="email" placeholder="Enter Email" oninput="handleTyping()">
+                                        <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</small>
+                                    </div>
+
                                     <!-- GitHub ID input field -->
                                     <div class="input-group mb-2 mr-sm-2">
                                         <input type="text" th:field="*{ghid}" id="ghid" placeholder="Enter GitHub ID" oninput="handleTyping()">

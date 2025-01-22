@@ -157,13 +157,16 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Using email as the unique identifier
 
         // Find the person by email
-        Optional<Person> optionalPerson = Optional.ofNullable(repository.findByGhid(email));
+        Optional<Person> optionalPerson = Optional.ofNullable(repository.findById(email));
         if (optionalPerson.isPresent()) {
             Person existingPerson = optionalPerson.get(); // Extract existing person from repository
 
             // Update the person's fields if provided in the DTO
             if (personDto.getEmail() != null) {
-                existingPerson.setGhid(personDto.getEmail());
+                existingPerson.setEmail(personDto.getEmail());
+            }
+            if (personDto.getGhid() != null) {
+                existingPerson.setGhid(personDto.getGhid());
             }
             if (personDto.getPassword() != null) {
                 existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
@@ -214,7 +217,7 @@ public class PersonApiController {
         String email = userDetails.getUsername(); // Get the email from authentication
 
         // Find the person by email
-        Optional<Person> optional = Optional.ofNullable(repository.findByGhid(email));
+        Optional<Person> optional = Optional.ofNullable(repository.findById(email));
         if (optional.isPresent()) {
             Person person = optional.get(); // Retrieve the person
 

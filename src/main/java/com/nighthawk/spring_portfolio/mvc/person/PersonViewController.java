@@ -63,13 +63,14 @@ public class PersonViewController {
             @Convert(attributeName = "person", converter = JsonType.class)
             class PersonAdjacent {
                 private String id;
+                private String email;
                 private String ghid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
             }
             // Wrap the person data into a PersonAdjacent object for consistent list format
-            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
+            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getEmail(), person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list
             model.addAttribute("list", list);  // Add the list to the model for the view
         }
@@ -104,13 +105,14 @@ public class PersonViewController {
             @Convert(attributeName = "person", converter = JsonType.class)
             class PersonAdjacent {
                 private String id;
+                private String email;
                 private String ghid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
             }
             // Wrap the person data into a PersonAdjacent object for consistent list format
-            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
+            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getEmail(), person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list
             model.addAttribute("list", list);  // Add the list to the model for the view
         }
