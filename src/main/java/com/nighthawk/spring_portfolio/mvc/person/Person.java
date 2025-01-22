@@ -128,7 +128,7 @@ public class Person implements Comparable<Person> {
      * property or field, in this case unique and email.
      */
     @NotEmpty
-    @Size(min = 5)
+    @Size(min = 1)
     @Column(unique = true, nullable = false)
     @Email
     private String email;
@@ -163,6 +163,8 @@ public class Person implements Comparable<Person> {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean kasmServerNeeded = false;
 
+    @Column(nullable=true)
+    private String sid;
     /**
      * user_stocks and balance describe properties used by the gamify application
      */
@@ -205,10 +207,11 @@ public class Person implements Comparable<Person> {
      * @param balance,
      * @param dob, a Date
      */
-    public Person(String email, String uid, String password, String name, Date dob, String pfp, String balance,  Boolean kasmServerNeeded, PersonRole role) {
+    public Person(String email, String uid, String password, String sid, String name, Date dob, String pfp, String balance,  Boolean kasmServerNeeded, PersonRole role) {
         this.email = email;
         this.uid = uid;
         this.password = password;
+        this.sid = sid;
         this.name = name;
         this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
@@ -257,9 +260,9 @@ public class Person implements Comparable<Person> {
      * @param dob
      * @return Person
      */
-    public static Person createPerson(String name, String email, String uid, String password, Boolean kasmServerNeeded, Boolean kasmServerNeeded1, String balance, String dob, List<String> asList) {
+    public static Person createPerson(String name, String email, String uid, String password, String sid, Boolean kasmServerNeeded, String balance, String dob, List<String> asList) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, email, uid, password, kasmServerNeeded, balance, dob, Arrays.asList("ROLE_USER", "ROLE_STUDENT"));
+        return createPerson(name, email, uid, password, sid, kasmServerNeeded, balance, dob, Arrays.asList("ROLE_USER", "ROLE_STUDENT"));
     }
     
     /**
@@ -267,12 +270,13 @@ public class Person implements Comparable<Person> {
      * 
      * @param roles
      */
-    public static Person createPerson(String name, String uid, String email, String password, String pfp, Boolean kasmServerNeeded, String balance, String dob, List<String> roleNames) {
+    public static Person createPerson(String name, String uid,  String email, String password, String sid,  String pfp, Boolean kasmServerNeeded, String balance, String dob, List<String> roleNames) {
         Person person = new Person();
         person.setName(name);
         person.setUid(uid);
         person.setEmail(email);
         person.setPassword(password);
+        person.setSid(sid);
         person.setKasmServerNeeded(kasmServerNeeded);
         person.setBalance(balance);
         person.setPfp(pfp);
@@ -305,12 +309,12 @@ public class Person implements Comparable<Person> {
         final Dotenv dotenv = Dotenv.load();
         final String adminPassword = dotenv.get("ADMIN_PASSWORD");
         final String defaultPassword = dotenv.get("DEFAULT_PASSWORD");
-        people.add(createPerson("Thomas Edison", "toby", "toby@gmail.com", adminPassword, "/images/toby.png", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        people.add(createPerson("Alexander Graham Bell", "lex", "lexb@gmail.com", defaultPassword, "/images/lex.png", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Nikola Tesla", "niko",  "niko@gmail.com",  defaultPassword, "/images/niko.png", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", defaultPassword, "/images/madam.png", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
+        people.add(createPerson("Thomas Edison", "toby", "toby@gmail.com",  adminPassword, "1", "/images/toby.png", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
+        people.add(createPerson("Alexander Graham Bell", "lex", "lexb@gmail.com", defaultPassword, "1", "/images/lex.png", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Nikola Tesla", "niko",  "niko@gmail.com",  defaultPassword, "1", "/images/niko.png", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", defaultPassword, "1", "/images/madam.png", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "1", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         
         Collections.sort(people);
         for (Person person : people) {

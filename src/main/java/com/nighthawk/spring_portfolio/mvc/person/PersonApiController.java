@@ -145,6 +145,7 @@ public class PersonApiController {
     public static class PersonDto {
         private String email;
         private String uid;
+        private String sid;
         private String password;
         private String name;
         private String dob;
@@ -171,7 +172,7 @@ public class PersonApiController {
         }
         // A person object WITHOUT ID will create a new record in the database
         String startingBalance = "100000";
-        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
@@ -209,6 +210,9 @@ public class PersonApiController {
             if (personDto.getUid() != null) {
                 existingPerson.setUid(personDto.getUid());
 
+            }
+            if (personDto.getSid() != null) {
+                existingPerson.setSid(personDto.getSid());
             }
         
             if (personDto.getName() != null) {
