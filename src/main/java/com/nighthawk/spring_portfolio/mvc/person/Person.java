@@ -218,10 +218,10 @@ public class Person {
     public static Person[] init() {
         ArrayList<Person> persons = new ArrayList<>();
         persons.add(createPerson("Thomas Edison", "N/A", "toby@gmail.com", "123toby", true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER","ROLE_SCRUMLEADER"),0));
-        persons.add(createPerson("John Mortensen", "jm1021", "N/A", "123Qwerty!", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER","ROLE_SCRUMLEADER"),1));
-        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "N/A", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),2));
-        persons.add(createPerson("Madam Curie", "madam@gmail.com", "N/A", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),3));
-        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "N/A", "123hop", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),4));
+        persons.add(createPerson("John Mortensen", "N/A", "jm1021", "123Qwerty!", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER","ROLE_SCRUMLEADER"),1));
+        persons.add(createPerson("Nikola Tesla", "N/A", "niko@gmail.com", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),2));
+        persons.add(createPerson("Madam Curie", "N/A", "madam@gmail.com", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),3));
+        persons.add(createPerson("Grace Hopper", "N/A", "hop@gmail.com", "123hop", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),4));
         return persons.toArray(Person[]::new);
     }
 
