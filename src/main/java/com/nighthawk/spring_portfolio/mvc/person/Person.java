@@ -196,7 +196,7 @@ public class Person {
     public static Person createPerson(String name, String email, String ghid, String password, Boolean kasmServerNeeded, String dob, List<String> roleNames, Integer studentId) {
         Person person = new Person();
         person.setName(name);
-        person.setEmail(email);
+        person.SetEmail(email);
         person.setGhid(ghid);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
@@ -217,7 +217,7 @@ public class Person {
      */
     public static Person[] init() {
         ArrayList<Person> persons = new ArrayList<>();
-        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "N/A", "123toby", true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER","ROLE_SCRUMLEADER"),0));
+        persons.add(createPerson("Thomas Edison", "N/A", "toby@gmail.com", "123toby", true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER","ROLE_SCRUMLEADER"),0));
         persons.add(createPerson("John Mortensen", "jm1021", "N/A", "123Qwerty!", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER","ROLE_SCRUMLEADER"),1));
         persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "N/A", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),2));
         persons.add(createPerson("Madam Curie", "madam@gmail.com", "N/A", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),3));
