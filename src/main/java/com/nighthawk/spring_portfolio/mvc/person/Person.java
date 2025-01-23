@@ -100,10 +100,11 @@ public class Person {
      * @Column(unique = true): Marks this field as unique in the database.
      */
     @Column(unique = true)
-    @Size(min = 1)
     @NotEmpty
     private String uid;
 
+    @NotEmpty
+    private String email;
     /**
      * The password used for authentication.
      * 
@@ -151,8 +152,9 @@ public class Person {
      * Constructor to create a Person object for API calls.
      * This constructor is used to initialize a new person with basic details and a role.
      */
-    public Person(String uid, String password, String name, Boolean kasmServerNeeded, PersonRole role, Integer studentId) {
+    public Person(String uid, String email, String password, String name, Boolean kasmServerNeeded, PersonRole role, Integer studentId) {
         this.uid = uid;
+        this.email = email;
         this.password = password;
         this.name = name;
         this.kasmServerNeeded = kasmServerNeeded;
@@ -164,31 +166,34 @@ public class Person {
      * Helper method to create a Person object with default roles (ROLE_USER, ROLE_STUDENT).
      * 
      * @param name: Name of the person.
-     * @param uid: Uid of the person
+     * @param uid: Uid of the person.
+     * @param email: Email of the person.
      * @param password: Password for the person.
      * @param kasmServerNeeded: Whether Kasm server is needed.
      * @return A new Person object.
      */
-    public static Person createPerson(String name, String uid, String password, Boolean kasmServerNeeded,Integer studentId) {
+    public static Person createPerson(String name, String uid, String email, String password, Boolean kasmServerNeeded,Integer studentId) {
         // By default, Spring Security expects roles to have a "ROLE_" prefix.
-        return createPerson(name, uid, password, kasmServerNeeded, password, Arrays.asList("ROLE_USER", "ROLE_STUDENT"),studentId);
+        return createPerson(name, uid, email, password, kasmServerNeeded, password, Arrays.asList("ROLE_USER", "ROLE_STUDENT"),studentId);
     }
 
     /**
      * Helper method to create a Person object with custom roles.
      * 
      * @param name: Name of the person.
-     * @param uid: Uid of the person
+     * @param uid: Uid of the person.
+     * @param email: Email of the person.
      * @param password: Password for the person.
      * @param kasmServerNeeded: Whether Kasm server is needed.
      * @param dob: Date of birth (not used directly).
      * @param roleNames: List of role names to assign to the person.
      * @return A new Person object.
      */
-    public static Person createPerson(String name, String uid, String password, Boolean kasmServerNeeded, String dob, List<String> roleNames, Integer studentId) {
+    public static Person createPerson(String name, String uid, String email, String password, Boolean kasmServerNeeded, String dob, List<String> roleNames, Integer studentId) {
         Person person = new Person();
         person.setName(name);
         person.setUid(uid);
+        person.setEmail(email);
         person.setPassword(password);
         person.setKasmServerNeeded(kasmServerNeeded);
         List<PersonRole> roles = new ArrayList<>();
@@ -209,11 +214,11 @@ public class Person {
      */
     public static Person[] init() {
         ArrayList<Person> persons = new ArrayList<>();
-        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "123toby", true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER","ROLE_SCRUMLEADER"),0));
-        persons.add(createPerson("John Mortensen", "jm1021", "123Qwerty!", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER","ROLE_SCRUMLEADER"),1));
-        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),2));
-        persons.add(createPerson("Madam Curie", "madam@gmail.com", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),3));
-        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "123hop", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),4));
+        persons.add(createPerson("Thomas Edison", "toby@gmail.com", "toby@gmail.com", "123toby", true, "02-11-1847", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER","ROLE_SCRUMLEADER"),0));
+        persons.add(createPerson("John Mortensen", "jm1021", "jm1021", "123Qwerty!", false, "10-21-1959", Arrays.asList("ROLE_ADMIN","ROLE_USER", "ROLE_TESTER","ROLE_TEACHER","ROLE_SCRUMLEADER"),1));
+        persons.add(createPerson("Nikola Tesla", "niko@gmail.com", "niko@gmail.com", "123niko", true, "07-10-1856", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),2));
+        persons.add(createPerson("Madam Curie", "madam@gmail.com", "madam@gmail.com", "123madam", true, "11-07-1867", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),3));
+        persons.add(createPerson("Grace Hopper", "hop@gmail.com", "hop@gmail.com", "123hop", true, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT"),4));
         return persons.toArray(Person[]::new);
     }
 

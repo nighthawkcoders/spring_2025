@@ -9,10 +9,11 @@ public class Person extends Generics{
     private static String classType = "Person";
     public static KeyTypes key = KeyType.title;  // static initializer
 	public static void setOrder(KeyTypes key) {Person.key = key;}
-	public enum KeyType implements KeyTypes {title, uid, name, age}
+	public enum KeyType implements KeyTypes {title, uid, email, name, age}
 
     // Instance data
     private String uid;  // user / person id
+    private String email;
     private String password;
     private String name;
     
@@ -23,9 +24,10 @@ public class Person extends Generics{
     }
 
     // Constructor used when building object from an API
-    public Person(String uid, String password, String name) {
+    public Person(String uid, String email, String password, String name) {
         this();  // runs zero argument constructor
         this.uid = uid;
+        this.email = email;
         this.password = password;
         this.name = name;
     }
@@ -58,6 +60,10 @@ public class Person extends Generics{
         this.uid = uid;
     }
 
+    public void setEmail(String email){
+        this.email = email;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -81,6 +87,7 @@ public class Person extends Generics{
         Person p1 = new Person();
         p1.setName("Thomas Edison");
         p1.setUid("toby@gmail.com");
+        p1.setEmail("toby@gmail.com");
         p1.setPassword("123Toby!");
         // Array definition and data initialization
         Person persons[] = {p1};

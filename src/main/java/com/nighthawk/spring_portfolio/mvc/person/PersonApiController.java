@@ -114,6 +114,7 @@ public class PersonApiController {
     @Getter
     public static class PersonDto {
         private String uid;
+        private String email;
         private String password;
         private String name;
         private Boolean kasmServerNeeded;
@@ -164,6 +165,9 @@ public class PersonApiController {
                     }
                     if (personDto.getUid() != null) {
                 existingPerson.setUid((String) personDto.getUid());
+            }
+            if (personDto.getEmail() != null) {
+                existingPerson.setEmail((String) personDto.getEmail());
             }
             if (personDto.getPassword() != null) {
                 existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));

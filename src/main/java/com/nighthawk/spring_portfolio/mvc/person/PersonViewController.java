@@ -64,6 +64,7 @@ public class PersonViewController {
             class PersonAdjacent {
                 private String id;
                 private String uid;
+                private String email;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
@@ -105,6 +106,7 @@ public class PersonViewController {
             class PersonAdjacent {
                 private String id;
                 private String uid;
+                private String email;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
