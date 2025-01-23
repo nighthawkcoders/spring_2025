@@ -64,7 +64,7 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Size(min = 1)
+    @Column(unique = true)
     private Integer studentId;
     /**
      * The many-to-many relationship with PersonSections.
