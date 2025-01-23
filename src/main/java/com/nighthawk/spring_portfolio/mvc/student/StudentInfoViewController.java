@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/mvc/student")
 public class StudentInfoViewController {
 
-    @GetMapping("/tableper1")
+    @GetMapping("/tablesper1")
     public String viewTablesPer1() {
         return "student/tables_per1.html";
     }
@@ -16,6 +16,11 @@ public class StudentInfoViewController {
     @GetMapping("/tablesper3")
     public String viewTablesPer3() {
         return "student/tables_per3.html";
+    }
+
+    @GetMapping("/tabledetails")
+    public String viewTableDetails() {
+        return "student/table-details.html";
     }
 
 }
