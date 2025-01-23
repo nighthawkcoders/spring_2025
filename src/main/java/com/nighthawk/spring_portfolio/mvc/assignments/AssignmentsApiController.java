@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
@@ -349,7 +352,37 @@ public class AssignmentsApiController {
             
         return ResponseEntity.ok(assignedGraderIds);
     }
+    
+    @GetMapping("/assigned")
+    public ResponseEntity<?> getAssignedAssignments(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
+        String uid = userDetails.getUsername();
+        Person user = personRepo.findByUid(uid);
+        if (user == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        List<Assignment> assignments = assignmentRepo.findByAssignedGraders(user);
+
+        List<Map<String, String>> formattedAssignments = new ArrayList<>();
+        for (Assignment a : assignments) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", String.valueOf(a.getId()));
+            map.put("name", a.getName());
+            map.put("description", a.getDescription());
+            map.put("dueDate", a.getDueDate());
+            map.put("points", String.valueOf(a.getPoints()));
+            map.put("type", a.getType());
+            formattedAssignments.add(map);
+        }
+
+        return ResponseEntity.ok(formattedAssignments);
+    }
 
     
 }
