@@ -155,6 +155,7 @@
                         <th>Github ID</th>
                         <th>Username</th>
                         <th>Uid</th> <!-- Added Uid column -->
+                        <th>Email</th> <!-- Added Email column -->
                         <th>Kasm</th>
                         <th>Profile Picture</th>
                         <th>Action</th>
@@ -168,6 +169,7 @@
                         </td>
                         <td th:text="${person.name}">Name</td>
                         <td class="uid" th:text="${person.uid}" title="${person.uid}">Uid</td> <!-- Shortened Uid with full on hover -->
+                        <td th:text="${person.email}">Email</td> <!-- Display Email -->
                         <!-- Checkbox for Kasm Image status -->
                         <td>
                             <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 

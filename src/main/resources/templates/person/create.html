@@ -112,7 +112,13 @@
                                         <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Username Error</small>
                                     </div>
 
-                                    <!-- Display Name input field -->
+                                    <!-- Email input field -->
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <input type="email" th:field="*{email}" id="email" placeholder="Email Address" required>
+                                        <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</small>
+                                    </div>
+
+                                    <!-- Student Id input field -->
                                     <div class="input-group mb-2 mr-sm-2">
                                         <label for="studentId"> Student Id: </label>
                                         <input type="number" minlength="1" th:field="*{studentId}" id="studentId" placeholder="0">
