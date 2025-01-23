@@ -64,6 +64,8 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Size(min = 1)
+    private Integer studentId;
     /**
      * The many-to-many relationship with PersonSections.
      * 
@@ -155,6 +157,7 @@ public class Person {
         this.name = name;
         this.kasmServerNeeded = kasmServerNeeded;
         this.roles.add(role);
+        this.studentId = studentId;
     }
 
     /**
@@ -194,6 +197,7 @@ public class Person {
             roles.add(role);
         }
         person.setRoles(roles);
+        person.setStudentId(studentId);
 
         return person;
     }
