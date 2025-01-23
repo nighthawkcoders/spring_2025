@@ -45,15 +45,15 @@
             margin-bottom: 20px;
         }
 
-        /* Email column styling to limit text and show full email on hover */
-        td.email {
+        /* Uid column styling to limit text and show full uid on hover */
+        td.uid {
             width: 18ch; /* Limit to 18 characters */
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        td.email:hover {
+        td.uid:hover {
             cursor: help;
         }
     </style>
@@ -154,7 +154,7 @@
                         <th>User ID</th>
                         <th>Github ID</th>
                         <th>Username</th>
-                        <th>Email</th> <!-- Added Email column -->
+                        <th>Uid</th> <!-- Added Uid column -->
                         <th>Kasm</th>
                         <th>Profile Picture</th>
                         <th>Action</th>
@@ -164,10 +164,10 @@
                     <tr th:each="person : ${list}">
                         <td th:text="${person.id}">Person ID</td>
                         <td>
-                            <a th:href="'https://github.com/' + ${person.ghid}" target="_blank" th:text="${person.ghid}">User GHID</a>
+                            <a th:href="'https://github.com/' + ${person.uid}" target="_blank" th:text="${person.uid}">User GHID</a>
                         </td>
                         <td th:text="${person.name}">Name</td>
-                        <td class="email" th:text="${person.email}" title="${person.email}">Email</td> <!-- Shortened Email with full on hover -->
+                        <td class="uid" th:text="${person.uid}" title="${person.uid}">Uid</td> <!-- Shortened Uid with full on hover -->
                         <!-- Checkbox for Kasm Image status -->
                         <td>
                             <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 
@@ -178,7 +178,7 @@
                             <div class="profile-picture-container">
                                 <!-- Profile picture with fallback image on error -->
                                 <a id="profile-link-${person.id}" data-person-id="${person.id}" target="_blank">
-                                    <img id="profile-img-${person.id}" th:src="|https://github.com/${person.ghid}.png|"
+                                    <img id="profile-img-${person.id}" th:src="|https://github.com/${person.uid}.png|"
                                          alt="Profile Picture"
                                          onerror="this.onerror=null; this.src='https://github.com/user-attachments/assets/13dec9b2-21d6-458e-b099-f5f85ae9caf2';" />
                                 </a>

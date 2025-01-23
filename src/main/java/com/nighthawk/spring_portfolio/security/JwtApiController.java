@@ -46,9 +46,9 @@ public class JwtApiController {
 	@SuppressWarnings("unchecked")
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody Person authenticationRequest) throws Exception {
-		authenticate(authenticationRequest.getGhid(), authenticationRequest.getPassword());
+		authenticate(authenticationRequest.getUid(), authenticationRequest.getPassword());
 		final UserDetails userDetails = personDetailsService
-				.loadUserByUsername(authenticationRequest.getGhid());
+				.loadUserByUsername(authenticationRequest.getUid());
 
 		// Get the roles of the user
 		List<String> roles = userDetails.getAuthorities().stream()
@@ -76,7 +76,7 @@ public class JwtApiController {
 
         JSONObject responseObject = new JSONObject();
 		//success message
-        responseObject.put("response",authenticationRequest.getGhid() + " was authenticated successfully");
+        responseObject.put("response",authenticationRequest.getUid() + " was authenticated successfully");
 		//pass through cookies just in case
 		responseObject.put("cookie",tokenCookie.toString());
 
@@ -84,7 +84,7 @@ public class JwtApiController {
 
         return new ResponseEntity<>(reponseString,responseHeaders, HttpStatus.OK);
 
-		//return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getGhid() + " was authenticated successfully");
+		//return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(authenticationRequest.getUid() + " was authenticated successfully");
 	}
 
 	private void authenticate(String username, String password) throws Exception {

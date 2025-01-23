@@ -51,9 +51,9 @@ public class PersonApiController {
     @GetMapping("/person/get")
     public ResponseEntity<Person> getPerson(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String email = userDetails.getUsername(); // Email mapped to username in Spring Security
+        String uid = userDetails.getUsername(); // Uid mapped to username in Spring Security
 
-        Person person = repository.findByGhid(email);
+        Person person = repository.findByUid(uid);
 
         // Return the found person or a NOT_FOUND status if not found
         if (person != null) {
@@ -113,14 +113,11 @@ public class PersonApiController {
      */
     @Getter
     public static class PersonDto {
-        private String email;
+        private String uid;
         private String password;
         private String name;
         private Boolean kasmServerNeeded;
-                public Object getGhid() {
-                    throw new UnsupportedOperationException("Unimplemented method 'getGhid'");
-                } 
-            }
+    }
         
             /**
              * Creates a new Person entity in the database.
@@ -140,7 +137,7 @@ public class PersonApiController {
                 responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         
                 JSONObject responseObject = new JSONObject();
-                responseObject.put("response", personDto.getEmail() + " is created successfully");
+                responseObject.put("response", personDto.getUid() + " is created successfully");
         
                 // Return the response with status OK
                 String responseString = responseObject.toString();
@@ -156,17 +153,17 @@ public class PersonApiController {
              */
             @PostMapping(value = "/person/update", produces = MediaType.APPLICATION_JSON_VALUE)
             public ResponseEntity<Object> updatePerson(Authentication authentication, @RequestBody final PersonDto personDto) {
-                // Find the person by email
+                // Find the person by uid
                 Optional<Person> optionalPerson = Optional.empty();
                 if (optionalPerson.isPresent()) {
                     Person existingPerson = optionalPerson.get(); // Extract existing person from repository
         
                     // Update the person's fields if provided in the DTO
-                    if (personDto.getEmail() != null) {
-                        existingPerson.setEmail(personDto.getEmail());
+                    if (personDto.getUid() != null) {
+                        existingPerson.setUid(personDto.getUid());
                     }
-                    if (personDto.getGhid() != null) {
-                existingPerson.setGhid((String) personDto.getGhid());
+                    if (personDto.getUid() != null) {
+                existingPerson.setUid((String) personDto.getUid());
             }
             if (personDto.getPassword() != null) {
                 existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
@@ -188,7 +185,7 @@ public class PersonApiController {
     }
 
     /**
-     * Searches for Person entities by name or email.
+     * Searches for Person entities by name or uid.
      * 
      * @param map A map containing the search term with the key "term".
      * @return A ResponseEntity containing a list of matching Person entities.
@@ -197,8 +194,8 @@ public class PersonApiController {
     public ResponseEntity<Object> personSearch(@RequestBody final Map<String, String> map) {
         String term = map.get("term"); // Extract search term from request body
 
-        // Search the repository for persons matching the term in either name or email
-        List<Person> list = repository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(term, term);
+        // Search the repository for persons matching the term in either name or uid
+        List<Person> list = repository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(term, term);
 
         // Return the list of matching persons with HTTP OK
         return new ResponseEntity<>(list, HttpStatus.OK);
@@ -207,13 +204,13 @@ public class PersonApiController {
     /**
      * Updates the stats for a specific person (e.g., health data).
      * 
-     * @param authentication The authentication object to get the current user's email.
+     * @param authentication The authentication object to get the current user's uid.
      * @param stat_map A map containing the stats data, e.g., health stats with date and measurements.
      * @return A ResponseEntity containing the updated Person entity with stats or a NOT_FOUND status.
      */
     @PostMapping(value = "/person/setStats", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Person> personStats(Authentication authentication, @RequestBody final Map<String,Object> stat_map) {
-        // Find the person by email
+        // Find the person by uid
         Optional<Person> optional = Optional.empty();
         if (optional.isPresent()) {
             Person person = optional.get(); // Retrieve the person

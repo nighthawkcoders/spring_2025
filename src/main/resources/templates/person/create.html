@@ -49,7 +49,7 @@
 
         // Function to check if the GitHub username exists using GitHub's API
         function checkGitHubUsername() {
-            const githubUsername = document.getElementById("ghid").value;
+            const githubUsername = document.getElementById("uid").value;
             const url = `https://api.github.com/users/${githubUsername}`;
 
             const currentTime = Date.now();
@@ -99,16 +99,11 @@
                             <div class="jumbotron">
                                 <h3>Create New Account</h3>
                                 <form class="form-inline" action="#" th:action="@{/mvc/person/create}" th:object="${person}" method="POST" onsubmit="validateForm(event)">
-                                    
-                                    <div class="input-group mb-2 mr-sm-2">
-                                        <input type="text" th:field="*{email}" id="email" placeholder="Enter Email" oninput="handleTyping()">
-                                        <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</small>
-                                    </div>
 
                                     <!-- GitHub ID input field -->
                                     <div class="input-group mb-2 mr-sm-2">
-                                        <input type="text" th:field="*{ghid}" id="ghid" placeholder="Enter GitHub ID" oninput="handleTyping()">
-                                        <small th:if="${#fields.hasErrors('ghid')}" th:errors="*{ghid}">GitHub ID Error</small>
+                                        <input type="text" th:field="*{uid}" id="uid" placeholder="Enter GitHub ID" oninput="handleTyping()">
+                                        <small th:if="${#fields.hasErrors('uid')}" th:errors="*{uid}">GitHub ID Error</small>
                                     </div>
 
                                     <!-- Display Name input field -->
@@ -133,12 +128,6 @@
                                         <label for="kasmServerNeeded"> Request Kasm Server: </label>
                                         <input type="checkbox" th:field="*{kasmServerNeeded}" id="kasmServerNeeded">
                                         <small th:if="${#fields.hasErrors('kasmServerNeeded')}" th:errors="*{kasmServerNeeded}">Kasm Server Needed Error</small>
-                                    </div>
-
-                                    <!-- Confirm Password input field -->
-                                    <div class="form-group mb-2 mr-sm-2">
-                                        <label for="studentId"> Student Id: </label>
-                                        <input type="number" minlength = "1" th:field="*{studentId}" id="studentId" placeholder="0">
                                     </div>
 
                                     <!-- Create Account Button -->

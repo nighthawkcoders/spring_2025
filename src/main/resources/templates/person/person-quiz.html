@@ -3,39 +3,7 @@
       layout:decorate="~{layouts/base}" lang="en">
 <head>
       <script>
-        // Function to check if an image exists by loading it
-        function imageExists(url) {
-            var img = new Image();
-            img.onload = function() {
-                return true;
-            };
-            img.onerror = function() {
-                return false;
-            };
-            img.src = url;
-        }
-
-        // Function to dynamically update the profile picture link
-        function updateProfilePicture(personId) {
-            var imgUrl = 'https://github.com/' + personId + '.png';
-            var link = document.getElementById('profile-link-' + personId);
-            var img = document.getElementById("pfp");
-
-            // If the image exists, set the link to the profile picture; otherwise, remove the link
-            if (imageExists(imgUrl)) {
-                link.href = imgUrl;
-            } else {
-                link.removeAttribute('href');
-            }
-        }
-
         window.addEventListener("load",()=>{
-            var personIds = document.querySelectorAll('[data-person-id]');
-            personIds.forEach(function(element) {
-                var personId = element.getAttribute('data-person-id');
-                updateProfilePicture(personId);
-            });
-
             document.getElementById("pfp-preview").src = document.getElementById("pfp").src;
             
             function getRandomInt(min, max) {
@@ -55,7 +23,7 @@
                     document.getElementById("question").innerHTML = "What is this user's: "+ "Id".bold()+"?";
                     break;
                 case 2:
-                    answer = document.getElementById("ghid").innerText;
+                    answer = document.getElementById("uid").innerText;
                     document.getElementById("question").innerHTML = "What is this user's: "+ "Github Username".bold()+"?";
                     break;
                 case 3:
@@ -67,8 +35,8 @@
                     document.getElementById("question").innerHTML = "What is this user's: "+ "Kasm Server Needed Status".bold()+"?";
                     break;
                 case 5:
-                answer = document.getElementById("studentId").innerText;
-                    document.getElementById("question").innerHTML = "What is this user's: "+ "Student Id".bold()+"?";
+                answer = document.getElementById("dob").innerText.split(" ")[0];
+                    document.getElementById("question").innerHTML = "What is this user's: "+ "Date of Birth".bold()+"? (yyyy-mm-dd)";
                     break;
                 default:
                     console.warn("something went wrong");
@@ -101,19 +69,12 @@
                             <tr th:object="${person}">
                                 <td th:text="${person.id}" id="id">Person ID</td>
                                 <td> 
-                                    <div class="profile-picture-container">
-                                        <!-- Profile picture with fallback image on error -->
-                                        <a id="profile-link-${person.id}" data-person-id="${person.id}" target="_blank">
-                                            <img id="pfp" th:src="|https://github.com/${person.ghid}.png|"
-                                                 alt="Profile Picture"
-                                                 onerror="this.onerror=null; this.src='https://github.com/user-attachments/assets/13dec9b2-21d6-458e-b099-f5f85ae9caf2';" />
-                                        </a>
-                                    </div>
+                                    <img th:src="${person.pfp}" id="pfp" alt="Profile Picture" style="width: 64px; height: 64px; border-radius: 50%;" />
                                 </td>    
-                                <td th:text="${person.ghid}" id="ghid">Person ID</td>
+                                <td th:text="${person.uid}" id="uid">Person ID</td>
                                 <td th:text="${person.name}" id="name">Name</td>
                                 <td th:text="${person.kasmServerNeeded}" id="kasmServerNeeded">Kasm Server Needed</td>
-                                <td th:text="${person.studentId}" id="studentId">Student Id</td>
+                                <td th:text="${person.dob}" id="dob">Date of Birth</td>
                             </tr>
                         </tbody>
                     </table>

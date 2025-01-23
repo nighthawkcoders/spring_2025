@@ -34,18 +34,18 @@ public class PersonDetailsService implements UserDetailsService {
     /**
      * Loads user details for authentication using Spring Security.
      * 
-     * @param ghid The unique identifier (username) of the person to load.
+     * @param uid The unique identifier (username) of the person to load.
      * @return A UserDetails object representing the authenticated user.
      * @throws UsernameNotFoundException If the user is not found.
      */
     @Override
-    public UserDetails loadUserByUsername(String ghid) throws UsernameNotFoundException {
-        // Fetch the person entity from the database by ghid (used as the username)
-        Person person = personJpaRepository.findByGhid(ghid); 
+    public UserDetails loadUserByUsername(String uid) throws UsernameNotFoundException {
+        // Fetch the person entity from the database by uid (used as the username)
+        Person person = personJpaRepository.findByUid(uid); 
 
         if (person == null) {
             // If no person is found, throw a UsernameNotFoundException (this is used by Spring Security)
-            throw new UsernameNotFoundException("User not found with username: " + ghid);
+            throw new UsernameNotFoundException("User not found with username: " + uid);
         }
 
         // Convert the person's roles into Spring Security authorities
@@ -54,8 +54,8 @@ public class PersonDetailsService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority(role.getName())); // Add each role as an authority
         });
 
-        // Return a Spring Security User object containing the person's ghid, encoded password, and authorities
-        return new User(person.getGhid(), person.getPassword(), authorities);
+        // Return a Spring Security User object containing the person's uid, encoded password, and authorities
+        return new User(person.getUid(), person.getPassword(), authorities);
     }
 
     /* CRUD Operations for managing Person entities */
@@ -70,25 +70,25 @@ public class PersonDetailsService implements UserDetailsService {
     }
 
     /**
-     * Retrieves a list of Person entities that match the given name or ghid.
+     * Retrieves a list of Person entities that match the given name or uid.
      * 
      * @param name The name to search for.
-     * @param ghid The ghid (unique identifier) to search for.
+     * @param uid The uid (unique identifier) to search for.
      * @return A list of matching Person entities.
      */
-    public List<Person> list(String name, String ghid) {
-        return personJpaRepository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(name, ghid); // Search by name or ghid
+    public List<Person> list(String name, String uid) {
+        return personJpaRepository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(name, uid); // Search by name or uid
     }
 
     /**
-     * Searches for Person entities that contain the given term in their name or ghid.
+     * Searches for Person entities that contain the given term in their name or uid.
      * The search is case-insensitive.
      * 
      * @param term The search term to look for.
      * @return A list of matching Person entities.
      */
     public List<Person> listLike(String term) {
-        return personJpaRepository.findByNameContainingIgnoreCaseOrGhidContainingIgnoreCase(term, term); // Perform a case-insensitive search by term
+        return personJpaRepository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(term, term); // Perform a case-insensitive search by term
     }
 
     /**
@@ -139,13 +139,13 @@ public class PersonDetailsService implements UserDetailsService {
     }
 
     /**
-     * Retrieves a Person entity by its ghid (unique identifier).
+     * Retrieves a Person entity by its uid (unique identifier).
      * 
-     * @param ghid The ghid of the person to retrieve.
+     * @param uid The uid of the person to retrieve.
      * @return The Person entity, or null if not found.
      */
-    public Person getByGhid(String ghid) {
-        return personJpaRepository.findByGhid(ghid); // Fetch person by their ghid
+    public Person getByUid(String uid) {
+        return personJpaRepository.findByUid(uid); // Fetch person by their uid
     }
 
     /**
@@ -200,14 +200,14 @@ public class PersonDetailsService implements UserDetailsService {
     }
 
     /**
-     * Adds a role to a Person entity identified by ghid.
+     * Adds a role to a Person entity identified by uid.
      * 
-     * @param ghid The ghid of the person to whom the role should be assigned.
+     * @param uid The uid of the person to whom the role should be assigned.
      * @param roleName The name of the role to assign.
      */
-    public void addRoleToPerson(String ghid, String roleName) {
-        // Find the person by their ghid
-        Person person = personJpaRepository.findByGhid(ghid); 
+    public void addRoleToPerson(String uid, String roleName) {
+        // Find the person by their uid
+        Person person = personJpaRepository.findByUid(uid); 
         if (person != null) {
             // Find the role by name
             PersonRole role = personRoleJpaRepository.findByName(roleName); 
@@ -218,12 +218,12 @@ public class PersonDetailsService implements UserDetailsService {
     }
 
     /**
-     * Checks if a Person exists based on their ghid.
+     * Checks if a Person exists based on their uid.
      * 
-     * @param ghid The ghid to check for existence.
+     * @param uid The uid to check for existence.
      * @return true if the person exists, false otherwise.
      */
-    public boolean existsByGhid(String ghid) {
-        return personJpaRepository.existsByGhid(ghid); // Check if a person with the given ghid exists
+    public boolean existsByUid(String uid) {
+        return personJpaRepository.existsByUid(uid); // Check if a person with the given uid exists
     }
 }

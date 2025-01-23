@@ -484,7 +484,7 @@ legend + * {
 /* rtl:raw:
 [type="tel"],
 [type="url"],
-[type="ghid"],
+[type="uid"],
 [type="number"] {
   direction: ltr;
 }
@@ -11210,7 +11210,7 @@ html, body {
   /* rtl:raw:
   [type="tel"],
   [type="url"],
-  [type="ghid"],
+  [type="uid"],
   [type="number"] {
     direction: ltr;
   }

@@ -57,20 +57,19 @@ public class PersonViewController {
             model.addAttribute("list", list);  // Add the list to the model for the view
         } else {
             // Fetch the person by their GitHub ID for non-admin users
-            Person person = repository.getByGhid(userDetails.getUsername());
+            Person person = repository.getByUid(userDetails.getUsername());
             @Data
             @AllArgsConstructor
             @Convert(attributeName = "person", converter = JsonType.class)
             class PersonAdjacent {
                 private String id;
-                private String email;
-                private String ghid;
+                private String uid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
             }
             // Wrap the person data into a PersonAdjacent object for consistent list format
-            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getEmail(), person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
+            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getUid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list
             model.addAttribute("list", list);  // Add the list to the model for the view
         }
@@ -97,22 +96,21 @@ public class PersonViewController {
             Person person = repository.get(id);  // Admin can view any person's details by ID
             List<Person> list = Arrays.asList(person);  // Wrap the person in a list for consistency
             model.addAttribute("list", list);  // Add the list to the model for the view
-        } else if (repository.getByGhid(userDetails.getUsername()).getId() == id) {
+        } else if (repository.getByUid(userDetails.getUsername()).getId() == id) {
             // Non-admin users can only view their own details
-            Person person = repository.getByGhid(userDetails.getUsername());
+            Person person = repository.getByUid(userDetails.getUsername());
             @Data
             @AllArgsConstructor
             @Convert(attributeName = "person", converter = JsonType.class)
             class PersonAdjacent {
                 private String id;
-                private String email;
-                private String ghid;
+                private String uid;
                 private String password;
                 private String name;
                 private boolean kasmServerNeeded;
             }
             // Wrap the person data into a PersonAdjacent object for consistent list format
-            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getEmail(), person.getGhid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
+            PersonAdjacent personAdjacent = new PersonAdjacent("user", person.getUid(), person.getPassword(), person.getName(), person.getKasmServerNeeded());
             List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list
             model.addAttribute("list", list);  // Add the list to the model for the view
         }
@@ -145,14 +143,14 @@ public class PersonViewController {
         }
 
         // Check if the GitHub ID already exists in the database
-        if (repository.existsByGhid(person.getGhid())) {
-            model.addAttribute("ghidError", "This Github Id is already in use. Please use a different Github Id.");
+        if (repository.existsByUid(person.getUid())) {
+            model.addAttribute("uidError", "This Github Id is already in use. Please use a different Github Id.");
             return "person/create";  // Return to the form with an error message
         }
 
         repository.save(person);  // Save the new person
-        repository.addRoleToPerson(person.getGhid(), "ROLE_USER");  // Assign default roles
-        repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
+        repository.addRoleToPerson(person.getUid(), "ROLE_USER");  // Assign default roles
+        repository.addRoleToPerson(person.getUid(), "ROLE_STUDENT");
 
         return "redirect:/mvc/person/read";  // Redirect to the read page after saving
     }
@@ -180,7 +178,7 @@ public class PersonViewController {
     @GetMapping("/update/user")
     public String personUpdate(Authentication authentication, Model model) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        model.addAttribute("person", repository.getByGhid(userDetails.getUsername()));  // Add the person's data to the model
+        model.addAttribute("person", repository.getByUid(userDetails.getUsername()));  // Add the person's data to the model
         return "person/update";  // Return the update form view
     }
 
@@ -200,10 +198,10 @@ public class PersonViewController {
         boolean isAdmin = userDetails.getAuthorities().stream()
             .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
-        Person personToUpdate = repository.getByGhid(person.getGhid());
+        Person personToUpdate = repository.getByUid(person.getUid());
 
         // If the user is not an admin, they can only update their own details
-        if (!isAdmin && !personToUpdate.getId().equals(repository.getByGhid(userDetails.getUsername()).getId())) {
+        if (!isAdmin && !personToUpdate.getId().equals(repository.getByUid(userDetails.getUsername()).getId())) {
             return "redirect:/e#Unauthorized";  // Redirect if user tries to update another person's details
         }
 
@@ -228,8 +226,8 @@ public class PersonViewController {
 
         // Save the updated person and ensure the roles are correctly maintained
         repository.save(personToUpdate, samePassword);
-        repository.addRoleToPerson(person.getGhid(), "ROLE_USER");
-        repository.addRoleToPerson(person.getGhid(), "ROLE_STUDENT");
+        repository.addRoleToPerson(person.getUid(), "ROLE_USER");
+        repository.addRoleToPerson(person.getUid(), "ROLE_STUDENT");
 
         return "redirect:/mvc/person/read";  // Redirect to the read page after updating
     }
@@ -238,7 +236,7 @@ public class PersonViewController {
 
     @Getter
     public static class PersonRoleDto {
-        private String ghid;
+        private String uid;
         private String roleName;
     }
 
@@ -250,19 +248,19 @@ public class PersonViewController {
      */
     @PostMapping("/update/role")
     public ResponseEntity<Object> personRoleUpdateSave(@RequestBody PersonRoleDto roleDto) {
-        Person personToUpdate = repository.getByGhid(roleDto.getGhid());
+        Person personToUpdate = repository.getByUid(roleDto.getUid());
         if (personToUpdate == null) {
             return new ResponseEntity<>(personToUpdate, HttpStatus.CONFLICT);  // Return error if person not found
         }
 
-        repository.addRoleToPerson(roleDto.getGhid(), roleDto.getRoleName());  // Add the role to the person
+        repository.addRoleToPerson(roleDto.getUid(), roleDto.getRoleName());  // Add the role to the person
 
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
     }
 
     @Getter
     public static class PersonRolesDto {
-        private String ghid;
+        private String uid;
         private List<String> roleNames;
     }
 
@@ -274,13 +272,13 @@ public class PersonViewController {
      */
     @PostMapping("/update/roles")
     public ResponseEntity<Object> personRolesUpdateSave(@RequestBody PersonRolesDto rolesDto) {
-        Person personToUpdate = repository.getByGhid(rolesDto.getGhid());
+        Person personToUpdate = repository.getByUid(rolesDto.getUid());
         if (personToUpdate == null) {
             return new ResponseEntity<>(personToUpdate, HttpStatus.CONFLICT);  // Return error if person not found
         }
 
         // Add all roles to the person
-        rolesDto.getRoleNames().forEach(roleName -> repository.addRoleToPerson(rolesDto.getGhid(), roleName));
+        rolesDto.getRoleNames().forEach(roleName -> repository.addRoleToPerson(rolesDto.getUid(), roleName));
 
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
     }
@@ -307,7 +305,7 @@ public class PersonViewController {
     @GetMapping("/delete/user")
     public String personDelete(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        repository.delete(repository.getByGhid(userDetails.getUsername()).getId());  // Delete the person by ID
+        repository.delete(repository.getByUid(userDetails.getUsername()).getId());  // Delete the person by ID
         return "redirect:/logout";  // Logout the user after deletion
     }
 
@@ -321,7 +319,7 @@ public class PersonViewController {
      */
     @GetMapping("/delete/{id}")
     public String personDelete(Authentication authentication, @PathVariable("id") long id) {
-        boolean deletingYourself = repository.getByGhid(((UserDetails) authentication.getPrincipal()).getUsername()).getId() == id;
+        boolean deletingYourself = repository.getByUid(((UserDetails) authentication.getPrincipal()).getUsername()).getId() == id;
         repository.delete(id);  // Delete the person by ID
         if (deletingYourself) {
             return "redirect:/logout"; // Log out if the user deletes themselves
