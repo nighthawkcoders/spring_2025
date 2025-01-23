@@ -118,13 +118,6 @@
                                         <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</small>
                                     </div>
 
-                                    <!-- Student Id input field -->
-                                    <div class="input-group mb-2 mr-sm-2">
-                                        <label for="studentId"> Student Id: </label>
-                                        <input type="number" minlength="1" th:field="*{studentId}" id="studentId" placeholder="0">
-                                        <small th:if="${#fields.hasErrors('studentId')}" th:errors="*{studentId}">studentId Error</small>
-                                    </div>
-
                                     <!-- Password input field -->
                                     <div class="form-group mb-2 mr-sm-2">
                                         <input type="password" th:field="*{password}" id="password" placeholder="Password">
@@ -134,6 +127,12 @@
                                     <!-- Confirm Password input field -->
                                     <div class="form-group mb-2 mr-sm-2">
                                         <input type="password" id="confirm_password" placeholder="Confirm Password">
+                                    </div>
+
+                                    <!-- Student Id input field (moved above Kasm Server Request) -->
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <input type="number" th:field="*{studentId}" id="studentId" placeholder="Student ID">
+                                        <small th:if="${#fields.hasErrors('studentId')}" th:errors="*{studentId}">Student ID Error</small>
                                     </div>
 
                                     <!-- Kasm Server Needed checkbox -->
