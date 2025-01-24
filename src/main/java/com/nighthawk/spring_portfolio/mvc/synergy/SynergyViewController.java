@@ -65,8 +65,8 @@ public class SynergyViewController {
     @GetMapping("/gradebook")
     public String editGrades(Model model, @AuthenticationPrincipal UserDetails userDetails) throws ResponseStatusException {
         // Load the user
-        String email = userDetails.getUsername();
-        Person user = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person user = personRepository.findByUid(uid);
         if (user == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to view this"
