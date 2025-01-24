@@ -101,10 +101,10 @@ public class AnalyticsApiController {
 
 
     @GetMapping("/assignment/{assignment_id}/student/grade")
-public ResponseEntity<Double> getStudentGradeForAssignment(
-    @AuthenticationPrincipal UserDetails userDetails,
-    @PathVariable("assignment_id") Long assignmentId
-) {
+    public ResponseEntity<Double> getStudentGradeForAssignment(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PathVariable("assignment_id") Long assignmentId
+    ) {
     // Create a logger instance
     Logger logger = LoggerFactory.getLogger(getClass());
 

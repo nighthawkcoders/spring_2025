@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,11 +20,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/api/assignments")
@@ -36,6 +41,26 @@ public class AssignmentsApiController {
 
     @Autowired
     private PersonJpaRepository personRepo;
+
+    @Getter
+    @Setter
+    public static class AssignmentDto {
+        public Long id;
+        public String name;
+        public String type;
+        public String description;
+        public Double points;
+        public String dueDate;
+
+        public AssignmentDto(Assignment assignment) {
+            this.id = assignment.getId();
+            this.name = assignment.getName();
+            this.type = assignment.getType();
+            this.description = assignment.getDescription();
+            this.points = assignment.getPoints();
+            this.dueDate = assignment.getDueDate();
+        }
+    }
 
     /**
      * A POST endpoint to create an assignment, accepts parametes as FormData.
@@ -145,19 +170,12 @@ public class AssignmentsApiController {
      * A GET endpoint used for debugging which returns information about every assignment.
      * @return Information about all the assignments.
      */
-    @GetMapping("/debug") 
+    @GetMapping("/debug")
     public ResponseEntity<?> debugAssignments() {
         List<Assignment> assignments = assignmentRepo.findAll();
-        List<Map<String, String>> simple = new ArrayList<>();
+        List<AssignmentDto> simple = new ArrayList<>();
         for (Assignment a : assignments) {
-            Map<String, String> map = new HashMap<>();
-            map.put("id", String.valueOf(a.getId()));
-            map.put("name", a.getName());
-            map.put("description", a.getDescription());
-            map.put("dueDate", a.getDueDate());
-            map.put("points", String.valueOf(a.getPoints()));
-            map.put("type", a.getType());
-            simple.add(map);
+            simple.add(new AssignmentDto(a));
         }
         return new ResponseEntity<>(simple, HttpStatus.OK);
     }
@@ -314,8 +332,8 @@ public class AssignmentsApiController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("/assignPersons/{id}")
-    public ResponseEntity<?> assignPersonsToAssignment( @PathVariable Long id, @RequestBody List<Long> personIds ) {
+    @PostMapping("/assignGraders/{id}")
+    public ResponseEntity<?> assignGradersToAssignment( @PathVariable Long id, @RequestBody List<Long> personIds ) {
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
         if (!assignmentOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
@@ -324,7 +342,7 @@ public class AssignmentsApiController {
         Assignment assignment = assignmentOptional.get();
         List<Person> persons = personRepo.findAllById(personIds);
 
-        assignment.setAssignedPersons(persons);
+        assignment.setAssignedGraders(persons);
 
         assignmentRepo.save(assignment);
 
@@ -332,24 +350,47 @@ public class AssignmentsApiController {
         return ResponseEntity.ok("Persons assigned successfully");
     }
 
-    @GetMapping("/assignedPersons/{id}")
-    public ResponseEntity<?> getAssignedPersons(@PathVariable Long id) {
+    @GetMapping("/assignedGraders/{id}")
+    public ResponseEntity<?> getAssignedGraders(@PathVariable Long id) {
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
         if (!assignmentOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
         }
 
         Assignment assignment = assignmentOptional.get();
-        List<Person> assignedPersons = assignment.getAssignedPersons();
+        List<Person> assignedGraders = assignment.getAssignedGraders();
         
         // Return just the IDs of assigned persons
-        List<Long> assignedPersonIds = assignedPersons.stream()
+        List<Long> assignedGraderIds = assignedGraders.stream()
             .map(Person::getId)
             .collect(Collectors.toList());
             
-        return ResponseEntity.ok(assignedPersonIds);
+        return ResponseEntity.ok(assignedGraderIds);
     }
+    
+    @GetMapping("/assigned")
+    public ResponseEntity<?> getAssignedAssignments(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
+        String uid = userDetails.getUsername();
+        Person user = personRepo.findByUid(uid);
+        if (user == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        List<Assignment> assignments = assignmentRepo.findByAssignedGraders(user);
+
+        List<AssignmentDto> formattedAssignments = new ArrayList<>();
+        for (Assignment a : assignments) {
+            formattedAssignments.add(new AssignmentDto(a));
+        }
+
+        return ResponseEntity.ok(formattedAssignments);
+    }
 
     
 }

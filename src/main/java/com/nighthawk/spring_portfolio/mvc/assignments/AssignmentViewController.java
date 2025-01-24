@@ -31,8 +31,8 @@ public class AssignmentViewController {
 
     @GetMapping("/tracker")
     public String assignmentTracker(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        Person user = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person user = personRepository.findByUid(uid);
         
         if (user == null || (!user.hasRoleWithName("ROLE_TEACHER") && !user.hasRoleWithName("ROLE_ADMIN"))) {
             throw new ResponseStatusException(
@@ -45,8 +45,8 @@ public class AssignmentViewController {
 
     @GetMapping
     public String listAssignments(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        Person user = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person user = personRepository.findByUid(uid);
         
         if (user == null) {
             throw new ResponseStatusException(
@@ -76,8 +76,8 @@ public class AssignmentViewController {
             @PathVariable Long id, 
             Model model, 
             @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        Person user = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person user = personRepository.findByUid(uid);
         
         if (user == null) {
             throw new ResponseStatusException(
@@ -108,8 +108,8 @@ public class AssignmentViewController {
 
     @GetMapping("/create")
     public String showCreateAssignmentForm(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        Person user = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person user = personRepository.findByUid(uid);
         
         if (user == null || (!user.hasRoleWithName("ROLE_TEACHER") && !user.hasRoleWithName("ROLE_ADMIN"))) {
             throw new ResponseStatusException(
@@ -127,8 +127,8 @@ public class AssignmentViewController {
             Model model, 
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        String email = userDetails.getUsername();
-        Person user = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person user = personRepository.findByUid(uid);
         
         if (user == null || (!user.hasRoleWithName("ROLE_TEACHER") && !user.hasRoleWithName("ROLE_ADMIN"))) {
             throw new ResponseStatusException(
