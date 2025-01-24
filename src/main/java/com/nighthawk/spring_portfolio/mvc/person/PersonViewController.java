@@ -19,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import jakarta.validation.Valid;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -57,21 +58,7 @@ public class PersonViewController {
         }
         else {
             Person person = repository.getByUid(userDetails.getUsername());  // Fetch the person by email
-            @Data
-            @AllArgsConstructor
-            @Convert(attributeName = "person", converter = JsonType.class)
-            class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
-                private String id;        
-                private String email;
-                private String uid;
-                private String password;
-                private String name;
-                private boolean kasmServerNeeded;
-                private String pfp;
-            }
-            //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(), person.getUid(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp());
-            List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
+            List<Person> list = Collections.singletonList(person);  // Create a single element list
             model.addAttribute("list", list);  // Add the list to the model for the view 
         }
         return "person/read";  // Return the template for displaying persons

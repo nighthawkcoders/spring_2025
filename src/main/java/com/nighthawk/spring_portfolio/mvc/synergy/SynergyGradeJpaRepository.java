@@ -1,14 +1,14 @@
 package com.nighthawk.spring_portfolio.mvc.synergy;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface SynergyGradeJpaRepository extends JpaRepository<SynergyGrade, Long> {
