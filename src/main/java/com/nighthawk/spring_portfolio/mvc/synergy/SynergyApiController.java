@@ -168,8 +168,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person grader = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person grader = personRepository.findByUid(uid);
         if (grader == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -216,8 +216,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestSeedDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person student = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person student = personRepository.findByUid(uid);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -247,8 +247,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestSelfDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person student = personRepository.findByUid(email);
+        String uid = userDetails.getUsername();
+        Person student = personRepository.findByUid(uid);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
