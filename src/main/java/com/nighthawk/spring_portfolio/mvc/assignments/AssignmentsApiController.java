@@ -26,6 +26,8 @@ import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/api/assignments")
@@ -39,6 +41,26 @@ public class AssignmentsApiController {
 
     @Autowired
     private PersonJpaRepository personRepo;
+
+    @Getter
+    @Setter
+    public static class AssignmentDto {
+        public Long id;
+        public String name;
+        public String type;
+        public String description;
+        public Double points;
+        public String dueDate;
+
+        public AssignmentDto(Assignment assignment) {
+            this.id = assignment.getId();
+            this.name = assignment.getName();
+            this.type = assignment.getType();
+            this.description = assignment.getDescription();
+            this.points = assignment.getPoints();
+            this.dueDate = assignment.getDueDate();
+        }
+    }
 
     /**
      * A POST endpoint to create an assignment, accepts parametes as FormData.
@@ -148,19 +170,12 @@ public class AssignmentsApiController {
      * A GET endpoint used for debugging which returns information about every assignment.
      * @return Information about all the assignments.
      */
-    @GetMapping("/debug") 
+    @GetMapping("/debug")
     public ResponseEntity<?> debugAssignments() {
         List<Assignment> assignments = assignmentRepo.findAll();
-        List<Map<String, String>> simple = new ArrayList<>();
+        List<AssignmentDto> simple = new ArrayList<>();
         for (Assignment a : assignments) {
-            Map<String, String> map = new HashMap<>();
-            map.put("id", String.valueOf(a.getId()));
-            map.put("name", a.getName());
-            map.put("description", a.getDescription());
-            map.put("dueDate", a.getDueDate());
-            map.put("points", String.valueOf(a.getPoints()));
-            map.put("type", a.getType());
-            simple.add(map);
+            simple.add(new AssignmentDto(a));
         }
         return new ResponseEntity<>(simple, HttpStatus.OK);
     }
@@ -369,16 +384,9 @@ public class AssignmentsApiController {
 
         List<Assignment> assignments = assignmentRepo.findByAssignedGraders(user);
 
-        List<Map<String, String>> formattedAssignments = new ArrayList<>();
+        List<AssignmentDto> formattedAssignments = new ArrayList<>();
         for (Assignment a : assignments) {
-            Map<String, String> map = new HashMap<>();
-            map.put("id", String.valueOf(a.getId()));
-            map.put("name", a.getName());
-            map.put("description", a.getDescription());
-            map.put("dueDate", a.getDueDate());
-            map.put("points", String.valueOf(a.getPoints()));
-            map.put("type", a.getType());
-            formattedAssignments.add(map);
+            formattedAssignments.add(new AssignmentDto(a));
         }
 
         return ResponseEntity.ok(formattedAssignments);
