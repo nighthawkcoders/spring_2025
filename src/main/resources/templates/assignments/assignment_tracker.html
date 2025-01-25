@@ -259,9 +259,12 @@
                 tableBody.innerHTML = '';
 
                 // Filter only students
-                const students = people.filter(person => 
-                    person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-                );
+                // temporarily remove filter bc roles are broken -> nede functional MVP
+                /*const students = people.filter(person => 
+                person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
+                );*/
+
+                const students = people;
 
                 students.forEach(student => {
                     const row = document.createElement('tr');
@@ -453,9 +456,11 @@
     fetch('/api/people')
         .then(response => response.json())
         .then(people => {
-            const students = people.filter(person => 
+            // temporarily remove filter bc roles are broken -> nede functional MVP
+            /*const students = people.filter(person => 
                 person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-            );
+            );*/
+            const students = people;
 
             students.forEach(student => {
                 const listItem = document.createElement('li');
