@@ -438,18 +438,24 @@ public void simulateStockValueChange(String username, List<UserStockInfo> stocks
         int quantity = stock.getQuantity();
 
         try {
-            // Fetch price 5 years ago
-            String apiUrl = "http://127.0.0.1:8765/api/stocks/price_five_years_ago/" + stockSymbol;
-            ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
+            // Fetch price 5 years ago (initial purchase price)
+            String apiUrl = "https://nitdpython.stu.nighthawkcodingsociety.com/api/stocks/price_five_years_ago/" + stockSymbol;
+            ResponseEntity<String> oldPriceResponse = restTemplate.getForEntity(apiUrl, String.class);
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                // Convert response to JSON and extract the price
-                JSONObject jsonResponse = new JSONObject(response.getBody());
-                double oldPrice = jsonResponse.getDouble("price_five_years_ago"); // Adjust key name as per API
+            if (oldPriceResponse.getStatusCode() == HttpStatus.OK) {
+                JSONObject jsonResponse = new JSONObject(oldPriceResponse.getBody());
+                double oldPrice = jsonResponse.getDouble("price_five_years_ago"); // Ensure correct key
 
-                // Calculate profit/loss
-                double totalValueChange = (getCurrentStockPrice(stockSymbol) - oldPrice) * quantity;
-                updatedBalance += totalValueChange;
+                // Fetch the current price
+                double currentPrice = getCurrentStockPrice(stockSymbol);
+
+                // Subtract the original purchase cost (old price * quantity)
+                double totalPurchaseCost = oldPrice * quantity;
+                updatedBalance -= totalPurchaseCost;
+
+                // Add the current value (current price * quantity)
+                double totalCurrentValue = currentPrice * quantity;
+                updatedBalance += totalCurrentValue;
             }
         } catch (Exception e) {
             System.out.println("Error fetching stock price 5 years ago for " + stockSymbol + ": " + e.getMessage());
