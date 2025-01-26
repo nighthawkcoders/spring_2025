@@ -40,7 +40,6 @@ public class userStocksTable {
 
     @Column
     private String email; // Email of the associated person
-
     @OneToOne
     @JoinColumn(name = "person_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -57,7 +56,7 @@ public class userStocksTable {
     private String balance; // Balance for the associated person
 
     @Column
-    private boolean hasSimulated; // Indicates if the user has simulated trading
+    private boolean hasSimulated;
 
     public double getBalanceDouble() {
         var balance_tmp = getBalance();
