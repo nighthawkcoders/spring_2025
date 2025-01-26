@@ -425,9 +425,18 @@ class UserStocksTableService implements UserDetailsService {
  * @param stocks List of stocks with quantities and symbols sent from the request.
  */
 public void simulateStockValueChange(String username, List<UserStockInfo> stocks) {
+    // Force fetch the latest user data to avoid caching issues
     userStocksTable user = userRepository.findByEmail(username);
     if (user == null) {
         throw new RuntimeException("User not found");
+    }
+
+    // Debugging: Print hasSimulated value
+    System.out.println("Checking hasSimulated for user " + username + ": " + user.isHasSimulated());
+
+    // Ensure simulation cannot be re-run
+    if (user.isHasSimulated()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Simulation has already been completed.");
     }
 
     double updatedBalance = Double.parseDouble(user.getBalance());
@@ -444,7 +453,7 @@ public void simulateStockValueChange(String username, List<UserStockInfo> stocks
 
             if (oldPriceResponse.getStatusCode() == HttpStatus.OK) {
                 JSONObject jsonResponse = new JSONObject(oldPriceResponse.getBody());
-                double oldPrice = jsonResponse.getDouble("price_five_years_ago"); // Ensure correct key
+                double oldPrice = jsonResponse.getDouble("price_five_years_ago");
 
                 // Fetch the current price
                 double currentPrice = getCurrentStockPrice(stockSymbol);
@@ -462,17 +471,22 @@ public void simulateStockValueChange(String username, List<UserStockInfo> stocks
         }
     }
 
-    // Update balance and clear stocks
+    // Update balance, clear stocks, and set hasSimulated to true
     user.setBalance(String.valueOf(updatedBalance));
     user.setStonks(""); // Clears all stocks
-    user.setHasSimulated(true);
+    user.setHasSimulated(true); //  Ensure hasSimulated is properly set
     userRepository.save(user);
 
-    // Update balance in the person table
+    // Force refresh user in database
+    userRepository.flush();  // This ensures immediate persistence
+
+    // Ensure the updated value is saved in the person table as well
     com.nighthawk.spring_portfolio.mvc.person.Person person = user.getPerson();
     person.setBalance(user.getBalance());
     personJpaRepository.save(person);
 }
+
+
 
 
 }
