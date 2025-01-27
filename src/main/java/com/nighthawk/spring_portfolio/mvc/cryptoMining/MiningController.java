@@ -30,25 +30,25 @@ public class MiningController {
     private MiningUser getOrCreateMiningUser() {
         // Get authentication details
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
+        String uid = auth.getName();
         
         System.out.println("DEBUG - Auth Details:");
-        System.out.println("  Email: " + email);
+        System.out.println("  UID: " + uid);
         System.out.println("  Principal: " + auth.getPrincipal());
         System.out.println("  Authorities: " + auth.getAuthorities());
 
-        if ("anonymousUser".equals(email)) {
+        if ("anonymousUser".equals(uid)) {
             throw new RuntimeException("Not authenticated");
         }
 
-        // Find person by email
-        Person person = personRepository.findByEmail(email);
+        // Find person by email instead of UID
+        Person person = personRepository.findByEmail(uid);  // uid here actually contains the email
         if (person == null) {
-            System.out.println("DEBUG - No person found for email: " + email);
-            throw new RuntimeException("User not found: " + email);
+            System.out.println("DEBUG - No person found for email: " + uid);
+            throw new RuntimeException("User not found: " + uid);
         }        
 
-        System.out.println("DEBUG - Found person: " + person.getEmail());
+        System.out.println("DEBUG - Found person with email: " + person.getEmail());
 
         // Find existing mining user
         Optional<MiningUser> existingUser = miningUserRepository.findByPerson(person);
