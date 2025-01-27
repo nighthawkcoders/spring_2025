@@ -69,7 +69,7 @@ public class Assignment {
         joinColumns = @JoinColumn(name = "assignment_id"),
         inverseJoinColumns = @JoinColumn(name = "person_id")
     )
-    private List<Person> assignedPersons;
+    private List<Person> assignedGraders;
 
 
 
@@ -134,12 +134,12 @@ public class Assignment {
         };
     }
 
-    public List<Person> getAssignedPersons() {
-        return assignedPersons;
+    public List<Person> getAssignedGraders() {
+        return assignedGraders;
     }
 
-    public void setAssignedPersons(List<com.nighthawk.spring_portfolio.mvc.person.Person> persons) {
-        this.assignedPersons = persons;
+    public void setAssignedGraders(List<com.nighthawk.spring_portfolio.mvc.person.Person> persons) {
+        this.assignedGraders = persons;
         System.out.println("ok bruh");
     }
 

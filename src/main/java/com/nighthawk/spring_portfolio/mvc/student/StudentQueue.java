@@ -1,8 +1,10 @@
-package com.nighthawk.spring_portfolio.mvc.bathroom;
+package com.nighthawk.spring_portfolio.mvc.student;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class BathroomQueue {
+public class StudentQueue {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -25,7 +27,6 @@ public class BathroomQueue {
     @Column
     private String teacherEmail;
     private String peopleQueue;
-    private int away;
 
     // Custom constructor
 
@@ -35,10 +36,9 @@ public class BathroomQueue {
      * @param teacherEmail - the teacher's email for what class they are from
      * @param peopleQueue  - the people in the queue
      */
-    public BathroomQueue(String teacherEmail, String peopleQueue) {
+    public StudentQueue(String teacherEmail, String peopleQueue) {
         this.teacherEmail = teacherEmail;
         this.peopleQueue = peopleQueue;
-        this.away = 0;
     }
 
     /**
@@ -46,6 +46,7 @@ public class BathroomQueue {
      * 
      * @param studentName - the name you want to add to the queue
      */
+
     public void addStudent(String studentName) {
         if (this.peopleQueue == null || this.peopleQueue.isEmpty()) {
             this.peopleQueue = studentName;
@@ -84,32 +85,13 @@ public class BathroomQueue {
      * When they are, their status is set to away
      * When they return, they are removed from the queue
      */
-    public void approveStudent() {
-        if (this.peopleQueue != null && !this.peopleQueue.isEmpty()) {
-            if (this.away == 0) {
-                // Student is approved to go away
-                this.away = 1;
-            } else {
-                // Student has returned; remove from queue
-                String[] students = this.peopleQueue.split(",");
-                if (students.length > 1) {
-                    this.peopleQueue = String.join(",", Arrays.copyOfRange(students, 1, students.length));
-                } else {
-                    this.peopleQueue = "";
-                }
-                this.away = 0;
-            }
-        } else {
-            throw new IllegalStateException("Queue is empty");
-        }
-    }
 
     /**
      * @return - initialize the queue
      */
-    public static BathroomQueue[] init() {
-        ArrayList<BathroomQueue> queues = new ArrayList<>();
-        queues.add(new BathroomQueue("jmort1021@gmail.com", ""));
-        return queues.toArray(new BathroomQueue[0]);
+    public static StudentQueue[] init() {
+        ArrayList<StudentQueue> queues = new ArrayList<>();
+        queues.add(new StudentQueue("jm1021@gmail.com", ""));
+        return queues.toArray(new StudentQueue[0]);
     }
 }

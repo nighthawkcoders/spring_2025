@@ -18,6 +18,9 @@ public interface MediaJpaRepository extends JpaRepository<Score, Long> {
     // Retrieve scores for a specific person by ID
     List<Score> findByPersonName(String personName);
 
+    @Override
+    @Query("SELECT s FROM Score s")
+    List<Score> findAll();
     // Retrieve the top score (first place)
     // @Query("SELECT s FROM Score s ORDER BY s.score DESC LIMIT 1")
     // Score findFirstPlace();

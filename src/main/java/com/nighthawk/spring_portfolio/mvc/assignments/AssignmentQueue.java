@@ -14,6 +14,7 @@ import lombok.Data;
 public class AssignmentQueue {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+
     private Long id;
 
     private List<String> working;

@@ -56,17 +56,17 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
         return personJpaRepository.findAllByOrderByNameAsc();
     }
 
-    // custom query to find match to name or email
+    // custom query to find match to name or uid
     public List<Person> list(String name, String uid) {
         return personJpaRepository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(name, uid);
     }
 
-    // custom query to find anything containing term in name or email ignoring case
+    // custom query to find anything containing term in name or uid ignoring case
     public List<Person> listLike(String term) {
         return personJpaRepository.findByNameContainingIgnoreCaseOrUidContainingIgnoreCase(term, term);
     }
 
-    // custom query to find anything containing term in name or email ignoring case
+    // custom query to find anything containing term in name or uid ignoring case
     public List<Person> listLikeNative(String term) {
         String like_term = String.format("%%%s%%",term);  // Like required % rappers
         return personJpaRepository.findByLikeTermNative(like_term);
@@ -116,7 +116,7 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
 
     
     public void addRoleToPerson(String uid, String roleName) { // by passing in the two strings you are giving the user that certain role
-        Person person = personJpaRepository.findByEmail(uid);
+        Person person = personJpaRepository.findByUid(uid);
         if (person != null) { // verify person
             PersonRole role = personRoleJpaRepository.findByName(roleName);
             if (role != null) { // verify role
@@ -133,7 +133,7 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
         }
     }
 
-    public boolean existsByUid(String uid) {  // check if email in db
+    public boolean existsByUid(String uid) {  // check if uid in db
         return personJpaRepository.existsByUid(uid);
     }
 }
