@@ -146,4 +146,9 @@ public class AssignmentViewController {
         model.addAttribute("submissions", submissions);
         return "assignments/assignment_submissions";
     }
+
+    @GetMapping("/queue-management")
+    public String queueManagement(){
+        return "assignments/queue_management";
+    }
 }
