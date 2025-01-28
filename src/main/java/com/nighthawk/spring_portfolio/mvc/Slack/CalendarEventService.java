@@ -94,58 +94,56 @@ public class CalendarEventService {
         List<CalendarEvent> events = new ArrayList<>();
         // Regex pattern filtering for keywords that mark the days of the week
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
-        Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*-\\s*(.+)");
-
+        Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*\\u2022\\s*(.+)"); // Matches bullets like "• description"
+    
         String[] lines = text.split("\\n");
-
+        CalendarEvent lastEvent = null;
+        
         for (String line : lines) {
             Matcher dayMatcher = dayPattern.matcher(line);
-
+    
             if (dayMatcher.find()) {
+                // Handle a new event header
                 String startDay = dayMatcher.group(1);
                 String endDay = dayMatcher.group(2) != null ? dayMatcher.group(2) : startDay;
                 String asterisks = dayMatcher.group(3); // Extract asterisks (* or **)
                 String currentTitle = dayMatcher.group(4).trim();
-
+    
                 String type = "daily plan"; // Default type
                 if ("*".equals(asterisks)) {
                     type = "check-in";
                 } else if ("**".equals(asterisks)) {
                     type = "grade";
                 }
-
+    
                 // Generate events for the date range
                 for (LocalDate date : getDatesInRange(startDay, endDay, weekStartDate)) {
-                    events.add(new CalendarEvent(date, currentTitle, "", type));
+                    lastEvent = new CalendarEvent(date, currentTitle, "", type);
+                    events.add(lastEvent);
                 }
             } else {
                 Matcher descMatcher = descriptionPattern.matcher(line);
-                if (descMatcher.find() && !events.isEmpty()) {
+                if (descMatcher.find() && lastEvent != null) {
+                    // Append multiline description to the last event
                     String description = descMatcher.group(2).trim();
                     String asterisks = descMatcher.group(1); // Extract asterisks (* or **)
-
-                    String type = events.get(events.size() - 1).getType(); // Default to previous event type
+    
+                    String type = lastEvent.getType(); // Default to the last event type
                     if ("*".equals(asterisks)) {
                         type = "check-in";
                     } else if ("**".equals(asterisks)) {
                         type = "grade";
                     }
-
-                    // Update all events of the current day range with the description and type
-                    for (int i = events.size() - 1; i >= 0; i--) {
-                        CalendarEvent event = events.get(i);
-                        if (event.getDescription().isEmpty()) {
-                            event.setDescription(description);
-                            event.setType(type);
-                        } else {
-                            break;
-                        }
-                    }
+    
+                    // Update the description and type for the last event
+                    lastEvent.setDescription(lastEvent.getDescription() + (lastEvent.getDescription().isEmpty() ? "" : ", ") + description);
+                    lastEvent.setType(type);
                 }
             }
         }
         return events;
     }
+    
 
     // Helper to generate dates in the range [startDay - endDay]
     private List<LocalDate> getDatesInRange(String startDay, String endDay, LocalDate weekStartDate) {
