@@ -1,5 +1,8 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
@@ -25,10 +28,12 @@ public class AssignmentSubmission {
     @ManyToOne
     @JoinColumn(name = "assignment_id")
     @JsonBackReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Assignment assignment;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Person student;
 
     private String content;
