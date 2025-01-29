@@ -4,45 +4,80 @@
 <head>
     <title>Student GitHub Profile</title>
     <style>
+        body {
+            background-color: #f5f5f5; /* Light background for the page */
+            color: #333; /* Dark text for readability */
+            font-family: 'Arial', sans-serif;
+        }
+
         #details-container {
             display: flex;
             align-items: center;
-            gap: 20px;
-            background-color: #3a3a3a;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
+            gap: 30px;
+            background-color: #181818;  /* Dark container for contrast */
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+            max-width: 900px;
+            width: 80%;
+            margin: 40px auto; /* Center the container */
+            transition: transform 0.2s ease-in-out;
+        }
+
+        #details-container:hover {
+            transform: scale(1.05); /* Slight zoom effect on hover */
         }
 
         #profile-pic {
-            width: 100px;
-            height: 100px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
-            border: 2px solid #ddd;
+            border: 3px solid #4c5c75; /* Soft blue border around the image */
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        #profile-pic:hover {
+            border-color: #5fafff; /* Change border color on hover */
         }
 
         .details-content {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
         }
 
         .details-content a {
-            color: #b0d4ff;
+            color: #5fafff; /* Cool light blue for links */
             text-decoration: none;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .details-content a:hover {
+            color: #a8d0ff; /* Lighter blue when hovered */
         }
 
         .details-content p {
-            margin: 2px 0;
-            font-size: 16px;
+            margin: 4px 0;
+            font-size: 18px;
+            color: #e0e0e0; /* Light grey text */
+            padding: 5px;
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .details-content p:hover {
+            background-color: #333333; /* Slightly lighter background on hover */
+            border: 2px solid #5fafff; /* Highlighted border on hover */
+        }
+
+        .details-content strong {
+            color: #f5f5f5; /* Light off-white for labels */
         }
     </style>
 </head>
 <body layout:fragment="body">
 
 <div id="details-container">
-    <!-- Populate some static fields using Thymeleaf -->
     <img id="profile-pic" th:src="${githubData != null} ? ${githubData.avatarUrl} : '/path/to/default-avatar.png'"
          alt="Profile Picture">
     <div class="details-content">
