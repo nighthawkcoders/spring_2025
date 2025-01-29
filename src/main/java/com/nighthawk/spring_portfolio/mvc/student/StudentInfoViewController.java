@@ -27,7 +27,8 @@ public class StudentInfoViewController {
     }
 
     @GetMapping("/tabledetails")
-    public String viewTableDetails(@RequestParam int table, @RequestParam int period, Model model) {
+    public String viewTableDetails() {
+        /* 
         // Retrieve students by table and period
         List<StudentInfo> students = studentService.findTeam("CSA", 2, period, table);
 
@@ -40,7 +41,7 @@ public class StudentInfoViewController {
         // for (StudentInfo student : students) {
 
         // }
-        // model.addAttribute("tasks", tasks);
+        // model.addAttribute("tasks", tasks);*/
 
         return "student/table-details.html";
     }
