@@ -65,6 +65,8 @@
                                 <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')" th:href="@{/mvc/synergy/gradebook}">Edit Student Grades</a></li>
                                 <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_STUDENT')" th:href="@{/mvc/synergy/gradebook}">View Grades</a></li>
                                 <li><a class="dropdown-item" th:href="@{/mvc/synergy/create-grade-request}">Create Grade Request</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/student/tablesper1}">Student Table Period 1</a><li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/student/tablesper3}">Student Table Period 3</a><li>
                             </ul>
                         </li>
                     </ul>

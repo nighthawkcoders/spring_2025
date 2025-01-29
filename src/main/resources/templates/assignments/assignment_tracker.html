@@ -182,7 +182,7 @@
                         <tr>
                             <th>Assignment</th>
                             <th>Submission Content</th>
-                            <th>Submission Date</th>
+                            <th>Submission Comments</th>
                             <th>Current Grade</th>
                             <th>Actions</th>
                         </tr>
@@ -259,9 +259,12 @@
                 tableBody.innerHTML = '';
 
                 // Filter only students
-                const students = people.filter(person => 
-                    person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-                );
+                // temporarily remove filter bc roles are broken -> nede functional MVP
+                /*const students = people.filter(person => 
+                person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
+                );*/
+
+                const students = people;
 
                 students.forEach(student => {
                     const row = document.createElement('tr');
@@ -341,7 +344,7 @@
                         row.innerHTML = `
                             <td>${submission.student ? submission.student.name : 'Unknown Student'}</td>
                             <td>${submission.content || 'No content'}</td>
-                            <td>N/A</td>
+                            <td>${submission.comment || 'No comments'}</td>
                             <td>${submission.grade || 'Not graded'}</td>
                             <td>
                                 <button class="btn btn-grade" onclick="gradeSubmission(${submission.id})">Grade</button>
@@ -357,7 +360,8 @@
                 console.error('Error fetching submissions:', error);
                 alert('Failed to fetch submissions: ' + error.message);
             });
-    }
+        }
+
 
     function viewStudentSubmissions(studentId, studentName) {
     fetch(`/api/assignments/submissions/student/${studentId}`)
@@ -453,9 +457,11 @@
     fetch('/api/people')
         .then(response => response.json())
         .then(people => {
-            const students = people.filter(person => 
+            // temporarily remove filter bc roles are broken -> nede functional MVP
+            /*const students = people.filter(person => 
                 person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-            );
+            );*/
+            const students = people;
 
             students.forEach(student => {
                 const listItem = document.createElement('li');
