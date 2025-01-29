@@ -265,6 +265,14 @@ public class PersonApiController {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
+
+
+    @GetMapping("/{sid}")
+    public String getNameById(@PathVariable String sid)
+    {
+        Person person = repository.findBySid(sid);
+        return person.getName();
+    };
     // @PostMapping(value = "/person/setSections", produces = MediaType.APPLICATION_JSON_VALUE)
     // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final List<SectionDTO> sections) {
     //     // Check if the authentication object is null
