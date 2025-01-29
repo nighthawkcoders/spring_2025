@@ -3,6 +3,7 @@ package com.nighthawk.spring_portfolio.mvc.synergy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -127,6 +129,11 @@ public class SynergyApiController {
     @PostMapping("/grades")
     public ResponseEntity<Map<String, String>> updateAllGrades(@RequestParam Map<String, String> grades) throws ResponseStatusException {
         for (String key : grades.keySet()) {
+            // only actually look at relevant parameters
+            if (!key.matches("grades\\[\\d+\\]\\[\\d+\\]")) {
+                continue;
+            }
+        
             String[] ids = key.replace("grades[", "").replace("]", "").split("\\[");
             Long assignmentId = Long.parseLong(ids[0]);
             Long studentId = Long.parseLong(ids[1]);
@@ -168,8 +175,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person grader = personRepository.findByEmail(email);
+        String uid = userDetails.getUsername();
+        Person grader = personRepository.findByUid(uid);
         if (grader == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -189,6 +196,21 @@ public class SynergyApiController {
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
     }
 
+    @GetMapping("/grades/requests/seed")
+    public ResponseEntity<?> getGradeRequestsSeed(
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String email = userDetails.getUsername();
+        Person student = personRepository.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        return ResponseEntity.ok(gradeRequestRepository.findByStudentId(student.getId()));
+    }
+
     /**
      * A POST endpoint to create a grade request for seed.
      * @param userDetails The information about the logged in user. Automatically passed in by thymeleaf.
@@ -201,8 +223,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestSeedDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person student = personRepository.findByEmail(email);
+        String uid = userDetails.getUsername();
+        Person student = personRepository.findByUid(uid);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -232,8 +254,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestSelfDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person student = personRepository.findByEmail(email);
+        String uid = userDetails.getUsername();
+        Person student = personRepository.findByUid(uid);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -318,6 +340,24 @@ public class SynergyApiController {
         gradeRequestRepository.save(request);
 
         return ResponseEntity.ok(Map.of("message", "Successfully rejected the grade request."));
+    }
+
+    @GetMapping("/grades/map/{userId}")
+    public ResponseEntity<Map<Long, Double>> getStudentGradesAsMap(@PathVariable Long userId) {
+        Person student = personRepository.findById(userId).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found")
+        );
+        
+        List<SynergyGrade> studentGrades = gradeRepository.findByStudent(student);
+        
+        Map<Long, Double> assignmentGrades = studentGrades.stream()
+            .collect(Collectors.toMap(
+                grade -> grade.getAssignment().getId(),
+                SynergyGrade::getGrade,
+                (existing, replacement) -> existing
+            ));
+        
+        return new ResponseEntity<>(assignmentGrades, HttpStatus.OK);
     }
 
     /**

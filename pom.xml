@@ -201,7 +201,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-logging</artifactId>
+    </dependency>
+
     </dependencies>
+
+    <!-- SLF4J and Logback (usually included in Spring Boot Starter) -->
+  
 
     <build>
         <plugins>

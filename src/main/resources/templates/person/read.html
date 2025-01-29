@@ -24,8 +24,10 @@
                     <thead>
                     <tr>
                         <th>ID</th>
+                        <th> Student ID </th>
                         <th>User Github ID</th>
                         <th>Person Email</th>
+                        <th>Name</th>
                         <th>Age</th>
                         <th>Kasm Server Needed</th>
                         <th>Profile Picture</th>
@@ -35,6 +37,7 @@
                     <tbody>
                     <tr th:each="person : ${list}">
                         <td th:text="${person.id}">Person ID</td>
+                        <td th:text="${person.sid}">Person ID</td>
                         <td th:text="${person.uid}">Github ID</td>
                         <td th:text="${person.email}">User Email</td>
                         <td th:text="${person.name}">Name</td>

@@ -33,6 +33,6 @@
 - "pom.xml" file can teach you a lot about Java dependencies.  This is similar to "requirements.txt" file in Python.  It manages packages and dependencies.
 
 ## .env files
-- In order to run this project locally, a .env file should be set up with the approprate variables:
+- In order to run this project locally, a .env file should be set up with the appropriate variables:
 - GAMIFY_API_URL
 - GAMIFY_API_KEY

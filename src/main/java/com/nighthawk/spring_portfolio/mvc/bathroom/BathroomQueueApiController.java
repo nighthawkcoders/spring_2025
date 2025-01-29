@@ -56,6 +56,7 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>(queueDto.getStudentName() + " was added to " + queueDto.getTeacherEmail(), HttpStatus.CREATED);
     }
 
+    
     // Endpoint to remove a student from the queue
     @CrossOrigin(origins = {"http://127.0.0.1:4100", "https://nighthawkcoders.github.io"})
     @DeleteMapping("/remove")

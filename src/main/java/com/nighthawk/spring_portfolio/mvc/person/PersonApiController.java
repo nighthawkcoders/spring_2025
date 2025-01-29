@@ -145,6 +145,7 @@ public class PersonApiController {
     public static class PersonDto {
         private String email;
         private String uid;
+        private String sid;
         private String password;
         private String name;
         private String dob;
@@ -171,11 +172,11 @@ public class PersonApiController {
         }
         // A person object WITHOUT ID will create a new record in the database
         String startingBalance = "100000";
-        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
-        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person);
+        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person, false);
         userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -205,6 +206,13 @@ public class PersonApiController {
             if (personDto.getPassword() != null) {
                 existingPerson.setPassword(passwordEncoder.encode(personDto.getPassword()));
 
+            }
+            if (personDto.getUid() != null) {
+                existingPerson.setUid(personDto.getUid());
+
+            }
+            if (personDto.getSid() != null) {
+                existingPerson.setSid(personDto.getSid());
             }
         
             if (personDto.getName() != null) {
@@ -257,6 +265,14 @@ public class PersonApiController {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
+
+
+    @GetMapping("/{sid}")
+    public String getNameById(@PathVariable String sid)
+    {
+        Person person = repository.findBySid(sid);
+        return person.getName();
+    };
     // @PostMapping(value = "/person/setSections", produces = MediaType.APPLICATION_JSON_VALUE)
     // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final List<SectionDTO> sections) {
     //     // Check if the authentication object is null

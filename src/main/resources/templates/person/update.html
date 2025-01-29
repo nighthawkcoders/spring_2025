@@ -90,6 +90,10 @@
                                 <input type="text" th:field="*{email}" id="email" hidden>
                                 <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</small>
                             </div>
+                            <div class="input-group mb-2 mr-sm-2">
+                                <input type="text" th:field="*{uid}" id="uid" hidden>
+                                <small th:if="${#fields.hasErrors('uid')}" th:errors="*{uid}">Email Error</small>
+                            </div>
 
                             <!-- GitHub Profile Picture -->
                             <div id="github_pfp_container" class="form-group mb-2 mr-sm-2">

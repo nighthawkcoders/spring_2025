@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -59,8 +60,8 @@ public class Assignment {
     @NotEmpty
     private String timestamp;
 
-    @OneToMany(mappedBy = "assignment")
-    @JsonIgnore 
+    @OneToMany(mappedBy="assignment", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonIgnore
     private List<AssignmentSubmission> submissions;
 
     @ManyToMany
@@ -69,15 +70,17 @@ public class Assignment {
         joinColumns = @JoinColumn(name = "assignment_id"),
         inverseJoinColumns = @JoinColumn(name = "person_id")
     )
-    private List<Person> assignedPersons;
+    private List<Person> assignedGraders;
 
 
 
-    @OneToMany(mappedBy="assignment")
+    @OneToMany(mappedBy="assignment", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<SynergyGrade> grades;
 
     @NotNull
     private Double points;
+
+    private Long presentationLength;
 
     @Convert(converter = AssignmentQueueConverter.class)
     private AssignmentQueue assignmentQueue;
@@ -89,8 +92,9 @@ public class Assignment {
     }
 
     // Initialize working list with all provided people
-    public void initQueue(List<String> people) {
+    public void initQueue(List<String> people, Long duration) {
         assignmentQueue.getWorking().addAll(people);
+        presentationLength = duration;
     }
 
     // Add person to waiting and remove from working
@@ -131,12 +135,12 @@ public class Assignment {
         };
     }
 
-    public List<Person> getAssignedPersons() {
-        return assignedPersons;
+    public List<Person> getAssignedGraders() {
+        return assignedGraders;
     }
 
-    public void setAssignedPersons(List<com.nighthawk.spring_portfolio.mvc.person.Person> persons) {
-        this.assignedPersons = persons;
+    public void setAssignedGraders(List<com.nighthawk.spring_portfolio.mvc.person.Person> persons) {
+        this.assignedGraders = persons;
         System.out.println("ok bruh");
     }
 

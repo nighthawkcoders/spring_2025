@@ -26,7 +26,7 @@ public class Generator {
 
     private static final Logger logger = LoggerFactory.getLogger(Generator.class);
     
-    private static final String GROQ_API_KEY = "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";
+    private static final String GROQ_API_KEY = "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";
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
     public static void main(String[] args) {

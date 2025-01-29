@@ -19,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import jakarta.validation.Valid;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -40,6 +41,9 @@ public class PersonViewController {
     @Autowired
     private PersonDetailsService repository;
 
+    @Autowired
+    private PersonJpaRepository find;
+
     @GetMapping("/read")
     public String person(Authentication authentication, Model model) {
         //check user authority
@@ -57,21 +61,7 @@ public class PersonViewController {
         }
         else {
             Person person = repository.getByUid(userDetails.getUsername());  // Fetch the person by email
-            @Data
-            @AllArgsConstructor
-            @Convert(attributeName = "person", converter = JsonType.class)
-            class PersonAdjacent{ //equilvalent class to Person, but id is replaced by a string
-                private String id;        
-                private String email;
-                private String uid;
-                private String password;
-                private String name;
-                private boolean kasmServerNeeded;
-                private String pfp;
-            }
-            //populate personAdajacent, id is replaced by "user"
-            PersonAdjacent personAdjacent = new PersonAdjacent("user",person.getEmail(), person.getUid(),person.getPassword(),person.getName(),person.getKasmServerNeeded(),person.getPfp());
-            List<PersonAdjacent> list = Arrays.asList(personAdjacent);  // Convert the single person into a list for consistency
+            List<Person> list = Collections.singletonList(person);  // Create a single element list
             model.addAttribute("list", list);  // Add the list to the model for the view 
         }
         return "person/read";  // Return the template for displaying persons
@@ -166,6 +156,11 @@ public class PersonViewController {
         return new ResponseEntity<>(personToUpdate, HttpStatus.OK);  // Return success response
     }
 
+
+
+
+
+
     @GetMapping("/person-quiz")
     public String personQuiz(Model model){
         List<Person> list = repository.listAll();  // Fetch all persons
@@ -202,63 +197,48 @@ public class PersonViewController {
         return "person/read";  // Redirect to the read page after deletion
     }
 
-@PostMapping("/update")
-public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult,
-                                @RequestParam(value = "pfpBase64", required = false) String pfpBase64) {
-    // Check authentication and user details
-    if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
-        return "redirect:/e#unauthorized"; // Redirect if authentication is null or invalid
-    }
+    @PostMapping("/update")
+public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
+    // Validation of Decorated PersonForm attributes
+    // Ensure ghid is passed properly, or check for null/empty value
+    // Fetch the person using the original UID
+String originalUid = person.getUid();
+System.out.println("Looking for UID: " + originalUid);
+Person personToUpdate = repository.getByUid(originalUid);
+if (personToUpdate == null) {
+    System.out.println("Person not found for UID: " + originalUid);
+    return "redirect:/e#uid_does_not_exist"; // Redirect if the UID does not exist
+}
+System.out.println("Found person: " + personToUpdate.getName());
 
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-    boolean isAdmin = userDetails.getAuthorities().stream()
-            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+// If the user is not an admin, ensure they are updating their own record
 
-    // Retrieve the person to update by email
-    Person personToUpdate = repository.getByUid(person.getUid());
-    if (personToUpdate == null) {
-        return "redirect:/e#email_does_not_exist"; // Redirect if the person does not exist
-    }
-
-    // If the user is not an admin, ensure they are updating their own record
-    if (!isAdmin) {
-        Person currentUser = repository.getByUid(userDetails.getUsername());
-        if (currentUser == null || !currentUser.getId().equals(personToUpdate.getId())) {
-            return "redirect:/e#unauthorized"; // Redirect if not authorized
-        }
-    }
-
-    // Update fields only if the new values are provided
-    boolean updated = false;
-
-    if (pfpBase64 != null && !pfpBase64.isEmpty()) {
-        personToUpdate.setPfp(pfpBase64); // Update the profile picture with Base64 value
-        updated = true;
-    }
-
-    if (person.getPassword() != null && !person.getPassword().isEmpty()) {
-        personToUpdate.setPassword(person.getPassword());
-        updated = true;
-    }
-
-    if (person.getName() != null && !person.getName().isEmpty()) {
-        personToUpdate.setName(person.getName());
-        updated = true;
-    }
-
-
-    if (person.getDob() != null) {
-        personToUpdate.setDob(person.getDob());
-        updated = true;
-    }
-
-    if (updated) {
-        repository.save(personToUpdate); // Save the updated person object
-    }
-
-    return "redirect:/mvc/person/read"; // Redirect to the profile page or another appropriate page
+// Do not allow UID updates
+if (!originalUid.equals(personToUpdate.getUid())) {
+    return "redirect:/e#uid_update_not_allowed"; // Redirect if a UID update is attempted
 }
 
+// Update other fields only if new values are provided
+boolean updated = false;
+boolean samePassword = true;
+
+if ((person.getPassword() != null) && (person.getPassword().isBlank() == false)) {
+    personToUpdate.setPassword(person.getPassword());
+    updated = true;
+    samePassword = false;
+}
+if (person.getName() != null && !person.getName().isEmpty()) {
+    personToUpdate.setName(person.getName());
+    updated = true;
+}
+
+// Save the updated record if fields were changed
+if (updated) {
+    repository.save(personToUpdate);
+}
+
+return "redirect:/mvc/person/read"; // Redirect to success if updates are made
+}
 
 @GetMapping("/read/{id}")
 public String person(Authentication authentication, @PathVariable("id") int id, Model model) {

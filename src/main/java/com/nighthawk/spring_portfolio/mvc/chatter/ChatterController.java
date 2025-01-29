@@ -18,7 +18,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 @RequestMapping("/grader")
 public class ChatterController {
 
-    private static final String MODEL_URL = "https://ggaib.torinwolff.com/api/grader";
+    private static final String MODEL_URL = "https://ggaib.stu.nighthawkcodingsociety.com/api/grader";
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
