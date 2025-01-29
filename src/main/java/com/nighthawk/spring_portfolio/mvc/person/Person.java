@@ -22,6 +22,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
@@ -40,8 +41,10 @@ import com.vladmihalcea.hibernate.type.json.JsonType;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
 import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
@@ -84,8 +87,13 @@ public class Person implements Comparable<Person> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    // @OneToMany(mappedBy="student")
-    // private List<SynergyGrade> grades;
+    @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonIgnore
+    private List<SynergyGrade> grades;
+    
+    @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonIgnore
+    private List<AssignmentSubmission> submissions;
     
     @ManyToMany(fetch = EAGER)
     @JoinTable(
