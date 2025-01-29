@@ -17,6 +17,7 @@
         private final SocketIOServer server;
         private final SocketService socketService;
         private SocketIOClient streamer;
+        private UUID streamerid;
 
         public SocketModule(SocketIOServer server, SocketService socketService) {
             this.server = server;
@@ -64,11 +65,8 @@
 
         private DataListener<SDPData> streamReady() {
             return (senderClient, data, ackSender) -> {
-                if(streamer!=null)
-                {
-                    return;
-                }
                 streamer = senderClient;
+                streamerid = streamer.getSessionId();
                 // System.out.println(streamer);
             };
         }
@@ -79,6 +77,8 @@
                 {
                     return;
                 }
+                System.out.println(streamer);
+                System.out.println("streamer is " + streamer);
                 // System.out.println(data.getSdp());
                 // System.out.println("view offer client");
                 SDPData toSend = new SDPData();
@@ -122,9 +122,10 @@
 
         private DisconnectListener onDisconnected() {
             return client -> {
-                if(client.getSessionId().compareTo(streamer.getSessionId()) == 0)
+                if(client.getSessionId().toString().equals(streamerid.toString()))
                 {
-                    streamer = null;
+                    streamer=null;
+                    streamerid=null;
                 }
                 System.out.println("Client[{}] - Disconnected from socket"+  client.getSessionId().toString());
             };

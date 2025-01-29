@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class iceData {
-    private String candidate;
+    private Object candidate;
 
-    public void setCandidate(String candidate)
+    public void setCandidate(Object candidate)
     {
         this.candidate = candidate;
     }
