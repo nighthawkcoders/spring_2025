@@ -3,6 +3,7 @@ package com.nighthawk.spring_portfolio.mvc.synergy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -336,9 +337,22 @@ public class SynergyApiController {
         return ResponseEntity.ok(Map.of("message", "Successfully rejected the grade request."));
     }
 
-    @GetMapping("/grades/{userId}")
-    public List<SynergyGradeRequest> getGrades(@PathVariable Long userId) {
-        return gradeRequestRepository.findByStudentId(userId);
+    @GetMapping("/grades/map/{userId}")
+    public ResponseEntity<Map<Long, Double>> getStudentGradesAsMap(@PathVariable Long userId) {
+        Person student = personRepository.findById(userId).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found")
+        );
+        
+        List<SynergyGrade> studentGrades = gradeRepository.findByStudent(student);
+        
+        Map<Long, Double> assignmentGrades = studentGrades.stream()
+            .collect(Collectors.toMap(
+                grade -> grade.getAssignment().getId(),
+                SynergyGrade::getGrade,
+                (existing, replacement) -> existing
+            ));
+        
+        return new ResponseEntity<>(assignmentGrades, HttpStatus.OK);
     }
 
     /**
