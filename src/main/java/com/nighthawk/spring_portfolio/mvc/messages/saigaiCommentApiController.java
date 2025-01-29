@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/saigai/comments")
-@CrossOrigin(origins = "http://127.0.0.1:4100", allowCredentials = "true")
+@CrossOrigin(origins = {"http://127.0.0.1:4100","https://nighthawkcoders.github.io/portfolio_2025/"}, allowCredentials = "true")
 public class saigaiCommentApiController {
 
      private static final Logger logger = LoggerFactory.getLogger(saigaiCommentApiController.class);
