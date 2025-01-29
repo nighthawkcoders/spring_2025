@@ -11,7 +11,7 @@ public class SocketIOConfig {
     // @Value("${socket-server.host}")
     // private String host;
 
-    @Value("${server.port}")
+    @Value("${socket.port}")
     private Integer port;
 
     @Bean
