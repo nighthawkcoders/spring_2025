@@ -22,16 +22,16 @@ public class PokerApiController {
 
     private PokerBoard pokerBoard;
 
-    // Request class to receive bet and uid from the client
+    // Request class to receive bet and email from the client
     public static class PokerRequest {
         private double bet;
-        private String uid;
+        private String email;
 
         public double getBet() { return bet; }
         public void setBet(double bet) { this.bet = bet; }
 
-        public String getUid() { return uid; }
-        public void setUid(String uid) { this.uid = uid; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
     }
 
     // Response class to send game results back to the client
@@ -63,8 +63,8 @@ public class PokerApiController {
             pokerBoard = new PokerBoard();  // Initialize if not done
         }
 
-        // Fetch person by uid
-        Person person = personJpaRepository.findByUid(pokerRequest.getUid());
+        // Fetch person by email
+        Person person = personJpaRepository.findByEmail(pokerRequest.getEmail());
         if (person == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Person not found
         }
