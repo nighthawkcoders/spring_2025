@@ -65,9 +65,7 @@ public class StudentInfo {
     @Column
     private String dailyActivity;
 
-    private Double averageRating;
-
-    
+    private Double averageRating;    
 
     public StudentInfo(Person person, String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int trimester, int period) {
         this.person = person;

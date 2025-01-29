@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -59,8 +60,8 @@ public class Assignment {
     @NotEmpty
     private String timestamp;
 
-    @OneToMany(mappedBy = "assignment")
-    @JsonIgnore 
+    @OneToMany(mappedBy="assignment", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonIgnore
     private List<AssignmentSubmission> submissions;
 
     @ManyToMany
@@ -73,7 +74,7 @@ public class Assignment {
 
 
 
-    @OneToMany(mappedBy="assignment")
+    @OneToMany(mappedBy="assignment", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<SynergyGrade> grades;
 
     @NotNull
