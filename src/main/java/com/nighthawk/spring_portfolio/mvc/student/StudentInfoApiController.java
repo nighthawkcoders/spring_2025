@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/api/students")
@@ -222,6 +223,25 @@ public ResponseEntity<String> completeTask(@RequestBody TasksDto tasksDto) {
         int progress = (int) Math.round(((double) totalCompletedTasks / totalTasks) * 100);
         return ResponseEntity.ok(progress);
     }
+    @Getter
+    @Setter
+public static class DailyActivityDto {
+    private String username;
+    private String dailyActivity;
+}
+@PostMapping("/save-daily-activity")
+public ResponseEntity<String> saveDailyActivity(@RequestBody DailyActivityDto dailyActivityDto) {
+    Optional<StudentInfo> optionalStudent = studentJPARepository.findByUsername(dailyActivityDto.getUsername());
+
+    if (optionalStudent.isPresent()) {
+        StudentInfo student = optionalStudent.get();
+        student.setDailyActivity(dailyActivityDto.getDailyActivity());
+        studentJPARepository.save(student);
+        return ResponseEntity.ok("Daily activity saved successfully.");
+    } else {
+        return ResponseEntity.status(404).body("Student not found.");
+    }
+}
 
 
 
