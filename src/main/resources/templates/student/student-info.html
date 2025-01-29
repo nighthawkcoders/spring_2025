@@ -74,6 +74,7 @@
             color: #f5f5f5; /* Light off-white for labels */
         }
     </style>
+    <script src="https://cdn.skypack.dev/@octokit/rest"></script>
 </head>
 <body layout:fragment="body">
 
@@ -104,6 +105,12 @@
 </div>
 
 <script type="module">
+    import { Octokit } from "https://cdn.skypack.dev/@octokit/rest";
+
+    const octokit = new Octokit({
+        auth: "test" // Use a token if needed for higher rate limits
+    });
+
     async function fetchStudentDetails() {
         const urlParams = new URLSearchParams(window.location.search);
         const username = urlParams.get("username");
@@ -131,33 +138,32 @@
             const student = await studentResponse.json();
             const githubUsername = student.username;
 
-            // Fetch GitHub user profile
-            const githubResponse = await fetch(`https://api.github.com/users/${githubUsername}`);
-            if (!githubResponse.ok) throw new Error("GitHub profile not found");
-            const githubData = await githubResponse.json();
+            // Fetch GitHub user data using Octokit
+            const { data: githubData } = await octokit.users.getByUsername({
+                username: githubUsername
+            });
 
-            // Fetch GitHub user events for issues, PRs, and commits data
-            const eventsResponse = await fetch(`https://api.github.com/users/${githubUsername}/events`);
-            if (!eventsResponse.ok) throw new Error("GitHub events not found");
-            const eventsData = await eventsResponse.json();
+            // Fetch user events for commits, PRs, and issues
+            const { data: eventsData } = await octokit.activity.listEventsForAuthenticatedUser({
+                username: githubUsername,
+                per_page: 100
+            });
 
-            // Define the start date for filtering events
             const startDate = new Date("2024-08-01T00:00:00Z");
 
-            // Count events occurring after the start date
-            const commitsCount = eventsData.filter(event => 
+            const commitsCount = eventsData.filter(event =>
                 event.type === "PushEvent" && new Date(event.created_at) >= startDate
             ).length;
 
-            const prsCount = eventsData.filter(event => 
+            const prsCount = eventsData.filter(event =>
                 event.type === "PullRequestEvent" && new Date(event.created_at) >= startDate
             ).length;
 
-            const issuesCount = eventsData.filter(event => 
+            const issuesCount = eventsData.filter(event =>
                 event.type === "IssuesEvent" && new Date(event.created_at) >= startDate
             ).length;
 
-            // Populate the dynamic fields
+            // Populate HTML elements
             document.getElementById("profile-pic").src = githubData.avatar_url;
             document.getElementById("githubUsername").innerText = githubData.login;
             document.getElementById("githubProfile").href = githubData.html_url;
