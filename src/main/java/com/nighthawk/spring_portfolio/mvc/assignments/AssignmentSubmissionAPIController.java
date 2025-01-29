@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -37,6 +39,9 @@ public class AssignmentSubmissionAPIController {
 
     @Autowired
     private PersonJpaRepository personRepo;
+
+    @Autowired
+    private SynergyGradeJpaRepository gradesRepo;
 
     /**
      * Get all submissions for a specific student.
@@ -100,7 +105,6 @@ public class AssignmentSubmissionAPIController {
      * @param feedback     optional feedback for the submission
      * @return a ResponseEntity indicating success or an error if the submission is not found
      */
-    @Transactional
     @PostMapping("/grade/{submissionId}")
     public ResponseEntity<?> gradeSubmission(
             @PathVariable Long submissionId,
@@ -109,10 +113,24 @@ public class AssignmentSubmissionAPIController {
     ) {
         AssignmentSubmission submission = submissionRepo.findById(submissionId).orElse(null);
         if (submission != null) {
+            // we have a correct submission
             submission.setGrade(grade);
             submission.setFeedback(feedback);
             submissionRepo.save(submission);
-            return new ResponseEntity<>(submission, HttpStatus.OK);
+
+            SynergyGrade assignedGrade = gradesRepo.findByAssignmentAndStudent(submission.getAssignment(), submission.getStudent());
+            if(assignedGrade != null){
+                // the assignment has a previously assigned grade, so we are just updating it
+                assignedGrade.setGrade(grade);
+            }
+            else{
+                // assignment is not graded, we must create a new grade
+                SynergyGrade newGrade = new SynergyGrade(grade, submission.getAssignment(), submission.getStudent());
+                gradesRepo.save(newGrade);
+            }
+            
+
+            return new ResponseEntity<>("It worked", HttpStatus.OK);
         }
         Map<String, String> error = new HashMap<>();
         error.put("error", "Submission not found");

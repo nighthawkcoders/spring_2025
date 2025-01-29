@@ -125,6 +125,18 @@
                     <button onclick="closeAddAssignmentModal()">Cancel</button>
                 </div>
             </div>
+            <div id="assignToGradeModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closeAssignToGradeModal()">&times;</span>
+                    <h2>Assign to Students</h2>
+                    <input type="text" id="studentSearchBar" placeholder="Search students..." oninput="filterStudentList()">
+                    <ul id="studentChecklist">
+                        <!-- Dynamically populated list -->
+                    </ul>
+                    <button class="btn" onclick="saveAssignedGraders()">Save</button>
+                    <button class="btn" onclick="closeAssignToGradeModal()">Close</button>
+                </div>
+            </div>
             
             <table id="assignmentTable">
                 <thead>
@@ -170,7 +182,7 @@
                         <tr>
                             <th>Assignment</th>
                             <th>Submission Content</th>
-                            <th>Submission Date</th>
+                            <th>Submission Comments</th>
                             <th>Current Grade</th>
                             <th>Actions</th>
                         </tr>
@@ -231,6 +243,7 @@
                         <td>
                             <button class="btn btn-view-submissions" onclick="viewSubmissions(${assignment.id})">View Submissions</button>
                             <button class="btn btn-delete" onclick="deleteAssignment('${assignment.id}')">Delete</button>
+                            <button class="btn btn-grade" onclick="showAssignToGradeModal(${assignment.id})">Assign to Grade</button>
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -246,9 +259,12 @@
                 tableBody.innerHTML = '';
 
                 // Filter only students
-                const students = people.filter(person => 
-                    person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-                );
+                // temporarily remove filter bc roles are broken -> nede functional MVP
+                /*const students = people.filter(person => 
+                person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
+                );*/
+
+                const students = people;
 
                 students.forEach(student => {
                     const row = document.createElement('tr');
@@ -328,7 +344,7 @@
                         row.innerHTML = `
                             <td>${submission.student ? submission.student.name : 'Unknown Student'}</td>
                             <td>${submission.content || 'No content'}</td>
-                            <td>N/A</td>
+                            <td>${submission.comment || 'No comments'}</td>
                             <td>${submission.grade || 'Not graded'}</td>
                             <td>
                                 <button class="btn btn-grade" onclick="gradeSubmission(${submission.id})">Grade</button>
@@ -344,7 +360,8 @@
                 console.error('Error fetching submissions:', error);
                 alert('Failed to fetch submissions: ' + error.message);
             });
-    }
+        }
+
 
     function viewStudentSubmissions(studentId, studentName) {
     fetch(`/api/assignments/submissions/student/${studentId}`)
@@ -419,8 +436,7 @@
             .then(response => {
                 if (response.ok) {
                     alert('Submission graded successfully');
-                    // Optionally, refresh the submissions list or update the view
-                    // You might want to implement a function to refresh the current view
+
                 } else {
                     throw new Error('Grading failed');
                 }
@@ -431,6 +447,82 @@
             });
         }
     }
+
+    function showAssignToGradeModal(assignmentId) {
+    const modal = document.getElementById('assignToGradeModal');
+    modal.dataset.assignmentId = assignmentId;
+    const checklist = document.getElementById('studentChecklist');
+    checklist.innerHTML = '';
+
+    fetch('/api/people')
+        .then(response => response.json())
+        .then(people => {
+            // temporarily remove filter bc roles are broken -> nede functional MVP
+            /*const students = people.filter(person => 
+                person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
+            );*/
+            const students = people;
+
+            students.forEach(student => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <label>
+                        <input type="checkbox" data-student-id="${student.id}">
+                        ${student.name} (${student.email})
+                    </label>
+                `;
+                checklist.appendChild(listItem);
+            });
+
+            modal.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching students:', error);
+            alert('Failed to load students.');
+        });
+    }
+
+    function closeAssignToGradeModal() {
+        document.getElementById('assignToGradeModal').style.display = 'none';
+    }
+
+    function saveAssignedGraders() {
+        const modal = document.getElementById('assignToGradeModal');
+        const assignmentId = modal.dataset.assignmentId;
+        const selectedCheckboxes = Array.from(document.querySelectorAll('#studentChecklist input:checked'));
+        const selectedIds = selectedCheckboxes.map(cb => parseInt(cb.dataset.studentId));
+
+        fetch(`/api/assignments/assignGraders/${assignmentId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(selectedIds),
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Assigned persons saved successfully.');
+                closeAssignToGradeModal();
+            } else {
+                alert('Failed to save assigned persons.');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving assigned persons:', error);
+            alert('An error occurred while saving.');
+        });
+    }
+    function filterStudentList() {
+    const searchValue = document.getElementById('studentSearchBar').value.toLowerCase();
+    const studentItems = document.querySelectorAll('#studentChecklist li');
+
+    studentItems.forEach(item => {
+        const studentName = item.textContent.toLowerCase();
+        if (studentName.includes(searchValue)) {
+            item.style.display = ''; // Show item
+        } else {
+            item.style.display = 'none'; // Hide item
+        }
+    });
+}
 
 </script>
 </th:block>

@@ -19,6 +19,8 @@ import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
+import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
@@ -38,6 +40,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
@@ -62,6 +66,8 @@ public class ModelInit {
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
     @Autowired StudentInfoJPARepository studentInfoJPA;
+    @Autowired SynergyGradeJpaRepository gradeJpaRepository;
+    @Autowired StudentQueueJPARepository studentQueueJPA;
 
     @Bean
     @Transactional
@@ -83,6 +89,7 @@ public class ModelInit {
                     questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
                 }
             }
+            
             List<Comment> Comments = Comment.init();
             for (Comment Comment : Comments) {
                 List<Comment> CommentFound = CommentJPA.findByAssignment(Comment.getAssignment()); 
@@ -156,6 +163,14 @@ public class ModelInit {
                 }
             }
 
+            StudentQueue[] studentQueueArray = StudentQueue.init();
+            for(StudentQueue queue: studentQueueArray) {
+                Optional<StudentQueue> queueFound = studentQueueJPA.findByTeacherEmail(queue.getTeacherEmail());
+                if(queueFound.isEmpty()) {
+                    studentQueueJPA.save(queue);
+                }
+            }
+
             // Teacher API is populated with starting announcements
             List<Teacher> teachers = Teacher.init();
             for (Teacher teacher : teachers) {
@@ -184,6 +199,22 @@ public class ModelInit {
                     submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByEmail("madam@gmail.com"), "test submission","test comment"));
                 }
             }
+
+            // Now call the non-static init() method
+            String[][] gradeArray = SynergyGrade.init();
+            for (String[] gradeInfo : gradeArray) {
+                Double gradeValue = Double.parseDouble(gradeInfo[0]);
+                Assignment assignment = assignmentJpaRepository.findByName(gradeInfo[1]);
+                Person student = personJpaRepository.findByUid(gradeInfo[2]);
+
+                SynergyGrade gradeFound = gradeJpaRepository.findByAssignmentAndStudent(assignment, student);
+                if (gradeFound == null) { // If the grade doesn't exist
+                    SynergyGrade newGrade = new SynergyGrade(gradeValue, assignment, student);
+                    gradeJpaRepository.save(newGrade);
+                }
+            }
+
+
         };
     }
 }

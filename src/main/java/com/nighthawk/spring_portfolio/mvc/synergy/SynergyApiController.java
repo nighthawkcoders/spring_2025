@@ -127,6 +127,11 @@ public class SynergyApiController {
     @PostMapping("/grades")
     public ResponseEntity<Map<String, String>> updateAllGrades(@RequestParam Map<String, String> grades) throws ResponseStatusException {
         for (String key : grades.keySet()) {
+            // only actually look at relevant parameters
+            if (!key.matches("grades\\[\\d+\\]\\[\\d+\\]")) {
+                continue;
+            }
+        
             String[] ids = key.replace("grades[", "").replace("]", "").split("\\[");
             Long assignmentId = Long.parseLong(ids[0]);
             Long studentId = Long.parseLong(ids[1]);
@@ -168,8 +173,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person grader = personRepository.findByEmail(email);
+        String uid = userDetails.getUsername();
+        Person grader = personRepository.findByUid(uid);
         if (grader == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -189,6 +194,21 @@ public class SynergyApiController {
         return ResponseEntity.ok(Map.of("message", "Successfully created the grade request."));
     }
 
+    @GetMapping("/grades/requests/seed")
+    public ResponseEntity<?> getGradeRequestsSeed(
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String email = userDetails.getUsername();
+        Person student = personRepository.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
+            );
+        }
+
+        return ResponseEntity.ok(gradeRequestRepository.findByStudentId(student.getId()));
+    }
+
     /**
      * A POST endpoint to create a grade request for seed.
      * @param userDetails The information about the logged in user. Automatically passed in by thymeleaf.
@@ -201,8 +221,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestSeedDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person student = personRepository.findByEmail(email);
+        String uid = userDetails.getUsername();
+        Person student = personRepository.findByUid(uid);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
@@ -232,8 +252,8 @@ public class SynergyApiController {
         @AuthenticationPrincipal UserDetails userDetails, 
         @RequestBody SynergyGradeRequestSelfDto requestData
     ) throws ResponseStatusException {
-        String email = userDetails.getUsername();
-        Person student = personRepository.findByEmail(email);
+        String uid = userDetails.getUsername();
+        Person student = personRepository.findByUid(uid);
         if (student == null) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You must be a logged in user to do this"
