@@ -129,6 +129,11 @@ public class SynergyApiController {
     @PostMapping("/grades")
     public ResponseEntity<Map<String, String>> updateAllGrades(@RequestParam Map<String, String> grades) throws ResponseStatusException {
         for (String key : grades.keySet()) {
+            // only actually look at relevant parameters
+            if (!key.matches("grades\\[\\d+\\]\\[\\d+\\]")) {
+                continue;
+            }
+        
             String[] ids = key.replace("grades[", "").replace("]", "").split("\\[");
             Long assignmentId = Long.parseLong(ids[0]);
             Long studentId = Long.parseLong(ids[1]);

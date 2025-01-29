@@ -25,7 +25,7 @@ public class DiceApiController {
     public static class DiceRequest {
         private double winChance;
         private double betSize;
-        private String email;
+        private String uid;
     }
 
 
@@ -33,9 +33,9 @@ public class DiceApiController {
     public ResponseEntity<Double> postDice(@RequestBody DiceRequest diceRequest) {
         System.out.println("Received request: " + diceRequest);
         Dice dice = new Dice(diceRequest.getWinChance(), diceRequest.getBetSize());
-        System.out.println(diceRequest.getEmail());
+        System.out.println(diceRequest.getUid());
         
-        Person user = personJpaRepository.findByEmail(diceRequest.getEmail());
+        Person user = personJpaRepository.findByUid(diceRequest.getUid());
 
         double currentBalance = user.getBalanceDouble();
         System.out.println(user.getBalanceDouble());
