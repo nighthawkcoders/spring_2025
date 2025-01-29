@@ -243,7 +243,62 @@ public ResponseEntity<String> saveDailyActivity(@RequestBody DailyActivityDto da
     }
 }
 
-
-
-
+@Getter
+@Setter
+public static class RatingDto {
+    private String username; // Username of the student being rated
+    private int communication; // Rating for communication (1-5)
+    private int teamwork; // Rating for teamwork (1-5)
+    private int problemSolving; // Rating for problem-solving (1-5)
+    private int creativity; // Rating for creativity (1-5)
+    private int punctuality; // Rating for punctuality (1-5)
 }
+@PostMapping("/rate")
+public ResponseEntity<String> rateStudent(@RequestBody RatingDto ratingDto) {
+    // Validate the ratings (ensure they are between 1 and 5)
+    if (!isValidRating(ratingDto.getCommunication()) ||
+        !isValidRating(ratingDto.getTeamwork()) ||
+        !isValidRating(ratingDto.getProblemSolving()) ||
+        !isValidRating(ratingDto.getCreativity()) ||
+        !isValidRating(ratingDto.getPunctuality())) {
+        return ResponseEntity.badRequest().body("All ratings must be between 1 and 5.");
+    }
+
+    // Find the student by username
+    Optional<StudentInfo> optionalStudent = studentJPARepository.findByUsername(ratingDto.getUsername());
+    if (!optionalStudent.isPresent()) {
+        return ResponseEntity.status(404).body("Student with username '" + ratingDto.getUsername() + "' not found.");
+    }
+
+    // Calculate the average rating
+    double averageRating = calculateAverageRating(ratingDto);
+
+    // Update the student's rating (assuming the StudentInfo entity has a field for averageRating)
+    StudentInfo student = optionalStudent.get();
+    student.setAverageRating(averageRating); // Add this field to the StudentInfo entity if it doesn't exist
+    studentJPARepository.save(student);
+
+    return ResponseEntity.ok("Student rated successfully. Average rating: " + averageRating);
+}
+
+// Helper method to validate ratings
+private boolean isValidRating(int rating) {
+    return rating >= 1 && rating <= 5;
+}
+
+// Helper method to calculate the average rating
+private double calculateAverageRating(RatingDto ratingDto) {
+    int sum = ratingDto.getCommunication() +
+              ratingDto.getTeamwork() +
+              ratingDto.getProblemSolving() +
+              ratingDto.getCreativity() +
+              ratingDto.getPunctuality();
+    return sum / 5.0; // Divide by 5 to get the average
+}
+}
+
+
+
+
+
+
