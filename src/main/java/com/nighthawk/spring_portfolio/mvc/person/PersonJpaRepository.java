@@ -33,7 +33,8 @@ public interface PersonJpaRepository extends JpaRepository<Person, Long> {
      * Spring Data JPA will automatically generate a query using the method name.
      */
     Person findByEmail(String email);
-    
+    Person findBySid(String sid);
+
     List<Person> findAllByOrderByNameAsc();
 
     List<Person> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
