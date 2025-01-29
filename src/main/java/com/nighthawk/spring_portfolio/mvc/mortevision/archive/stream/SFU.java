@@ -1,4 +1,4 @@
-package com.nighthawk.spring_portfolio.mvc.mortevision;
+package com.nighthawk.spring_portfolio.mvc.mortevision.archive.stream;
 
 import java.util.Collections;
 import java.util.HashMap;
