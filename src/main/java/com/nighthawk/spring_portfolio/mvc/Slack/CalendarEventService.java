@@ -95,8 +95,13 @@ public class CalendarEventService {
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
         Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*\\u2022\\s*(.+)");
     
-        boolean hasPeriod1 = text.toLowerCase().contains("period 1");
-        boolean hasPeriod3 = text.toLowerCase().contains("period 3");
+        // Only one boolean flag to check for either period 1 or period 3
+        String period = "None";
+        if (text.toLowerCase().contains("period: 1")) {
+            period = "1";
+        } else if (text.toLowerCase().contains("period: 3")) {
+            period = "3";
+        }
     
         String[] lines = text.split("\\n");
         CalendarEvent lastEvent = null;
@@ -111,12 +116,7 @@ public class CalendarEventService {
                 String currentTitle = dayMatcher.group(4).trim();
     
                 // Append period info if found anywhere in the text
-                if (hasPeriod1) {
-                    currentTitle += " (P1)";
-                } 
-                if (hasPeriod3) {
-                    currentTitle += " (P3)";
-                }
+                currentTitle += " (P" + period + ")";
     
                 String type = "daily plan";
                 if ("*".equals(asterisks)) {
@@ -126,7 +126,7 @@ public class CalendarEventService {
                 }
     
                 for (LocalDate date : getDatesInRange(startDay, endDay, weekStartDate)) {
-                    lastEvent = new CalendarEvent(date, currentTitle, "", type);
+                    lastEvent = new CalendarEvent(date, currentTitle, "", type, period);
                     events.add(lastEvent);
                 }
             } else {

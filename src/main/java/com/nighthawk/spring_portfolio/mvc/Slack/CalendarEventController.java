@@ -32,10 +32,10 @@ public class CalendarEventController {
         LocalDateTime now = LocalDateTime.now();
         String formattedDate = String.format("%d-%02d-%02d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
         LocalDate weekStartDate = LocalDate.parse(formattedDate);
-        //Gets the current day including the month, and parses it through the parseSlackMessage method
+        // Gets the current day including the month, and parses it through the parseSlackMessage method
         calendarEventService.parseSlackMessage(jsonMap, weekStartDate);
     }
-    
+
     @PostMapping("/add_event")
     public void addEvents(@RequestBody Map<String, String> jsonMap) {
         if (jsonMap.containsKey("text")) {
@@ -49,8 +49,9 @@ public class CalendarEventController {
             LocalDate date = LocalDate.parse(jsonMap.get("date"));
             String title = jsonMap.get("title");
             String description = jsonMap.getOrDefault("description", "");
-            String type = jsonMap.getOrDefault("type", "general"); 
-            CalendarEvent event = new CalendarEvent(date, title, description, type);
+            String type = jsonMap.getOrDefault("type", "general");
+            String period = jsonMap.getOrDefault("period", ""); // Get period if exists
+            CalendarEvent event = new CalendarEvent(date, title, description, type, period); // Include period
             calendarEventService.saveEvent(event);
         } else {
             throw new IllegalArgumentException("Invalid input: Must include either 'text' for Slack messages or 'date' and 'title' for single event addition.");
@@ -81,7 +82,7 @@ public class CalendarEventController {
             boolean updated = calendarEventService.updateEventByTitle(decodedTitle, newTitle, description);
             if (!updated) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
-            }   
+            }
             return ResponseEntity.ok("Event updated successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
@@ -100,7 +101,6 @@ public class CalendarEventController {
         return calendarEventService.getEventsWithinDateRange(startDate, endDate);
     }
 
-
     @GetMapping("/events/next-day")
     public List<CalendarEvent> getNextDayEvents() {
         // Get the current date and the next day
@@ -110,7 +110,7 @@ public class CalendarEventController {
         // Fetch events for the next day
         return calendarEventService.getEventsByDate(nextDay);
     }
-    
+
     @DeleteMapping("/delete/{title}")
     public ResponseEntity<String> deleteEvent(@PathVariable String title) {
         // Decode the title to handle multi-word or special character titles
@@ -126,5 +126,4 @@ public class CalendarEventController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
-
 }
