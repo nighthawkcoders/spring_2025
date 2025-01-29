@@ -153,6 +153,8 @@
             <label for="presenterInput">Presenters</label>
             <select id="presenterInput">
                 <option value="tester">Tester Set</option>
+                <option value="p1">Period 1</option>
+                <option value="p3">Period 3</option>
             </select>
             <button id="initializeQueue">Begin Presentations</button>
             <button id="resetQueue">Reset Assignment Queue</button>
@@ -297,6 +299,10 @@
                 "Madam Curie",
                 "Nikola Tesla",
                 "Thomas Edison"]
+        } else if (document.getElementById("presenterInput").value == "p1") {
+            peopleList = ["Hanlun", "David", "Sharon", "Beijan", "Miheer", "Eshaan", "Tanav", "Saathvik", "Sri", "Aidan", "Nitin", "Srini", "Dinesh", "Josh", "Matthew", "Ian", "Trevor", "Alisha"]
+        } else if (document.getElementById("presenterInput").value == "p3") {
+            peopleList = ["Eric", "Shuban", "Aashray", "Anusha", "Vibha", "Avanthika", "Isabel", "Trystan", "Jason", "Tara", "Lilian", "Anika", "Arnav", "Drishya", "Tanuj", "Saaras", "Rahul", "Aadit", "Imaad", "Tanay", "Nisarg", "Arthur", "Nikhil", "Aditya", "Akhil", "Tarun", "Kayden", "Nandan", "Torin", "Dylan"]
         }
 
         await fetch(URL + `initQueue/${assignmentId}`, {
