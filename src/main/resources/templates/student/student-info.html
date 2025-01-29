@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{layouts/base}" lang="en">
 <head>
     <title>Student GitHub Profile</title>
@@ -14,40 +14,57 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             max-width: 700px;
         }
+
         #profile-pic {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             border: 2px solid #ddd;
         }
+
         .details-content {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
+
         .details-content a {
             color: #b0d4ff;
             text-decoration: none;
         }
+
         .details-content p {
             margin: 2px 0;
             font-size: 16px;
         }
     </style>
 </head>
-<body>
+<body layout:fragment="body">
 
 <div id="details-container">
-    <img id="profile-pic" src="" alt="Profile Picture">
+    <!-- Populate some static fields using Thymeleaf -->
+    <img id="profile-pic" th:src="${githubData != null} ? ${githubData.avatarUrl} : '/path/to/default-avatar.png'"
+         alt="Profile Picture">
     <div class="details-content">
-        <p><strong>Username:</strong> <span id="githubUsername"></span></p>
-        <p><strong>Profile URL:</strong> <a id="githubProfile" href="" target="_blank"></a></p>
+        <p><strong>Username:</strong> 
+            <span id="githubUsername" th:text="${githubData != null} ? ${githubData.username} : 'N/A'"></span>
+        </p>
+        <p><strong>Profile URL:</strong> 
+            <a id="githubProfile" th:href="${githubData != null} ? ${githubData.profileUrl} : '#'" 
+               target="_blank" th:text="${githubData != null} ? ${githubData.profileUrl} : 'N/A'"></a>
+        </p>
         <p><strong>Issues:</strong> <span id="githubIssues"></span></p>
         <p><strong>Pull Requests:</strong> <span id="githubPulls"></span></p>
         <p><strong>Commits:</strong> <span id="githubCommits"></span></p>
-        <p><strong>Public Repos:</strong> <span id="githubRepos"></span></p>
-        <p><strong>Public Gists:</strong> <span id="githubGists"></span></p>
-        <p><strong>Followers:</strong> <span id="githubFollowers"></span></p>
+        <p><strong>Public Repos:</strong> 
+            <span id="githubRepos" th:text="${githubData != null} ? ${githubData.publicRepos} : 'N/A'"></span>
+        </p>
+        <p><strong>Public Gists:</strong> 
+            <span id="githubGists" th:text="${githubData != null} ? ${githubData.publicGists} : 'N/A'"></span>
+        </p>
+        <p><strong>Followers:</strong> 
+            <span id="githubFollowers" th:text="${githubData != null} ? ${githubData.followers} : 'N/A'"></span>
+        </p>
     </div>
 </div>
 
@@ -105,7 +122,7 @@
                 event.type === "IssuesEvent" && new Date(event.created_at) >= startDate
             ).length;
 
-            // Populate the details on the page
+            // Populate the dynamic fields
             document.getElementById("profile-pic").src = githubData.avatar_url;
             document.getElementById("githubUsername").innerText = githubData.login;
             document.getElementById("githubProfile").href = githubData.html_url;
@@ -114,7 +131,6 @@
             document.getElementById("githubGists").innerText = githubData.public_gists;
             document.getElementById("githubFollowers").innerText = githubData.followers;
 
-            // Display the filtered event data
             document.getElementById("githubIssues").innerText = issuesCount;
             document.getElementById("githubPulls").innerText = prsCount;
             document.getElementById("githubCommits").innerText = commitsCount;
