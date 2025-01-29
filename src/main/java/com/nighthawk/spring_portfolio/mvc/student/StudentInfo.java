@@ -61,6 +61,10 @@ public class StudentInfo {
     
     @Column
     private String person_name;
+
+    @Column
+    private String dailyActivity;
+
     
 
     public StudentInfo(Person person, String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int trimester, int period) {
@@ -73,6 +77,7 @@ public class StudentInfo {
         this.trimester = trimester;
         this.period = period;
         this.person_name = person.getName();
+
     }
 
     public static StudentInfo[] init(Person[] persons)

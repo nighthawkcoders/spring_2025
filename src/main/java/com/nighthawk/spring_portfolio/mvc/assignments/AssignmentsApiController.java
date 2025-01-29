@@ -52,6 +52,7 @@ public class AssignmentsApiController {
         public String description;
         public Double points;
         public String dueDate;
+        public String timestamp;
 
         public AssignmentDto(Assignment assignment) {
             this.id = assignment.getId();
@@ -60,6 +61,7 @@ public class AssignmentsApiController {
             this.description = assignment.getDescription();
             this.points = assignment.getPoints();
             this.dueDate = assignment.getDueDate();
+            this.timestamp = assignment.getTimestamp();
         }
     }
 
