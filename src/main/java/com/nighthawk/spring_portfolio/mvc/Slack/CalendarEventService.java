@@ -92,9 +92,11 @@ public class CalendarEventService {
     // Extract events and calculate date for each day of the week
     private List<CalendarEvent> extractEventsFromText(String text, LocalDate weekStartDate) {
         List<CalendarEvent> events = new ArrayList<>();
-        // Regex pattern filtering for keywords that mark the days of the week
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
-        Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*\\u2022\\s*(.+)"); // Matches bullets like "• description"
+        Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*\\u2022\\s*(.+)");
+    
+        boolean hasPeriod1 = text.toLowerCase().contains("period 1");
+        boolean hasPeriod3 = text.toLowerCase().contains("period 3");
     
         String[] lines = text.split("\\n");
         CalendarEvent lastEvent = null;
@@ -103,20 +105,26 @@ public class CalendarEventService {
             Matcher dayMatcher = dayPattern.matcher(line);
     
             if (dayMatcher.find()) {
-                // Handle a new event header
                 String startDay = dayMatcher.group(1);
                 String endDay = dayMatcher.group(2) != null ? dayMatcher.group(2) : startDay;
-                String asterisks = dayMatcher.group(3); // Extract asterisks (* or **)
+                String asterisks = dayMatcher.group(3);
                 String currentTitle = dayMatcher.group(4).trim();
     
-                String type = "daily plan"; // Default type
+                // Append period info if found anywhere in the text
+                if (hasPeriod1) {
+                    currentTitle += " (P1)";
+                } 
+                if (hasPeriod3) {
+                    currentTitle += " (P3)";
+                }
+    
+                String type = "daily plan";
                 if ("*".equals(asterisks)) {
                     type = "check-in";
                 } else if ("**".equals(asterisks)) {
                     type = "grade";
                 }
     
-                // Generate events for the date range
                 for (LocalDate date : getDatesInRange(startDay, endDay, weekStartDate)) {
                     lastEvent = new CalendarEvent(date, currentTitle, "", type);
                     events.add(lastEvent);
@@ -124,18 +132,16 @@ public class CalendarEventService {
             } else {
                 Matcher descMatcher = descriptionPattern.matcher(line);
                 if (descMatcher.find() && lastEvent != null) {
-                    // Append multiline description to the last event
                     String description = descMatcher.group(2).trim();
-                    String asterisks = descMatcher.group(1); // Extract asterisks (* or **)
+                    String asterisks = descMatcher.group(1);
     
-                    String type = lastEvent.getType(); // Default to the last event type
+                    String type = lastEvent.getType();
                     if ("*".equals(asterisks)) {
                         type = "check-in";
                     } else if ("**".equals(asterisks)) {
                         type = "grade";
                     }
     
-                    // Update the description and type for the last event
                     lastEvent.setDescription(lastEvent.getDescription() + (lastEvent.getDescription().isEmpty() ? "" : ", ") + description);
                     lastEvent.setType(type);
                 }
