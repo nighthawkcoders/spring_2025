@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Approval Requests</title>
+    <script>
+        function approveStudent(teacherEmail, studentName) {
+            fetch("/mvc/queue/approve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ teacherEmail, studentName })
+            }).then(() => window.location.reload());
+        }
+
+        function denyStudent(teacherEmail, studentName) {
+            fetch("/mvc/queue/deny", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ teacherEmail, studentName })
+            }).then(() => window.location.reload());
+        }
+    </script>
+</head>
+<body>
+    <h2>Pending Approval Requests</h2>
+    <table border="1">
+        <tr>
+            <th>Student Name</th>
+            <th>Actions</th>
+        </tr>
+        <tr th:each="request : ${pendingRequests}">
+            <td th:text="${request.studentName}"></td>
+            <td>
+                <button th:onclick="|approveStudent('${request.teacherEmail}', '${request.studentName}')|">Approve</button>
+                <button th:onclick="|denyStudent('${request.teacherEmail}', '${request.studentName}')|">Deny</button>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
