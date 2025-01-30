@@ -4,23 +4,34 @@
     <title>Approval Requests</title>
     <script>
         function approveStudent(teacherEmail, studentName) {
-            fetch("/mvc/queue/approve", {
-                method: "POST",
+            fetch("http://127.0.0.1:8085/api/approval/approveRequest", {
+                method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ teacherEmail, studentName })
-            }).then(() => window.location.reload());
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Failed to approve request.");
+                }
+            });
         }
 
         function denyStudent(teacherEmail, studentName) {
-            fetch("/mvc/queue/deny", {
-                method: "POST",
+            fetch("http://127.0.0.1:8085/api/approval/denyRequest", { 
+                method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ teacherEmail, studentName })
-            }).then(() => window.location.reload());
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Failed to deny request.");
+                }
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Attach event listeners to all approve buttons
             document.querySelectorAll(".approve-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     const teacherEmail = this.getAttribute("data-teacher-email");
@@ -29,7 +40,6 @@
                 });
             });
 
-            // Attach event listeners to all deny buttons
             document.querySelectorAll(".deny-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     const teacherEmail = this.getAttribute("data-teacher-email");
@@ -41,7 +51,7 @@
     </script>
 </head>
 <body>
-    <h2>Pending Approval Requests</h2>
+    <h2><strong>Pending Approval Requests</strong></h2>
     <table border="1">
         <tr>
             <th>Student Name</th>
