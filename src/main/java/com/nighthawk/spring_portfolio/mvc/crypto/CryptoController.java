@@ -17,6 +17,8 @@ import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 
 @RestController
+
+
 @RequestMapping("/api/crypto")
 public class CryptoController {
 
@@ -31,6 +33,17 @@ public class CryptoController {
 
     @Autowired
     private CryptoJPArepo cryptoJPArepo;
+
+    @GetMapping("/balance")
+    public ResponseEntity<?> getUserBalance(@RequestParam String email) {
+        userStocksTable userStocks = userStocksRepo.findByEmail(email);
+    
+        if (userStocks == null) {
+            return ResponseEntity.status(404).body("User balance not found for email: " + email);
+        }
+    
+        return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"balance\": \"" + userStocks.getBalance() + "\" }");
+    }
 
     @GetMapping("/live")
     public ResponseEntity<?> getLiveCryptoData() {
