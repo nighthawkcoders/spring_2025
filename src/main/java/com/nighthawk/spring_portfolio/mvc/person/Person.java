@@ -348,4 +348,16 @@ public class Person implements Comparable<Person> {
             System.out.println();
         }
     }
+
+    public Date getDob() {
+        return this.dob;
+    }
+    
+    public String getPfp() {
+        return this.pfp;
+    }
+    
+    public Collection<PersonRole> getRoles() {
+        return this.roles;
+    }
 }
