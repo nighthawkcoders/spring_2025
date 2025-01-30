@@ -1,0 +1,169 @@
+package com.nighthawk.spring_portfolio.mvc.backups;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/export")
+public class BackupsController {
+
+    @Autowired
+    private PersonJpaRepository personRepo;
+
+    @Autowired
+    private AssignmentJpaRepository assignmentRepo;
+
+    @Autowired
+    private AssignmentSubmissionJPA submissionRepo;
+
+    /**
+     * Export all persons to a CSV file.
+     */
+    @GetMapping("/persons")
+    public ResponseEntity<byte[]> exportPersons() throws IOException {
+        // Fetch all persons and map them to CSV rows
+        List<String> data = personRepo.findAll().stream()
+                .map(p -> String.join(",", 
+                    String.valueOf(p.getId()), 
+                    p.getBalance(), 
+                    formatTimestamp(p.getDob()), 
+                    p.getEmail(), 
+                    String.valueOf(p.getKasmServerNeeded()), 
+                    p.getName(), 
+                    p.getPassword(), 
+                    p.getPfp(), 
+                    p.getSid(), 
+                    serializeStats(p.getStats()), // Serialize stats to JSON
+                    p.getUid()
+                ))
+                .collect(Collectors.toList());
+    
+        // Define the CSV header
+        String header = "id,balance,dob,email,kasm_server_needed,name,password,pfp,sid,stats,uid\n";
+    
+        // Combine header and data into a single CSV string
+        String csvContent = header + String.join("\n", data);
+    
+        // Create and return the CSV file as a ResponseEntity
+        return createCSVResponse("persons.csv", csvContent);
+    }
+
+    private String serializeStats(Map<String, Map<String, Object>> stats) {
+        if (stats == null || stats.isEmpty()) {
+            return "{}"; // Return an empty JSON object if stats is null or empty
+        }
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(stats); // Serialize stats to JSON
+        } catch (JsonProcessingException e) {
+            return "{}"; // Fallback to an empty JSON object if serialization fails
+        }
+    }
+
+
+    /**
+     * Export all assignments to a CSV file.
+     */
+    @Transactional
+    @GetMapping("/assignments")
+    public ResponseEntity<String> exportAssignments() {
+        List<Assignment> assignments = assignmentRepo.findAll();
+
+        StringBuilder csvData = new StringBuilder();
+        csvData.append("id,assignment_queue,description,due_date,name,points,presentation_length,timestamp,type\n"); // Header row
+
+        for (Assignment assignment : assignments) {
+            // Escape double quotes in the assignment queue string
+            String assignmentQueueString = assignment.getAssignmentQueue() != null
+                    ? assignment.getAssignmentQueue().toString().replace("\"", "\"\"")
+                    : "";
+
+            csvData.append(assignment.getId()).append(",")
+                    .append("\"").append(assignmentQueueString).append("\",") // Escaped JSON string
+                    .append("\"").append(assignment.getDescription()).append("\",")
+                    .append(assignment.getDueDate()).append(",")
+                    .append("\"").append(assignment.getName()).append("\",")
+                    .append(assignment.getPoints()).append(",")
+                    .append(assignment.getPresentationLength() != null ? assignment.getPresentationLength() : "").append(",")
+                    .append(assignment.getTimestamp()).append(",")
+                    .append("\"").append(assignment.getType()).append("\"\n");
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=assignments.csv");
+        headers.add(HttpHeaders.CONTENT_TYPE, "text/csv");
+
+        return new ResponseEntity<>(csvData.toString(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * Export all submissions to a CSV file.
+     */
+    @GetMapping("/submissions")
+    public ResponseEntity<byte[]> exportSubmissions() throws IOException {
+        List<String> data = submissionRepo.findAll().stream()
+                .map(s -> String.join(",", 
+                    String.valueOf(s.getId()), 
+                    String.valueOf(s.getAssignment().getId()), 
+                    "\"" + s.getComment() + "\"",  // Encapsulate text fields in quotes
+                    "\"" + s.getContent() + "\"", 
+                    "\"" + (s.getFeedback() != null ? s.getFeedback() : "") + "\"", 
+                    String.valueOf(s.getGrade() != null ? s.getGrade() : ""), 
+                    String.valueOf(s.getAssignment().getId()), 
+                    String.valueOf(s.getStudent().getId())))
+                .collect(Collectors.toList());
+
+        String csvContent = "id,assignmentid,comment,content,feedback,grade,assignment_id,student_id\n" + 
+                            String.join("\n", data);
+
+        return createCSVResponse("submissions.csv", csvContent);
+    }
+
+    /**
+     * Helper method to create a CSV file response.
+     */
+    private ResponseEntity<byte[]> createCSVResponse(String fileName, String content) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+        writer.write(content);
+        writer.close();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        headers.setContentDispositionFormData("attachment", fileName);
+        return new ResponseEntity<>(outputStream.toByteArray(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * Helper method to format a Date object to a timestamp string.
+     */
+    private String formatTimestamp(Date date) {
+        if (date == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(date);
+    }
+}
