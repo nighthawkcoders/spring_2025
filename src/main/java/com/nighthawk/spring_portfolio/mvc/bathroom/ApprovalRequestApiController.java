@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST})
 @RestController
-@RequestMapping("/api/queue") // Base API URL
+@RequestMapping("/api/approval")
 public class ApprovalRequestApiController {
 
     @Autowired
@@ -17,16 +18,18 @@ public class ApprovalRequestApiController {
 
     @PostMapping("/sendApprovalRequest")
     public ResponseEntity<Object> sendApprovalRequest(@RequestBody ApprovalRequest requestDto) {
-        // Create new approval request entry in the database
+        System.out.println("🔹 Request received: " + requestDto.getStudentName());
+    
         ApprovalRequest newRequest = new ApprovalRequest(requestDto.getTeacherEmail(), requestDto.getStudentName());
         approvalRepository.save(newRequest);
-
-        return new ResponseEntity<>("Approval request sent!", HttpStatus.CREATED);
+    
+        System.out.println("✅ Saved to database: " + newRequest);
+        return new ResponseEntity<>("Approval request sent successfully!", HttpStatus.CREATED);
     }
 
-    @GetMapping("/pendingRequests/{teacherEmail}")
-    public ResponseEntity<List<ApprovalRequest>> getPendingRequests(@PathVariable String teacherEmail) {
-        List<ApprovalRequest> pendingRequests = approvalRepository.findByTeacherEmail(teacherEmail);
+    @GetMapping("/pendingRequests")
+    public ResponseEntity<List<ApprovalRequest>> getAllPendingRequests() {
+        List<ApprovalRequest> pendingRequests = approvalRepository.findAll();
         return new ResponseEntity<>(pendingRequests, HttpStatus.OK);
     }
 
