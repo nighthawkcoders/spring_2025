@@ -18,12 +18,11 @@ public class ApprovalRequestApiController {
 
     @PostMapping("/sendApprovalRequest")
     public ResponseEntity<Object> sendApprovalRequest(@RequestBody ApprovalRequest requestDto) {
-        System.out.println("🔹 Request received: " + requestDto.getStudentName());
+        System.out.println("Request received: " + requestDto.getStudentName());
     
         ApprovalRequest newRequest = new ApprovalRequest(requestDto.getTeacherEmail(), requestDto.getStudentName());
         approvalRepository.save(newRequest);
     
-        System.out.println("✅ Saved to database: " + newRequest);
         return new ResponseEntity<>("Approval request sent successfully!", HttpStatus.CREATED);
     }
 
@@ -33,13 +32,31 @@ public class ApprovalRequestApiController {
         return new ResponseEntity<>(pendingRequests, HttpStatus.OK);
     }
 
+    // ✅ Approve Request (Removes the request from the database)
+    @DeleteMapping("/approveRequest")
+    public ResponseEntity<Object> approveRequest(@RequestBody ApprovalRequest requestDto) {
+        Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(
+                requestDto.getTeacherEmail(), requestDto.getStudentName());
+
+        if (request.isPresent()) {
+            approvalRepository.delete(request.get());
+            return new ResponseEntity<>("Request approved", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND);
+    }
+
+    // ✅ Deny Request (Same logic as Approve, just deleting request)
     @DeleteMapping("/denyRequest")
     public ResponseEntity<Object> denyRequest(@RequestBody ApprovalRequest requestDto) {
-        Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(requestDto.getTeacherEmail(), requestDto.getStudentName());
+        Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(
+                requestDto.getTeacherEmail(), requestDto.getStudentName());
+
         if (request.isPresent()) {
             approvalRepository.delete(request.get());
             return new ResponseEntity<>("Request denied", HttpStatus.OK);
         }
+
         return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND);
     }
 }
