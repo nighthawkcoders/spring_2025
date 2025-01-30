@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController // annotation to simplify the creation of RESTful web services
 @RequestMapping("/api/saigai/messages")  // all requests in file begin with this URI
-@CrossOrigin(origins = "http://127.0.0.1:4100", allowCredentials = "true")
+@CrossOrigin(origins = {"http://127.0.0.1:4100","https://nighthawkcoders.github.io/portfolio_2025/"}, allowCredentials = "true")
 public class saigaiMessageApiController {
      private static final Logger logger = LoggerFactory.getLogger(saigaiMessageApiController.class);
     // Autowired enables Control to connect URI request and POJO Object to easily for Database CRUD operations
