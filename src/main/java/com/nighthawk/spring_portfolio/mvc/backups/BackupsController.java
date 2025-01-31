@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentQueue;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
@@ -91,25 +92,34 @@ public class BackupsController {
     @GetMapping("/assignments")
     public ResponseEntity<String> exportAssignments() {
         List<Assignment> assignments = assignmentRepo.findAll();
+        ObjectMapper objectMapper = new ObjectMapper();
 
         StringBuilder csvData = new StringBuilder();
-        csvData.append("id,assignment_queue,description,due_date,name,points,presentation_length,timestamp,type\n"); // Header row
+        // Header row
+        csvData.append("id,assignment_queue,description,due_date,name,points,presentation_length,timestamp,type\n");
 
         for (Assignment assignment : assignments) {
-            // Escape double quotes in the assignment queue string
-            String assignmentQueueString = assignment.getAssignmentQueue() != null
-                    ? assignment.getAssignmentQueue().toString().replace("\"", "\"\"")
-                    : "";
+            try {
+                // Serialize AssignmentQueue to JSON
+                String assignmentQueueJson = assignment.getAssignmentQueue() != null
+                        ? objectMapper.writeValueAsString(assignment.getAssignmentQueue())
+                        : "null";
 
-            csvData.append(assignment.getId()).append(",")
-                    .append("\"").append(assignmentQueueString).append("\",") // Escaped JSON string
-                    .append("\"").append(assignment.getDescription()).append("\",")
-                    .append(assignment.getDueDate()).append(",")
-                    .append("\"").append(assignment.getName()).append("\",")
-                    .append(assignment.getPoints()).append(",")
-                    .append(assignment.getPresentationLength() != null ? assignment.getPresentationLength() : "").append(",")
-                    .append(assignment.getTimestamp()).append(",")
-                    .append("\"").append(assignment.getType()).append("\"\n");
+                // Append each field to the CSV row, ensuring proper escaping
+                csvData.append(escapeCsvField(assignment.getId().toString())).append(",")
+                        .append(escapeCsvField(assignmentQueueJson)).append(",")
+                        .append(escapeCsvField(assignment.getDescription())).append(",")
+                        .append(escapeCsvField(assignment.getDueDate())).append(",")
+                        .append(escapeCsvField(assignment.getName())).append(",")
+                        .append(escapeCsvField(assignment.getPoints().toString())).append(",")
+                        .append(escapeCsvField(assignment.getPresentationLength() != null ? assignment.getPresentationLength().toString() : "")).append(",")
+                        .append(escapeCsvField(assignment.getTimestamp())).append(",")
+                        .append(escapeCsvField(assignment.getType()))
+                        .append("\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new ResponseEntity<>("Error generating CSV", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -119,6 +129,18 @@ public class BackupsController {
         return new ResponseEntity<>(csvData.toString(), headers, HttpStatus.OK);
     }
 
+    private String escapeCsvField(String field) {
+        if (field == null) {
+            return "";
+        }
+        // Escape double quotes by doubling them
+        String escapedField = field.replace("\"", "\"\"");
+        // Enclose the field in double quotes if it contains commas, newlines, or double quotes
+        if (escapedField.contains(",") || escapedField.contains("\n") || escapedField.contains("\"")) {
+            return "\"" + escapedField + "\"";
+        }
+        return escapedField;
+    }
     /**
      * Export all submissions to a CSV file.
      */
