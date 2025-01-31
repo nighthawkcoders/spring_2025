@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nighthawk.spring_portfolio.mvc.assignments.*;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
+import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,6 +35,9 @@ public class ImportsController {
     
     @Autowired
     private AssignmentSubmissionJPA submissionRepo;
+
+    @Autowired
+    private PersonRoleJpaRepository roleRepo;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -159,6 +165,71 @@ public class ImportsController {
             return ResponseEntity.ok("Submissions imported successfully");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to import submissions: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/roles")
+    public ResponseEntity<String> importRoles(@RequestParam("file") MultipartFile file) {
+        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
+            String[] line;
+            boolean isHeader = true;
+
+            while ((line = reader.readNext()) != null) {
+                if (isHeader) {
+                    isHeader = false; // Skip header row
+                    continue;
+                }
+
+                // Parse CSV row
+                Long personId = Long.parseLong(line[0]);
+                Long roleId = Long.parseLong(line[1]);
+
+                // Fetch Person and Role entities
+                Person person = personRepo.findById(personId)
+                    .orElseThrow(() -> new RuntimeException("Person not found with id: " + personId));
+                PersonRole role = roleRepo.findById(roleId)
+                    .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+
+                // Add role to person
+                person.getRoles().add(role);
+                personRepo.save(person); // Save the updated person entity
+            }
+
+            return ResponseEntity.ok("Roles imported successfully");
+        } catch (IOException | CsvValidationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error importing roles: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/roles_mapping")
+    public ResponseEntity<String> importRolesMapping(@RequestParam("file") MultipartFile file) {
+        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
+            String[] line;
+            boolean isHeader = true;
+
+            while ((line = reader.readNext()) != null) {
+                if (isHeader) {
+                    isHeader = false; // Skip header row
+                    continue;
+                }
+
+                // Parse CSV row
+                Long roleId = Long.parseLong(line[0]);
+                String roleName = line[1];
+
+                // Create or update Role entity
+                PersonRole role = roleRepo.findById(roleId).orElse(new PersonRole());
+                role.setId(roleId);
+                role.setName(roleName);
+
+                roleRepo.save(role); // Save the role entity
+            }
+
+            return ResponseEntity.ok("Roles mapping imported successfully");
+        } catch (IOException | CsvValidationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error importing roles mapping: " + e.getMessage());
         }
     }
 

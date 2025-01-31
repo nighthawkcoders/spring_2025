@@ -16,12 +16,20 @@ import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentQueue;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
+import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.opencsv.CSVWriter;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +47,9 @@ public class BackupsController {
 
     @Autowired
     private AssignmentSubmissionJPA submissionRepo;
+
+    @Autowired
+    private PersonRoleJpaRepository roleRepo;
 
     /**
      * Export all persons to a CSV file.
@@ -84,7 +95,6 @@ public class BackupsController {
         }
     }
 
-
     /**
      * Export all assignments to a CSV file.
      */
@@ -129,18 +139,6 @@ public class BackupsController {
         return new ResponseEntity<>(csvData.toString(), headers, HttpStatus.OK);
     }
 
-    private String escapeCsvField(String field) {
-        if (field == null) {
-            return "";
-        }
-        // Escape double quotes by doubling them
-        String escapedField = field.replace("\"", "\"\"");
-        // Enclose the field in double quotes if it contains commas, newlines, or double quotes
-        if (escapedField.contains(",") || escapedField.contains("\n") || escapedField.contains("\"")) {
-            return "\"" + escapedField + "\"";
-        }
-        return escapedField;
-    }
     /**
      * Export all submissions to a CSV file.
      */
@@ -187,5 +185,62 @@ public class BackupsController {
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(date);
+    }
+
+    @GetMapping("/roles")
+    public void exportRoles(HttpServletResponse response) throws IOException {
+        // Set response headers
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=person_roles.csv");
+
+        // Fetch all PersonRole records using the correct repository
+        Collection<Person> personRoles = personRepo.findAll(); // Correct repository
+
+        // Write CSV data
+        try (PrintWriter writer = response.getWriter();
+            CSVWriter csvWriter = new CSVWriter(writer)) {
+
+            // Write CSV header
+            String[] header = {"person_id", "role_id"};
+            csvWriter.writeNext(header);
+
+            // Write CSV rows
+            for (Person personRole : personRoles) {
+                // Loop through each role for the person and create a separate row for each
+                for (PersonRole role : personRole.getRoles()) {
+                    String[] row = {
+                        personRole.getId().toString(),
+                        role.getId().toString()  // Assuming Role has getId() method
+                    };
+                    csvWriter.writeNext(row);
+                }
+            }
+        }
+    }
+
+    @GetMapping("/roles_mapping")
+    public ResponseEntity<byte[]> exportRoles() throws IOException {
+        List<String> data = roleRepo.findAll().stream()
+            .map(role -> role.getId() + "," + role.getName())
+            .collect(Collectors.toList());
+
+        String csvContent = "id,name\n" + String.join("\n", data);
+        return createCSVResponse("roles.csv", csvContent);
+    }
+
+
+
+
+    private String escapeCsvField(String field) {
+        if (field == null) {
+            return "";
+        }
+        // Escape double quotes by doubling them
+        String escapedField = field.replace("\"", "\"\"");
+        // Enclose the field in double quotes if it contains commas, newlines, or double quotes
+        if (escapedField.contains(",") || escapedField.contains("\n") || escapedField.contains("\"")) {
+            return "\"" + escapedField + "\"";
+        }
+        return escapedField;
     }
 }
