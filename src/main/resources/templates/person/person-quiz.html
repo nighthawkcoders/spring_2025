@@ -13,7 +13,7 @@
             }
 
 
-            var randomInt = getRandomInt(1,5);
+            var randomInt = getRandomInt(1,6);
 
             var answer = "";
 
@@ -23,8 +23,8 @@
                     document.getElementById("question").innerHTML = "What is this user's: "+ "Id".bold()+"?";
                     break;
                 case 2:
-                    answer = document.getElementById("uid").innerText;
-                    document.getElementById("question").innerHTML = "What is this user's: "+ "Github Username".bold()+"?";
+                    answer = document.getElementById("email").innerText;
+                    document.getElementById("question").innerHTML = "What is this user's: "+ "Email?".bold()+"?";
                     break;
                 case 3:
                     answer = document.getElementById("name").innerText;
@@ -33,6 +33,10 @@
                 case 4:
                     answer = document.getElementById("kasmServerNeeded").innerText;
                     document.getElementById("question").innerHTML = "What is this user's: "+ "Kasm Server Needed Status".bold()+"?";
+                    break;
+                case 5:
+                answer = document.getElementById("dob").innerText.split(" ")[0];
+                    document.getElementById("question").innerHTML = "What is this user's: "+ "Date of Birth".bold()+"? (yyyy-mm-dd)";
                     break;
                 default:
                     console.warn("something went wrong");
@@ -67,9 +71,10 @@
                                 <td> 
                                     <img th:src="${person.pfp}" id="pfp" alt="Profile Picture" style="width: 64px; height: 64px; border-radius: 50%;" />
                                 </td>    
-                                <td th:text="${person.uid}" id="uid">Person ID</td>
+                                <td th:text="${person.email}" id="email">Person ID</td>
                                 <td th:text="${person.name}" id="name">Name</td>
                                 <td th:text="${person.kasmServerNeeded}" id="kasmServerNeeded">Kasm Server Needed</td>
+                                <td th:text="${person.dob}" id="dob">Date of Birth</td>
                             </tr>
                         </tbody>
                     </table>
@@ -86,3 +91,5 @@
         </div>
     </th:block>
 </body>
+
+</html>
