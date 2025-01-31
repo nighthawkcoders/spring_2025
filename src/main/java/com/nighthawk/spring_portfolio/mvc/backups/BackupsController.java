@@ -61,7 +61,7 @@ public class BackupsController {
                 .map(p -> String.join(",", 
                     String.valueOf(p.getId()), 
                     p.getBalance(), 
-                    formatTimestamp(p.getDob()), 
+                    //formatTimestamp(p.getDob()), 
                     p.getEmail(), 
                     String.valueOf(p.getKasmServerNeeded()), 
                     p.getName(), 
@@ -74,7 +74,7 @@ public class BackupsController {
                 .collect(Collectors.toList());
     
         // Define the CSV header
-        String header = "id,balance,dob,email,kasm_server_needed,name,password,pfp,sid,stats,uid\n";
+        String header = "id,balance,email,kasm_server_needed,name,password,pfp,sid,stats,uid\n";
     
         // Combine header and data into a single CSV string
         String csvContent = header + String.join("\n", data);
@@ -179,6 +179,7 @@ public class BackupsController {
     /**
      * Helper method to format a Date object to a timestamp string.
      */
+    /* 
     private String formatTimestamp(Date date) {
         if (date == null) {
             return "";
@@ -186,6 +187,7 @@ public class BackupsController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(date);
     }
+    */
 
     @GetMapping("/roles")
     public void exportRoles(HttpServletResponse response) throws IOException {

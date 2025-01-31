@@ -61,7 +61,6 @@ public class ImportsController {
                     Person person = new Person();
                     person.setId(Long.parseLong(data[0]));
                     person.setBalance(data[1]);
-                    person.setDob(parseDate(data[2]));
                     person.setEmail(data[3]);
                     person.setKasmServerNeeded(Boolean.parseBoolean(data[4]));
                     person.setName(data[5]);
@@ -233,6 +232,7 @@ public class ImportsController {
         }
     }
 
+    /*
     private Date parseDate(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return null;
         try {
@@ -242,4 +242,5 @@ public class ImportsController {
             return null;
         }
     }
+         */
 }

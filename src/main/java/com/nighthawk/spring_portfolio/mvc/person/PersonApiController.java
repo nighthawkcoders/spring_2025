@@ -148,7 +148,6 @@ public class PersonApiController {
         private String sid;
         private String password;
         private String name;
-        private String dob;
         private String pfp;
         private double balance;
         private Boolean kasmServerNeeded; 
@@ -163,16 +162,18 @@ public class PersonApiController {
      */
     @PostMapping("/person/create")
     public ResponseEntity<Object> postPerson(@RequestBody PersonDto personDto) {
-        // Validate dob input
+        // Validate dob input (not used)
+        /* 
         Date dob;
         try {
             dob = new SimpleDateFormat("MM-dd-yyyy").parse(personDto.getDob());
         } catch (Exception e) {
             return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
         }
+        */
         // A person object WITHOUT ID will create a new record in the database
         String startingBalance = "100000";
-        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
