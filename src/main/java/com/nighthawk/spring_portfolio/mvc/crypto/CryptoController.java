@@ -122,7 +122,7 @@ public ResponseEntity<?> buyCrypto(@RequestBody BuyRequest buyRequest) {
 
     userStocksTable userStocks = person.getUser_stocks();
     if (userStocks == null) {
-        userStocks = new userStocksTable("", selectedCrypto.getSymbol() + ":" + cryptoAmount, String.valueOf(updatedBalance), person.getEmail(), person, false);
+        userStocks = new userStocksTable("", selectedCrypto.getSymbol() + ":" + cryptoAmount, String.valueOf(updatedBalance), person.getEmail(), person, false, true);
     } else {
         String updatedCrypto = addOrUpdateCryptoHoldings(userStocks.getCrypto(), selectedCrypto.getSymbol(), cryptoAmount);
         userStocks.setCrypto(updatedCrypto);
