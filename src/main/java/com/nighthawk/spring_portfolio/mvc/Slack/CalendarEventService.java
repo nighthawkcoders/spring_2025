@@ -51,11 +51,12 @@ public class CalendarEventService {
         }
         return false;
     }
-
+    
     // Delete event by title
     public boolean deleteEventByTitle(String title) {
         CalendarEvent event = getEventByTitle(title);
         if (event != null) {
+
             // Perform the delete
             calendarEventRepository.delete(event);
             return true;
@@ -90,7 +91,6 @@ public class CalendarEventService {
     // Extract events and calculate date for each day of the week
     private List<CalendarEvent> extractEventsFromText(String text, LocalDate weekStartDate) {
         List<CalendarEvent> events = new ArrayList<>();
-
         // Updated regex pattern to capture an optional period (e.g., "(Period 3)")
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+?)\\s*(?:\\((Period \\d+)\\))?");
         Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*-\\s*(.+)");
@@ -103,8 +103,9 @@ public class CalendarEventService {
             if (dayMatcher.find()) {
                 String startDay = dayMatcher.group(1);
                 String endDay = dayMatcher.group(2) != null ? dayMatcher.group(2) : startDay;
-                String asterisks = dayMatcher.group(3);
+                String asterisks = dayMatcher.group(3); // Extract asterisks (* or **)
                 String currentTitle = dayMatcher.group(4).trim();
+
                 String period = dayMatcher.group(5) != null ? dayMatcher.group(5) : "default"; // Extract period if available
 
                 String type = "daily plan";
@@ -117,11 +118,13 @@ public class CalendarEventService {
                 // Generate events for the date range
                 for (LocalDate date : getDatesInRange(startDay, endDay, weekStartDate)) {
                     events.add(new CalendarEvent(date, currentTitle, "", type, period));
+
                 }
             } else {
                 Matcher descMatcher = descriptionPattern.matcher(line);
                 if (descMatcher.find() && !events.isEmpty()) {
                     String description = descMatcher.group(2).trim();
+
                     String asterisks = descMatcher.group(1);
 
                     String type = events.get(events.size() - 1).getType(); // Default to previous event type
@@ -162,3 +165,5 @@ public class CalendarEventService {
         return dateRange;
     }
 }
+
+
