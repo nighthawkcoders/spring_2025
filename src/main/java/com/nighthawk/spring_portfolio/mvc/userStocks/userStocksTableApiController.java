@@ -122,13 +122,14 @@ public class userStocksTableApiController {
     @ResponseBody
     public ResponseEntity<String> simulateStocks(@RequestBody SimulationRequest request) {
         try {
-            userService.simulateStockValueChange(request.getUsername(), request.getStocks());
+            userService.simulateStockValueChange(request.getUsername(), request.getStocks(), request.isPeriod1());
             return ResponseEntity.ok("Stock simulation completed successfully!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                 .body("An error occurred during simulation: " + e.getMessage());
         }
     }
+
 
 
 }
@@ -151,8 +152,10 @@ class UserStockInfo {
 @AllArgsConstructor
 class SimulationRequest {
     private String username;
-    private List<UserStockInfo> stocks; // List of stocks with quantity and symbol
+    private List<UserStockInfo> stocks;
+    private boolean period1;  // New field
 }
+
 
 
 /**
@@ -424,7 +427,7 @@ class UserStocksTableService implements UserDetailsService {
  * @param username The username of the user initiating the simulation.
  * @param stocks List of stocks with quantities and symbols sent from the request.
  */
-public void simulateStockValueChange(String username, List<UserStockInfo> stocks) {
+public void simulateStockValueChange(String username, List<UserStockInfo> stocks, boolean period1) {
     // Force fetch the latest user data to avoid caching issues
     userStocksTable user = userRepository.findByEmail(username);
     if (user == null) {
@@ -474,7 +477,9 @@ public void simulateStockValueChange(String username, List<UserStockInfo> stocks
     // Update balance, clear stocks, and set hasSimulated to true
     user.setBalance(String.valueOf(updatedBalance));
     user.setStonks(""); // Clears all stocks
-    user.setHasSimulated(true); //  Ensure hasSimulated is properly set
+    user.setHasSimulated(true); // Ensure hasSimulated is properly set
+    user.setPeriod1(period1); // Update period1 column in the database
+
     userRepository.save(user);
 
     // Force refresh user in database
