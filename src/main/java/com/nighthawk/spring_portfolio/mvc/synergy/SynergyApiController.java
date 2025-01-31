@@ -3,6 +3,7 @@ package com.nighthawk.spring_portfolio.mvc.synergy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -338,6 +340,24 @@ public class SynergyApiController {
         gradeRequestRepository.save(request);
 
         return ResponseEntity.ok(Map.of("message", "Successfully rejected the grade request."));
+    }
+
+    @GetMapping("/grades/map/{userId}")
+    public ResponseEntity<Map<Long, Double>> getStudentGradesAsMap(@PathVariable Long userId) {
+        Person student = personRepository.findById(userId).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found")
+        );
+        
+        List<SynergyGrade> studentGrades = gradeRepository.findByStudent(student);
+        
+        Map<Long, Double> assignmentGrades = studentGrades.stream()
+            .collect(Collectors.toMap(
+                grade -> grade.getAssignment().getId(),
+                SynergyGrade::getGrade,
+                (existing, replacement) -> existing
+            ));
+        
+        return new ResponseEntity<>(assignmentGrades, HttpStatus.OK);
     }
 
     /**

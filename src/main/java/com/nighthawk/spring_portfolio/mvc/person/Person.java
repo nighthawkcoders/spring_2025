@@ -321,12 +321,12 @@ public class Person implements Comparable<Person> {
         people.add(createPerson("Alexander Graham Bell", "lex", "lexb@gmail.com", defaultPassword, "1", "/images/lex.png", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("Nikola Tesla", "niko",  "niko@gmail.com",  defaultPassword, "1", "/images/niko.png", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", defaultPassword, "1", "/images/madam.png", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "1", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
+        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "123", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         
         Collections.sort(people);
         for (Person person : people) {
-            userStocksTable stock = new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person);
+            userStocksTable stock = new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person, false);
             person.setUser_stocks(stock);
         }
 
@@ -347,5 +347,17 @@ public class Person implements Comparable<Person> {
             System.out.println(person);  // print object
             System.out.println();
         }
+    }
+
+    public Date getDob() {
+        return this.dob;
+    }
+    
+    public String getPfp() {
+        return this.pfp;
+    }
+    
+    public Collection<PersonRole> getRoles() {
+        return this.roles;
     }
 }

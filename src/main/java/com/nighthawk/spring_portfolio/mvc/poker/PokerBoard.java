@@ -36,14 +36,22 @@ public class PokerBoard {
 
     // Deal a hand to both player and dealer
     public void dealHands() {
+        if (deck.size() < 10) { // Reset the deck if there aren’t enough cards
+            deck.clear();
+            initializeDeck();
+            shuffleDeck();
+        }
+    
         playerHand.clear();
         dealerHand.clear();
-
+    
         for (int i = 0; i < 5; i++) {
             playerHand.add(deck.remove(0));
             dealerHand.add(deck.remove(0));
         }
     }
+    
+    
 
     public List<PokerCard> getPlayerHand() {
         return playerHand;
