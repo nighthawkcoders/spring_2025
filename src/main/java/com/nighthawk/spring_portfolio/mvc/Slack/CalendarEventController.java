@@ -12,6 +12,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,8 +67,11 @@ public class CalendarEventController {
             String description = jsonMap.getOrDefault("description", "");
             String type = jsonMap.getOrDefault("type", "general");
 
-            // Create the event
-            CalendarEvent event = new CalendarEvent(date, title, description, type);
+
+            String period = jsonMap.get("period"); // Retrieve the period from the request
+            CalendarEvent event = new CalendarEvent(date, title, description, type, period);
+
+
 
             // Save the event using the service
             calendarEventService.saveEvent(event);
@@ -94,6 +98,12 @@ public class CalendarEventController {
     public ResponseEntity<String> deleteEvent(@PathVariable String title) {
         // Decode the title to handle multi-word or special character titles
         String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
+        // Log the decoded title for debugging purposes
+        System.out.println("Attempting to delete event with title: " + decodedTitle);
+        try {
+            // Call your service to delete the event
+            boolean deleted = calendarEventService.deleteEventByTitle(decodedTitle);
+
 
         // Log the decoded title for debugging purposes
         System.out.println("Attempting to delete event with title: " + decodedTitle);
@@ -102,10 +112,14 @@ public class CalendarEventController {
             // Call your service to delete the event
             boolean deleted = calendarEventService.deleteEventByTitle(decodedTitle);
 
+
             // If the event wasn't found and deleted, return a 404 response
             if (!deleted) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
             }
+
+
+
 
             // Return a success response if the event is deleted
             return ResponseEntity.ok("Event deleted successfully.");
@@ -114,7 +128,11 @@ public class CalendarEventController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred: " + e.getMessage());
+
+        }
+
         } 
+
     }
 
 
