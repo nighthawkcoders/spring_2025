@@ -74,9 +74,13 @@ public class PersonDetailsService implements UserDetailsService {  // "implement
 
     // encode password prior to sava
     public void save(Person person) {
+        if (person.getPassword() == null || person.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
         person.setPassword(passwordEncoder.encode(person.getPassword()));
         personJpaRepository.save(person);
     }
+    
 
     public Person get(long id) {
         return (personJpaRepository.findById(id).isPresent())
