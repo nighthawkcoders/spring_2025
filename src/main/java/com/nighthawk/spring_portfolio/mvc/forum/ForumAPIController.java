@@ -11,11 +11,11 @@ import org.springframework.web.client.RestClientException;
 @RestController
 @RequestMapping("/forum")
 public class ForumAPIController {
-    @PostMapping("/input")
+    @PostMapping("/issue/post")
     public String getInput(@RequestBody RequestBodyData requestBodyData) {
         System.out.println("Received message: " + requestBodyData.getTitle());
-        if (requestBodyData.getTitle() == null || requestBodyData.getTitle().isEmpty()) {
-            return "Error: code_block is required.";
+        if (requestBodyData.getTitle() == null || requestBodyData.getTitle().isEmpty() || requestBodyData.getProblem() == null || requestBodyData.getProblem().isEmpty()) {
+            return "Error: Title or Problem is required.";
         }
         try {
             String response = requestBodyData.getTitle();
@@ -29,11 +29,23 @@ public class ForumAPIController {
 
     public static class RequestBodyData {
         private String title;
-        // private String content;
+        private String problem;
         // private String author;
 
         public String getTitle() {
             return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getProblem() {
+            return problem;
+        }
+
+        public void setProblem(String problem) {
+            this.problem = problem;
         }
     }
 }
