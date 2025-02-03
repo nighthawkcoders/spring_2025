@@ -41,8 +41,8 @@ public class PersonViewController {
     @Autowired
     private PersonDetailsService repository;
 
-    @Autowired
-    private PersonJpaRepository find;
+    //@Autowired
+    //private PersonJpaRepository find;
 
     @GetMapping("/read")
     public String person(Authentication authentication, Model model) {
@@ -197,47 +197,35 @@ public class PersonViewController {
         return "person/read";  // Redirect to the read page after deletion
     }
 
-    @PostMapping("/update")
-public String personUpdateSave(@Valid Person person, BindingResult bindingResult) {
-    // Validation of Decorated PersonForm attributes
-    // Ensure ghid is passed properly, or check for null/empty value
-    // Fetch the person using the original UID
-String originalUid = person.getUid();
-System.out.println("Looking for UID: " + originalUid);
-Person personToUpdate = repository.getByUid(originalUid);
-if (personToUpdate == null) {
-    System.out.println("Person not found for UID: " + originalUid);
-    return "redirect:/e#uid_does_not_exist"; // Redirect if the UID does not exist
-}
-System.out.println("Found person: " + personToUpdate.getName());
+@PostMapping("/update")
+public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult) {
+    // Check if the user has admin authority
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    boolean isAdmin = userDetails.getAuthorities().stream()
+        .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    Person personToUpdate = repository.getByUid(person.getUid());
+    // If the user is not an admin, they can only update their own details
+    if (!isAdmin && !personToUpdate.getId().equals(repository.getByUid(userDetails.getUsername()).getId())) {
+        return "redirect:/e#Unauthorized";  // Redirect if user tries to update another person's details
+    }
+    boolean samePassword = true;
+    // Update fields if the new values are provided
+    if (person.getPassword() != null && !person.getPassword().isBlank()) {
+        personToUpdate.setPassword(person.getPassword());
+        samePassword = false;
+    }
+    if (person.getName() != null && !person.getName().isBlank() && !person.getName().equals(personToUpdate.getName())) {
+        personToUpdate.setName(person.getName());
+    }
+    if (person.getKasmServerNeeded() != null && !person.getKasmServerNeeded().equals(personToUpdate.getKasmServerNeeded())) {
+        personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
+    }
 
-// If the user is not an admin, ensure they are updating their own record
-
-// Do not allow UID updates
-if (!originalUid.equals(personToUpdate.getUid())) {
-    return "redirect:/e#uid_update_not_allowed"; // Redirect if a UID update is attempted
-}
-
-// Update other fields only if new values are provided
-boolean updated = false;
-boolean samePassword = true;
-
-if ((person.getPassword() != null) && (person.getPassword().isBlank() == false)) {
-    personToUpdate.setPassword(person.getPassword());
-    updated = true;
-    samePassword = false;
-}
-if (person.getName() != null && !person.getName().isEmpty()) {
-    personToUpdate.setName(person.getName());
-    updated = true;
-}
-
-// Save the updated record if fields were changed
-if (updated) {
-    repository.save(personToUpdate);
-}
-
-return "redirect:/mvc/person/read"; // Redirect to success if updates are made
+    // Save the updated person and ensure the roles are correctly maintained
+    repository.save(personToUpdate, samePassword);
+    repository.addRoleToPerson(person.getUid(), "ROLE_USER");
+    repository.addRoleToPerson(person.getUid(), "ROLE_STUDENT");
+    return "redirect:/mvc/person/read";  // Redirect to the read page after updating
 }
 
 @GetMapping("/read/{id}")

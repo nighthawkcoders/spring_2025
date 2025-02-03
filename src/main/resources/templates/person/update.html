@@ -122,13 +122,6 @@
                                 <input type="password" id="confirm_password">
                             </div>
 
-                            <!-- Date of Birth Input -->
-                            <div class="input-group mb-2 mr-sm-2">
-                                <label for="dob">Birth Date:</label>
-                                <input type="date" th:field="*{dob}" id="dob">
-                                <small th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}">Birth Date Error</small>
-                            </div>
-
                             <!-- Checkbox: Kasm Server Needed -->
                             <div class="input-group mb-2 mr-sm-2">
                                 <label for="kasmServerNeeded">Kasm Server Needed:</label>
