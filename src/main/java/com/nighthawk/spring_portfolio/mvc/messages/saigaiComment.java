@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class saigaiComment {
+public class SaigaiComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,13 +25,5 @@ public class saigaiComment {
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "message_id")
-    private saigaiMessage message;
-
-//     @ManyToMany(fetch = FetchType.EAGER)
-// @JoinTable(
-//     name = "person_roles",
-//     joinColumns = @JoinColumn(name = "person_id"),
-//     inverseJoinColumns = @JoinColumn(name = "role_id")
-// )
-// private Set<PersonRole> roles;
+    private SaigaiMessage message;
 }
