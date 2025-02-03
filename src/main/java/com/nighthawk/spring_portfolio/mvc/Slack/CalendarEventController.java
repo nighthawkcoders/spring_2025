@@ -30,64 +30,53 @@ public class CalendarEventController {
     @PostMapping("/add")
     public void addEventsFromSlackMessage(@RequestBody Map<String, String> jsonMap) {
         LocalDateTime now = LocalDateTime.now();
-        String formattedDate = String.format("%d-%02d-%02d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
-        LocalDate weekStartDate = LocalDate.parse(formattedDate);
-        //Gets the current day including the month, and parses it through the parseSlackMessage method
+        LocalDate weekStartDate = LocalDate.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth());
         calendarEventService.parseSlackMessage(jsonMap, weekStartDate);
     }
-    
+
     @PostMapping("/add_event")
-    public ResponseEntity<Map<String, String>> addEvent(@RequestBody Map<String, String> jsonMap) {
-        Map<String, String> response = new HashMap<>();
-        try {
-            // Validate required fields
+    public void addEvents(@RequestBody Map<String, String> jsonMap) {
+        if (jsonMap.containsKey("text")) {
+            // Parse Slack message if "text" key exists
+            LocalDateTime now = LocalDateTime.now();
+            String formattedDate = String.format("%d-%02d-%02d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+            LocalDate weekStartDate = LocalDate.parse(formattedDate);
+            calendarEventService.parseSlackMessage(jsonMap, weekStartDate);
+        } else if (jsonMap.containsKey("date") && jsonMap.containsKey("title")) {
+            // Add single event manually if "date" and "title" keys exist
+            LocalDate date = LocalDate.parse(jsonMap.get("date"));
             String title = jsonMap.get("title");
-            String dateStr = jsonMap.get("date");
-
-            if (title == null || title.trim().isEmpty()) {
-                response.put("message", "Invalid input: 'title' cannot be null or empty.");
-                return ResponseEntity.badRequest().body(response);
-            }
-            if (dateStr == null || dateStr.trim().isEmpty()) {
-                response.put("message", "Invalid input: 'date' cannot be null or empty.");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            // Parse the date string into LocalDate
-            LocalDate date;
-            try {
-                date = LocalDate.parse(dateStr); // Ensure valid date format (YYYY-MM-DD)
-            } catch (Exception e) {
-                response.put("message", "Invalid date format. Use YYYY-MM-DD.");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            // Get optional fields for description and type
             String description = jsonMap.getOrDefault("description", "");
-            String type = jsonMap.getOrDefault("type", "general");
-
-            // Create the event
+            String type = jsonMap.getOrDefault("type", "general"); 
             CalendarEvent event = new CalendarEvent(date, title, description, type);
-
-            // Save the event using the service
             calendarEventService.saveEvent(event);
-
-            // Return success response
-            response.put("message", "Event added successfully.");
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            // Handle unexpected errors
-            response.put("message", "Error adding event: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        } else {
+            throw new IllegalArgumentException("Invalid input: Must include either 'text' for Slack messages or 'date' and 'title' for single event addition.");
         }
     }
 
 
     @GetMapping("/events/{date}")
     public List<CalendarEvent> getEventsByDate(@PathVariable String date) {
-        LocalDate localDate = LocalDate.parse(date);
-        return calendarEventService.getEventsByDate(localDate);
+        return calendarEventService.getEventsByDate(LocalDate.parse(date));
+    }
+
+    @DeleteMapping("/delete/{title}")
+    public ResponseEntity<String> deleteEvent(@PathVariable String title) {
+        String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
+        System.out.println("Attempting to delete event with title: " + decodedTitle);
+
+        try {
+            boolean deleted = calendarEventService.deleteEventByTitle(decodedTitle);
+            if (!deleted) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
+            }
+            return ResponseEntity.ok("Event deleted successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/delete/{title}")
@@ -120,34 +109,26 @@ public class CalendarEventController {
 
     @PutMapping("/edit/{title}")
     public ResponseEntity<String> editEvent(@PathVariable String title, @RequestBody Map<String, String> payload) {
+        // Decode the title to handle multi-word or special character titles
+        String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
+        String newTitle = payload.get("newTitle");
+        String description = payload.get("description");
+
+        if (newTitle == null || newTitle.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("New title cannot be null or empty.");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Description cannot be null or empty.");
+        }
+
         try {
-         // Decode the title to handle multi-word or special character titles
-            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
-
-            // Extract new title and description from payload
-            String newTitle = payload.get("newTitle");
-            String description = payload.get("description");
-
-            // Validate input
-            if (newTitle == null || newTitle.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("New title cannot be null or empty.");
-            }
-            if (description == null || description.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Description cannot be null or empty.");
-            }
-
-           // Attempt to update the event
-            boolean updated = calendarEventService.updateEventByTitle(decodedTitle, newTitle.trim(), description.trim());
-
-            if (updated) {
-                return ResponseEntity.ok("Event updated successfully.");
-            } else {
+            boolean updated = calendarEventService.updateEventByTitle(decodedTitle, newTitle, description);
+            if (!updated) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
-            }
+            }   
+            return ResponseEntity.ok("Event updated successfully.");
         } catch (Exception e) {
-            // Log the exception and return a proper error response
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while updating the event: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
 }
 
@@ -159,21 +140,12 @@ public class CalendarEventController {
 
     @GetMapping("/events/range")
     public List<CalendarEvent> getEventsWithinDateRange(@RequestParam String start, @RequestParam String end) {
-        LocalDate startDate = LocalDate.parse(start);
-        LocalDate endDate = LocalDate.parse(end);
-        return calendarEventService.getEventsWithinDateRange(startDate, endDate);
+        return calendarEventService.getEventsWithinDateRange(LocalDate.parse(start), LocalDate.parse(end));
     }
-
 
     @GetMapping("/events/next-day")
     public List<CalendarEvent> getNextDayEvents() {
-        // Get the current date and the next day
-        LocalDate today = LocalDate.now();
-        LocalDate nextDay = today.plusDays(1);
-
-        // Fetch events for the next day
-        return calendarEventService.getEventsByDate(nextDay);
+        return calendarEventService.getEventsByDate(LocalDate.now().plusDays(1));
     }
 
 }
-
