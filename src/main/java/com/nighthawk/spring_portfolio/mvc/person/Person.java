@@ -326,7 +326,7 @@ public class Person implements Comparable<Person> {
         
         Collections.sort(people);
         for (Person person : people) {
-            userStocksTable stock = new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person, false);
+            userStocksTable stock = new userStocksTable(null, "BTC,ETH", startingBalance, person.getEmail(), person, false);
             person.setUser_stocks(stock);
         }
 
