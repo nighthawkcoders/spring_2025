@@ -9,8 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class ServerCommandLineRunner implements CommandLineRunner {
+public class SocketCLRunner implements CommandLineRunner {
     private final SocketIOServer server;
+    //i changed the name because when our actual commandlinerunner that main uses bricks i wont get cooked
     @Override
     public void run(String... args) throws Exception {
         server.start();
