@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
+import com.nighthawk.spring_portfolio.mvc.forum.ForumRepository;
+
 @RestController
 @RequestMapping("/forum")
 public class ForumAPIController {
@@ -32,7 +34,7 @@ public class ForumAPIController {
             String author = requestBodyData.getAuthor();
 
             // Create a new ForumTableController object and save it to the database
-            ForumTableController forumTable = new ForumTableController(author, title, context);
+            Forum forumTable = new Forum(author, title, context);
             forumRepository.save(forumTable); // Use the repository to save
 
             return "Successfully added to database";
