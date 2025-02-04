@@ -1,6 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.blackjack;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,13 +29,16 @@ public class BlackjackApiController {
     @Autowired
     private PersonJpaRepository personJpaRepository;
 
+    /** 
+     * Start a new Blackjack game
+     */
     @PostMapping("/start")
     public ResponseEntity<Blackjack> startGame(@RequestBody Map<String, Object> request) {
         try {
-            String email = request.get("email").toString();
+            String uid = request.get("uid").toString();
             double betAmount = Double.parseDouble(request.get("betAmount").toString());
 
-            Person person = personJpaRepository.findByEmail(email);
+            Person person = personJpaRepository.findByUid(uid);
             if (person == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
@@ -56,11 +58,14 @@ public class BlackjackApiController {
         }
     }
 
+    /** 
+     * Handle "Hit" action
+     */
     @PostMapping("/hit")
     public ResponseEntity<Object> hit(@RequestBody Map<String, Object> request) {
         try {
-            String email = request.get("email").toString();
-            Person person = personJpaRepository.findByEmail(email);
+            String uid = request.get("uid").toString();
+            Person person = personJpaRepository.findByUid(uid);
 
             if (person == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Person not found");
@@ -74,8 +79,8 @@ public class BlackjackApiController {
             Blackjack game = optionalGame.get();
             game.loadGameState();
 
-            List<String> playerHand = safeCastToList(game.getGameStateMap().get("playerHand"));
-            List<String> deck = safeCastToList(game.getGameStateMap().get("deck"));
+            List<String> playerHand = (List<String>) game.getGameStateMap().get("playerHand");
+            List<String> deck = (List<String>) game.getGameStateMap().get("deck");
 
             if (deck == null || deck.isEmpty()) {
                 return ResponseEntity.ok("Deck is empty");
@@ -91,8 +96,7 @@ public class BlackjackApiController {
             game.persistGameState();
 
             if (playerScore > 21) {
-                double betAmount = game.getBetAmount();
-                double updatedBalance = person.getBalanceDouble() - betAmount;
+                double updatedBalance = person.getBalanceDouble() - game.getBetAmount();
                 person.setBalanceString(updatedBalance);
                 game.setStatus("INACTIVE");
                 personJpaRepository.save(person);
@@ -106,11 +110,14 @@ public class BlackjackApiController {
         }
     }
 
+    /** 
+     * Handle "Stand" action
+     */
     @PostMapping("/stand")
     public ResponseEntity<Object> stand(@RequestBody Map<String, Object> request) {
         try {
-            String email = request.get("email").toString();
-            Person person = personJpaRepository.findByEmail(email);
+            String uid = request.get("uid").toString();
+            Person person = personJpaRepository.findByUid(uid);
 
             if (person == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Person not found");
@@ -124,8 +131,8 @@ public class BlackjackApiController {
             Blackjack game = optionalGame.get();
             game.loadGameState();
 
-            List<String> dealerHand = safeCastToList(game.getGameStateMap().get("dealerHand"));
-            List<String> deck = safeCastToList(game.getGameStateMap().get("deck"));
+            List<String> dealerHand = (List<String>) game.getGameStateMap().get("dealerHand");
+            List<String> deck = (List<String>) game.getGameStateMap().get("deck");
             int playerScore = (int) game.getGameStateMap().getOrDefault("playerScore", 0);
             int dealerScore = (int) game.getGameStateMap().getOrDefault("dealerScore", 0);
             double betAmount = game.getBetAmount();
@@ -141,7 +148,7 @@ public class BlackjackApiController {
             game.getGameStateMap().put("dealerScore", dealerScore);
             game.getGameStateMap().put("deck", deck);
 
-            // Determine outcome
+            // Determine game outcome
             String result;
             if (playerScore > 21) {
                 result = "LOSE";
@@ -169,14 +176,5 @@ public class BlackjackApiController {
             LOGGER.log(Level.SEVERE, "Error processing stand", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
-    }
-
-    // Utility method to safely cast an object to List<String>
-    @SuppressWarnings("unchecked")
-    private List<String> safeCastToList(Object obj) {
-        if (obj instanceof List) {
-            return (List<String>) obj;
-        }
-        return new ArrayList<>();
     }
 }
