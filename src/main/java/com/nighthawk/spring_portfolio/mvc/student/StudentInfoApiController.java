@@ -97,6 +97,25 @@ public class StudentInfoApiController {
         }
     }
 
+    @Getter
+    public static class StudentName {
+        private String name;
+    }
+
+    @PostMapping("/findbyName")
+    public ResponseEntity<Iterable<StudentInfo>> getStudentByName(
+            @RequestBody StudentName studentName) {
+        
+        List<StudentInfo> students = studentJPARepository.findByPersonName(studentName.getName());
+        
+        if (students.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(students);
+        }
+    }
+
+
 
     @Getter 
     public static class StudentDto {
