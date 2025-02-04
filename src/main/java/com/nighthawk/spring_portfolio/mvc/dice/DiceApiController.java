@@ -37,7 +37,7 @@ public class DiceApiController {
         
         Person user = personJpaRepository.findByUid(diceRequest.getUid());
         if (diceRequest.getBetSize() > user.getBalanceDouble()){
-            return new ResponseEntity<>(null);
+            return new ResponseEntity<>(user.getBalanceDouble(), HttpStatus.NOT_ACCEPTABLE);
         }
 
         double currentBalance = user.getBalanceDouble();
