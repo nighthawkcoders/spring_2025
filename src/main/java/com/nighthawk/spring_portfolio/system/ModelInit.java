@@ -19,8 +19,6 @@ import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.BathroomQueueJPARepository;
-import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
-import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
@@ -38,12 +36,14 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
-import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
-import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo.StudentService;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
+import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.User;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
 
@@ -68,6 +68,7 @@ public class ModelInit {
     @Autowired StudentInfoJPARepository studentInfoJPA;
     @Autowired SynergyGradeJpaRepository gradeJpaRepository;
     @Autowired StudentQueueJPARepository studentQueueJPA;
+    @Autowired StudentService studentService;
 
     @Bean
     @Transactional
@@ -147,13 +148,14 @@ public class ModelInit {
                 }
             }
 
-            StudentInfo[] studentInfoArray = StudentInfo.init(personArray);
+            studentService.initialization();
+            /*StudentInfo[] studentInfoArray = StudentInfo.init(personArray);
             for (StudentInfo studentInfo: studentInfoArray) {
                 Optional<StudentInfo> studentFound = studentInfoJPA.findByPersonName(studentInfo.getPerson_name());
                 if (studentFound.isEmpty()) {
                     studentInfoJPA.save(studentInfo);
                 }
-            }
+            }*/
 
             BathroomQueue[] queueArray = BathroomQueue.init();
             for(BathroomQueue queue: queueArray) {
