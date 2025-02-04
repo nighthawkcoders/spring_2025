@@ -44,6 +44,12 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
         @Param("period") int period
     );
 
-    Optional<StudentInfo> findByPersonName(String personName);
+    @Query(
+        value = "SELECT * FROM students WHERE person_name = :person_name",
+        nativeQuery = true
+    )
+    List<StudentInfo> findByPersonName(
+        @Param("person_name") String person_name
+    );
 
 }
