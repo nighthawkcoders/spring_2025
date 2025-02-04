@@ -39,7 +39,7 @@ public class DiceApiController {
 
         double currentBalance = user.getBalanceDouble();
         System.out.println(user.getBalanceDouble());
-        double updatedBalance = currentBalance - diceRequest.getBetSize();
+        double updatedBalance = currentBalance + dice.calculateWin();
         user.setBalanceString(updatedBalance);
         personJpaRepository.save(user);  // Save the updated balance
 
