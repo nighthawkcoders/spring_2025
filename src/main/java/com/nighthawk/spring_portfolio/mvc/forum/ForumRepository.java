@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ForumRepository extends JpaRepository<Forum, Long> {
     // You can define custom queries if needed
+    Forum findByTitle(String title);
 }
