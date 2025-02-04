@@ -16,16 +16,16 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/saigai/comments")
+@RequestMapping("/api/sagai/comments")
 @CrossOrigin(origins = {"http://127.0.0.1:4100","https://nighthawkcoders.github.io/portfolio_2025/"}, allowCredentials = "true")
-public class SaigaiCommentApiController {
+public class SagaiCommentApiController {
 
-     private static final Logger logger = LoggerFactory.getLogger(SaigaiCommentApiController.class);
+     private static final Logger logger = LoggerFactory.getLogger(SagaiCommentApiController.class);
     @Autowired
-    private SaigaiCommentJpaRepository commentRepository;
+    private SagaiCommentJpaRepository commentRepository;
 
     @Autowired
-    private SaigaiMessageJpaRepository messageRepository;
+    private SagaiMessageJpaRepository messageRepository;
 
       @Autowired
     private PersonJpaRepository personRepository;
@@ -34,12 +34,12 @@ public class SaigaiCommentApiController {
     private PersonRoleJpaRepository personRoleRepository; // For role lookup
 
     @GetMapping
-    public List<SaigaiComment> getAllComments() {
+    public List<SagaiComment> getAllComments() {
         return commentRepository.findAll();
     }
 
     @PostMapping("/{messageId}")
-    public ResponseEntity<SaigaiComment> createComment(@PathVariable Long messageId, @RequestBody SaigaiComment comment) {
+    public ResponseEntity<SagaiComment> createComment(@PathVariable Long messageId, @RequestBody SagaiComment comment) {
         return messageRepository.findById(messageId).map(message -> {
             comment.setMessage(message);
             return ResponseEntity.ok(commentRepository.save(comment));
