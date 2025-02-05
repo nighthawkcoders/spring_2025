@@ -1,8 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -266,7 +265,7 @@ public class PersonApiController {
     }
 
 
-
+    @CrossOrigin(origins = {"*"})
     @GetMapping("/{sid}")
     public String getNameById(@PathVariable String sid)
     {
