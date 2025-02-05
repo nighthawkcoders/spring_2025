@@ -113,7 +113,7 @@
 
         private ConnectListener onConnected() {
             return (client) -> {
-                String room = "mortevision";//technically this could be anything in case i wanted to make the 6C 77 68 61 74 65 63 6C 75 62 room
+                String room = "mortevision";
                 client.joinRoom(room);
                 System.out.println("Socket ID[{}]  Connected to socket"+ client.getSessionId().toString());
             };

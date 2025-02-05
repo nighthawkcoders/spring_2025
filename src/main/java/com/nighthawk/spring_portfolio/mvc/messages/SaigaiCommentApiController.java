@@ -18,14 +18,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/saigai/comments")
 @CrossOrigin(origins = {"http://127.0.0.1:4100","https://nighthawkcoders.github.io/portfolio_2025/"}, allowCredentials = "true")
-public class saigaiCommentApiController {
+public class SaigaiCommentApiController {
 
-     private static final Logger logger = LoggerFactory.getLogger(saigaiCommentApiController.class);
+     private static final Logger logger = LoggerFactory.getLogger(SaigaiCommentApiController.class);
     @Autowired
-    private saigaiCommentJpaRepository commentRepository;
+    private SaigaiCommentJpaRepository commentRepository;
 
     @Autowired
-    private saigaiMessageJpaRepository messageRepository;
+    private SaigaiMessageJpaRepository messageRepository;
 
       @Autowired
     private PersonJpaRepository personRepository;
@@ -34,12 +34,12 @@ public class saigaiCommentApiController {
     private PersonRoleJpaRepository personRoleRepository; // For role lookup
 
     @GetMapping
-    public List<saigaiComment> getAllComments() {
+    public List<SaigaiComment> getAllComments() {
         return commentRepository.findAll();
     }
 
     @PostMapping("/{messageId}")
-    public ResponseEntity<saigaiComment> createComment(@PathVariable Long messageId, @RequestBody saigaiComment comment) {
+    public ResponseEntity<SaigaiComment> createComment(@PathVariable Long messageId, @RequestBody SaigaiComment comment) {
         return messageRepository.findById(messageId).map(message -> {
             comment.setMessage(message);
             return ResponseEntity.ok(commentRepository.save(comment));
