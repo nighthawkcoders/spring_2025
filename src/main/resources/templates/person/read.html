@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<!DOCTYPE HTML> 
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/base}" lang="en">
 
@@ -117,8 +117,87 @@
             }
         }
 
-        // Update all profile pictures on page load
+        // Sorting function
+        var sortDirections = {}; // Track the current sorting direction for each column
+
+        function sortTable(columnIndex, isNumeric) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("personTable");
+            switching = true;
+            dir = sortDirections[columnIndex] === "asc" ? "desc" : "asc"; // Toggle the sort direction
+            sortDirections[columnIndex] = dir; // Store the current direction
+
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+
+                // Loop through all table rows (except for the header)
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("td")[columnIndex];
+                    y = rows[i + 1].getElementsByTagName("td")[columnIndex];
+
+                    // Check if the rows should be switched
+                    if (isNumeric) {
+                        // For numeric columns (ID#, SID, KSM), compare as numbers
+                        var xValue = parseFloat(x.innerText.replace(/[^\d.-]/g, '')); // Remove non-numeric characters
+                        var yValue = parseFloat(y.innerText.replace(/[^\d.-]/g, '')); // Remove non-numeric characters
+
+                        if (dir === "asc") {
+                            if (xValue > yValue) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (xValue < yValue) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        // For text-based columns, compare as strings
+                        if (dir === "asc") {
+                            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (shouldSwitch) {
+                    // If a switch is found, perform the switch and mark switching as true
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    // If no switching has been done and the direction is "asc", change the direction
+                    if (switchcount === 0 && dir === "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        // Add sorting to each sortable column (excluding "Action" and "PFP")
         window.onload = function() {
+            var ths = document.querySelectorAll("th.sortable");
+            ths.forEach(function(th, index) {
+                if (index !== 5 && index !== 7) {  // Exclude "PFP" (index 5) and "Action" (index 7)
+                    th.onclick = function() {
+                        var isNumeric = index === 0 || index === 6 || index === 4; // Numeric: ID#, SID, KSM
+                        sortTable(index, isNumeric);
+                    };
+                }
+            });
+
+            // Update all profile pictures on page load
             var personIds = document.querySelectorAll('[data-person-id]');
             personIds.forEach(function(element) {
                 var personId = element.getAttribute('data-person-id');
@@ -151,13 +230,13 @@
                 <table id="personTable" class="table">
                     <thead>
                     <tr>
-                        <th>ID#</th>
-                        <th>UID</th> <!-- Changed GHID to UID -->
-                        <th>UN</th>
-                        <th>Email</th> <!-- Added Email column -->
+                        <th class="sortable">ID#</th>
+                        <th class="sortable">UID</th> <!-- Changed GHID to UID -->
+                        <th class="sortable">UN</th>
+                        <th class="sortable">Email</th> <!-- Added Email column -->
                         <th>KSM</th>
                         <th>PFP</th>
-                        <th>SID</th>
+                        <th class="sortable">SID</th>
                         <th>Action</th>
                     </tr>
                     </thead>
