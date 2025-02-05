@@ -3,20 +3,39 @@
 <head>
     <title>Approval Requests</title>
     <script>
+        // ✅ Approve Student: Remove from requests & Add to Queue
         function approveStudent(teacherEmail, studentName) {
             fetch("http://127.0.0.1:8085/api/approval/approveRequest", {
-                method: "DELETE",
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ teacherEmail, studentName })
             }).then(response => {
                 if (response.ok) {
-                    window.location.reload();
+                    console.log(`✅ Approved: ${studentName}, now adding to queue...`);
+                    addToQueue(teacherEmail, studentName);
                 } else {
                     alert("Failed to approve request.");
                 }
             });
         }
 
+        // ✅ Add Student to Queue After Approval
+        function addToQueue(teacherEmail, studentName) {
+            fetch("http://127.0.0.1:8085/api/queue/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ teacherEmail, studentName })
+            }).then(response => {
+                if (response.ok) {
+                    console.log(`✅ Added to queue: ${studentName}`);
+                    document.querySelector(`[data-student-name="${studentName}"]`).remove(); // ✅ Remove from UI
+                } else {
+                    alert("Failed to add student to queue.");
+                }
+            });
+        }
+
+        // ✅ Deny Student: Remove from requests only
         function denyStudent(teacherEmail, studentName) {
             fetch("http://127.0.0.1:8085/api/approval/denyRequest", { 
                 method: "DELETE",
@@ -24,13 +43,15 @@
                 body: JSON.stringify({ teacherEmail, studentName })
             }).then(response => {
                 if (response.ok) {
-                    window.location.reload();
+                    console.log(`❌ Denied: ${studentName}`);
+                    document.querySelector(`[data-student-name="${studentName}"]`).remove(); // ✅ Remove from UI
                 } else {
                     alert("Failed to deny request.");
                 }
             });
         }
 
+        // ✅ Attach event listeners to buttons
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".approve-btn").forEach(button => {
                 button.addEventListener("click", function () {
@@ -57,7 +78,7 @@
             <th>Student Name</th>
             <th>Actions</th>
         </tr>
-        <tr th:each="request : ${pendingRequests}">
+        <tr th:each="request : ${pendingRequests}" th:data-student-name="${request.studentName}">
             <td th:text="${request.studentName}"></td>
             <td>
                 <button class="approve-btn" 
