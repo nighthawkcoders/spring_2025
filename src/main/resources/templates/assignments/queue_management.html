@@ -262,6 +262,50 @@
         fetchQueue();
     }
 
+    async function handlePersonClick(event) {
+    const personName = event.target.textContent.trim(); // Get the clicked person's name
+    if (!personName) return;
+
+    try {
+        const response = await fetch(`${javaURI}/api/people/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ term: personName }) // Send search term in request body
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch person data');
+            return;
+        }
+
+        const people = await response.json();
+        
+        if (people.length === 0) {
+            console.warn('No matching person found');
+            return;
+        }
+
+        // Assume the first match is the correct person
+        const user = people[0]; 
+
+        if (!user || !user.uid) {
+            console.warn('User found, but UID is missing');
+            return;
+        }
+
+        // Construct student info URL
+        const studentInfoURL = `${javaURI}/mvc/student/studentinfo?username=${encodeURIComponent(user.uid)}&course=CSA&trimester=2&period=3`;
+
+        console.log(`Redirecting to: ${studentInfoURL}`);
+        window.location.href = studentInfoURL; // Redirect to the student info page
+
+    } catch (error) {
+        console.error('Error fetching person data:', error);
+    }
+}
+
+
+
     // update display - ran periodically
     function updateQueueDisplay(queue) {
         currentQueue = queue.waiting;
@@ -273,7 +317,14 @@
         notGoneList.innerHTML = queue.working.map(person => `<div class="card">${person}</div>`).join('');
         waitingList.innerHTML = queue.waiting.map(person => `<div class="card">${person}</div>`).join('');
         doneList.innerHTML = queue.completed.map(person => `<div class="card">${person}</div>`).join('');
+
+        // Add event listeners to the new cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', handlePersonClick);
+        });
     }
+
+
 
     document.getElementById('initializeQueue').addEventListener('click', initializeQueue);
 
