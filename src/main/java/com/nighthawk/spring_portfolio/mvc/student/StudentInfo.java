@@ -129,7 +129,6 @@ public class StudentInfo {
                     studentJPARepository.save(student);
                 }
             }
-            System.out.println("I am here");
         }
 
         public Iterable<StudentInfo> findAll() {
