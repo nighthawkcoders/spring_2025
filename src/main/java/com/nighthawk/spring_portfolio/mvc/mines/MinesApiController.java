@@ -27,8 +27,14 @@ public class MinesApiController {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MinesRequest {
-        private double betSize;
+        private double bet;
         private String uid;
+
+        public double getBet() { return bet; }
+        public void setBet(double bet) { this.bet = bet; }
+
+        public String getUid() { return uid; }
+        public void setUid(String uid) { this.uid = uid; }
     }
 
     @GetMapping("/{xCoord}/{yCoord}")
@@ -44,7 +50,7 @@ public class MinesApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        double betSize = minesRequest.getBetSize();
+        double betSize = minesRequest.getBet();
         double winnings = board.winnings() * betSize;
         double updatedBalance = user.getBalanceDouble() + winnings;
         user.setBalanceString(updatedBalance);
@@ -60,7 +66,7 @@ public class MinesApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        double betSize = minesRequest.getBetSize();
+        double betSize = minesRequest.getBet();
         double updatedBalance = user.getBalanceDouble() - betSize;
         if (updatedBalance < 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
