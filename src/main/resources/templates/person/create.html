@@ -135,11 +135,6 @@
                                         <small th:if="${#fields.hasErrors('sid')}" th:errors="*{sid}">Student ID Error</small>
                                     </div>
 
-                                    <div class="input-group mb-2 mr-sm-2">
-                                        <input type="number" th:field="*{scrumGroup}" id="scrumGroup" placeholder="Scrum Group">
-                                        <small th:if="${#fields.hasErrors('scrumGroup')}" th:errors="*{scrumGroup}">Student ID Error</small>
-                                    </div>
-
                                     <!-- Kasm Server Needed checkbox -->
                                     <div class="input-group mb-2 mr-sm-2">
                                         <label for="kasmServerNeeded"> Request Kasm Server: </label>
