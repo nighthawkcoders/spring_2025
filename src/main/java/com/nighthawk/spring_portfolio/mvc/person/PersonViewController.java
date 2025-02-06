@@ -255,13 +255,3 @@ public class PersonViewController {
         
         return "person/read";  // Redirect to the read page after deletion
     }
-
-///////////////////////////////////////////////////////////////////////////////////////////
-/// "Search" Get mapping
-
- @GetMapping("/search")
-    public String person() {
-        return "person/search";
-    }
-
-}
