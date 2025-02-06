@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -102,16 +103,32 @@ public class StudentInfoApiController {
         private String name;
     }
 
+    @Getter
+    @AllArgsConstructor
+    public static class StudentInfoDto {
+        private String username;
+        private String course;
+        private int tableNumber;
+        private int period;
+    }
+
     @PostMapping("/findbyName")
-    public ResponseEntity<Iterable<StudentInfo>> getStudentByName(
-            @RequestBody StudentName studentName) {
-        
-        List<StudentInfo> students = studentJPARepository.findByPersonName(studentName.getName());
-        
-        if (students.isEmpty()) {
+    public ResponseEntity<List<StudentInfoDto>> getStudentByName(@RequestBody StudentName studentName) {
+        List<Object[]> studentData = studentJPARepository.findSelectedFieldsByPersonName(studentName.getName());
+
+        if (studentData.isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
-            return ResponseEntity.ok(students);
+            List<StudentInfoDto> studentDtos = studentData.stream()
+                .map(data -> new StudentInfoDto(
+                    (String) data[0],  // username
+                    (String) data[1],  // course
+                    (Integer) data[2], // tableNumber
+                    (Integer) data[3]  // period
+                ))
+                .toList();
+            
+            return ResponseEntity.ok(studentDtos);
         }
     }
 
