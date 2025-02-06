@@ -26,4 +26,12 @@ public class SaigaiComment {
     @ManyToOne
     @JoinColumn(name = "message_id")
     private SaigaiMessage message;
+
+//     @ManyToMany(fetch = FetchType.EAGER)
+// @JoinTable(
+//     name = "person_roles",
+//     joinColumns = @JoinColumn(name = "person_id"),
+//     inverseJoinColumns = @JoinColumn(name = "role_id")
+// )
+// private Set<PersonRole> roles;
 }
