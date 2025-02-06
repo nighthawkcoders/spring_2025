@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SocketIOConfig {
 
-    @Value("${socket.host}")
-    private String host;
+    // @Value("${socket.host}")
+    // private String host;
 
     @Value("${socket.port}")
     private Integer port;
@@ -19,7 +19,7 @@ public class SocketIOConfig {
         com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
         // config.setHostname(host);
         config.setPort(port);
-        config.setHostname(host);
+        // config.setHostname(host);
         return new SocketIOServer(config);
     }
 
