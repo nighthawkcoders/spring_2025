@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
-
-import jakarta.persistence.PostUpdate;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE})
 @RestController
@@ -79,6 +76,7 @@ public class ApprovalRequestApiController {
 
         // ✅ Add student to queue
         BathroomQueue newQueueEntry = new BathroomQueue(requestDto.getTeacherEmail(), requestDto.getStudentName());
+        newQueueEntry.approveStudent();
         bathroomQueueRepository.save(newQueueEntry);
         System.out.println("✅ Added to Queue: " + student.getEmail());
 
