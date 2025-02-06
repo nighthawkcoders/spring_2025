@@ -444,45 +444,52 @@
         card.style.transition = 'transform 0.2s ease-in-out, border-color 0.3s ease-in-out';
         card.style.border = '2px solid transparent';
         card.style.flexShrink = '0';  // Prevents shrinking when scrolling
+    
         card.addEventListener('mouseover', () => {
             card.style.transform = 'scale(1.05)';
-            card.style.borderColor = '#5FAFFF';
+            card.style.borderColor = '#5fafff';
         });
+    
         card.addEventListener('mouseout', () => {
             card.style.transform = 'scale(1)';
             card.style.borderColor = 'transparent';
         });
+    
         // Construct analytics page URL
         const analyticsURL = `http://localhost:8085/mvc/student/studentinfo?username=${encodeURIComponent(student.username)}&course=${encodeURIComponent(student.course)}&trimester=2&period=${student.period}`;
+    
         // Fetch student GitHub profile picture
         fetch(`https://api.github.com/users/${student.username}`)
             .then(response => response.json())
             .then(githubData => {
                 const imageUrl = githubData.avatar_url || "default-profile.jpg"; // Fallback image
+    
                 card.innerHTML = `
                     <a href="${analyticsURL}" target="_blank">
                         <img src="${imageUrl}" alt="${student.username}'s Profile Picture" class="student-image"
-                             style="width:100px; height:100px; border-radius:50%; margin-bottom:10px; border:3px solid #4C5C75; cursor: pointer;">
+                             style="width:100px; height:100px; border-radius:50%; margin-bottom:10px; border:3px solid #4c5c75; cursor: pointer;">
                     </a>
-                    <h3 style="color: #E0E0E0;">Username: ${student.username}</h3>
-                    <p style="color: #E0E0E0;">Course: ${student.course}</p>
-                    <p style="color: #E0E0E0;">Table Number: ${student.tableNumber}</p>
-                    <p style="color: #E0E0E0;">Period: ${student.period}</p>
+                    <h3 style="color: #e0e0e0;">Username: ${student.username}</h3>
+                    <p style="color: #e0e0e0;">Course: ${student.course}</p>
+                    <p style="color: #e0e0e0;">Table Number: ${student.tableNumber}</p>
+                    <p style="color: #e0e0e0;">Period: ${student.period}</p>
                 `;
             })
             .catch(error => {
                 console.error("GitHub profile fetch error:", error);
+    
                 card.innerHTML = `
                     <a href="${analyticsURL}" target="_blank">
                         <img src="default-profile.jpg" alt="Default Profile Picture" class="student-image"
-                             style="width:100px; height:100px; border-radius:50%; margin-bottom:10px; border:3px solid #4C5C75; cursor: pointer;">
+                             style="width:100px; height:100px; border-radius:50%; margin-bottom:10px; border:3px solid #4c5c75; cursor: pointer;">
                     </a>
-                    <h3 style="color: #E0E0E0;">Username: ${student.username}</h3>
-                    <p style="color: #E0E0E0;">Course: ${student.course}</p>
-                    <p style="color: #E0E0E0;">Table Number: ${student.tableNumber}</p>
-                    <p style="color: #E0E0E0;">Period: ${student.period}</p>
+                    <h3 style="color: #e0e0e0;">Username: ${student.username}</h3>
+                    <p style="color: #e0e0e0;">Course: ${student.course}</p>
+                    <p style="color: #e0e0e0;">Table Number: ${student.tableNumber}</p>
+                    <p style="color: #e0e0e0;">Period: ${student.period}</p>
                 `;
             });
+    
         container.appendChild(card);
     }
     
