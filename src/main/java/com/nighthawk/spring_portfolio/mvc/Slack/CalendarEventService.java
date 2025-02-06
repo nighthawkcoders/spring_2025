@@ -91,59 +91,60 @@ public class CalendarEventService {
     // Extract events and calculate date for each day of the week
     private List<CalendarEvent> extractEventsFromText(String text, LocalDate weekStartDate) {
         List<CalendarEvent> events = new ArrayList<>();
-        // Updated regex pattern to capture an optional period (e.g., "(Period 3)")
-        Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+?)\\s*(?:\\((Period \\d+)\\))?");
-        Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*-\\s*(.+)");
-
+        Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
+        Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*\\u2022\\s*(.+)");
+    
+        boolean hasPeriod1 = text.toLowerCase().contains("period 1");
+        boolean hasPeriod3 = text.toLowerCase().contains("period 3");
+    
         String[] lines = text.split("\\n");
-
+        CalendarEvent lastEvent = null;
+        
         for (String line : lines) {
             Matcher dayMatcher = dayPattern.matcher(line);
-
+    
             if (dayMatcher.find()) {
                 String startDay = dayMatcher.group(1);
                 String endDay = dayMatcher.group(2) != null ? dayMatcher.group(2) : startDay;
-                String asterisks = dayMatcher.group(3); // Extract asterisks (* or **)
+                String asterisks = dayMatcher.group(3);
                 String currentTitle = dayMatcher.group(4).trim();
-
-                String period = dayMatcher.group(5) != null ? dayMatcher.group(5) : "default"; // Extract period if available
-
+                String period;
+                // Append period info if found anywhere in the text
+                if (hasPeriod1) {
+                    period = "1";
+                } 
+                else if (hasPeriod3) {
+                    period = "3";
+                }
+                else {period = "0";}
+                
+    
                 String type = "daily plan";
                 if ("*".equals(asterisks)) {
                     type = "check-in";
                 } else if ("**".equals(asterisks)) {
                     type = "grade";
                 }
-
-                // Generate events for the date range
+    
                 for (LocalDate date : getDatesInRange(startDay, endDay, weekStartDate)) {
-                    events.add(new CalendarEvent(date, currentTitle, "", type, period));
-
+                    lastEvent = new CalendarEvent(date, currentTitle, "", type, period);
+                    events.add(lastEvent);
                 }
             } else {
                 Matcher descMatcher = descriptionPattern.matcher(line);
-                if (descMatcher.find() && !events.isEmpty()) {
+                if (descMatcher.find() && lastEvent != null) {
                     String description = descMatcher.group(2).trim();
-
                     String asterisks = descMatcher.group(1);
-
-                    String type = events.get(events.size() - 1).getType(); // Default to previous event type
+    
+                    String type = lastEvent.getType();
                     if ("*".equals(asterisks)) {
                         type = "check-in";
                     } else if ("**".equals(asterisks)) {
                         type = "grade";
                     }
-
-                    // Update all events of the current day range with the description and type
-                    for (int i = events.size() - 1; i >= 0; i--) {
-                        CalendarEvent event = events.get(i);
-                        if (event.getDescription().isEmpty()) {
-                            event.setDescription(description);
-                            event.setType(type);
-                        } else {
-                            break;
-                        }
-                    }
+    
+                    lastEvent.setDescription(lastEvent.getDescription() + (lastEvent.getDescription().isEmpty() ? "" : ", ") + description);
+                    lastEvent.setType(type);
                 }
             }
         }
