@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/casino/mines")
@@ -27,8 +29,14 @@ public class MinesApiController {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MinesRequest {
-        private double betSize;
+        private double bet;
         private String uid;
+
+        public double getBet() { return bet; }
+        public void setBet(double bet) { this.bet = bet; }
+
+        public String getUid() { return uid; }
+        public void setUid(String uid) { this.uid = uid; }
     }
 
     @GetMapping("/{xCoord}/{yCoord}")
@@ -44,7 +52,7 @@ public class MinesApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        double betSize = minesRequest.getBetSize();
+        double betSize = minesRequest.getBet();
         double winnings = board.winnings() * betSize;
         double updatedBalance = user.getBalanceDouble() + winnings;
         user.setBalanceString(updatedBalance);
@@ -60,7 +68,7 @@ public class MinesApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        double betSize = minesRequest.getBetSize();
+        double betSize = minesRequest.getBet();
         double updatedBalance = user.getBalanceDouble() - betSize;
         if (updatedBalance < 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -80,5 +88,40 @@ public class MinesApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(user.getBalanceDouble(), HttpStatus.OK);
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<Map<String, Object>> handleMinesGame(@RequestBody MinesRequest minesRequest) {
+        // Get user from database
+        Person person = personJpaRepository.findByUid(minesRequest.getUid());
+        if (person == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        // Update balance
+        double currentBalance = person.getBalanceDouble();
+        double updatedBalance = currentBalance + minesRequest.getBet();
+        
+        // Check for negative balance
+        if (updatedBalance < 0) {
+            return new ResponseEntity<>(
+                Map.of("error", "Insufficient balance"),
+                HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // Save updated balance
+        person.setBalanceString(updatedBalance);
+        personJpaRepository.save(person);
+
+        // Return response
+        return new ResponseEntity<>(
+            Map.of(
+                "status", "success",
+                "updatedBalance", updatedBalance,
+                "transactionAmount", minesRequest.getBet()
+            ),
+            HttpStatus.OK
+        );
     }
 }
