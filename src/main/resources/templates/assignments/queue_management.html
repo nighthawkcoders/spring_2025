@@ -260,6 +260,10 @@
         await fetch(URL + `resetQueue/${assignment}`, {
             method: 'PUT'
         });
+        // Clear student cards
+        document.getElementById('studentDetails').innerHTML = "";
+
+        console.log("Queue and student cards reset.");
         fetchQueue();
     }
 
