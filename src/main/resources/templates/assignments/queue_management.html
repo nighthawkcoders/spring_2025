@@ -179,7 +179,6 @@
             </div>
         </div>
         <div id="studentDetails"></div>
-            <h3>Student Details</h3>
             <!-- Student information will appear here when a name is clicked -->
         </div>
 </th:block>
@@ -378,14 +377,25 @@
     }
     
     async function fetchStudentByName(studentNames) {
-        // Split the names by " | " and trim whitespace
         const individualNames = studentNames.split(" | ").map(name => name.trim());
         
-        console.log(`Fetching data for students:`, individualNames);  // Log the student names before the requests
+        console.log(`Fetching data for students:`, individualNames);
+    
+        // Get the container element and clear previous results
+        const container = document.getElementById('studentDetails');
+        container.innerHTML = ""; 
+        container.style.display = 'flex'; 
+        container.style.flexWrap = 'nowrap';  // Prevent wrapping to a new row
+        container.style.overflowX = 'auto';   // Enable horizontal scrolling if needed
+        container.style.gap = '20px';
+        container.style.marginTop = '20px';
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'center';
+        container.style.padding = '10px';
     
         for (const name of individualNames) {
-            const requestData = { name: name };  // Data to send to the API
-            console.log('Request data:', requestData);  // Log the request data
+            const requestData = { name: name };  
+            console.log('Request data:', requestData);
     
             try {
                 const response = await fetch(`/api/students/findbyName`, {
@@ -396,40 +406,79 @@
     
                 if (!response.ok) {
                     console.error(`Failed to fetch data for student: ${name}`);
-                    continue; // Skip to the next iteration if the request fails
+                    continue;
                 }
     
-                const students = await response.json();  // Parse the API response
-                console.log(`Data received for ${name}:`, students);  // Log the received data
+                const students = await response.json();
+                console.log(`Data received for ${name}:`, students);
     
                 if (students.length > 0) {
-                    displayStudentDetails(students[0]);  // Display the first matched student
+                    students.forEach(student => createStudentCard(student, container));
                 } else {
                     console.warn(`No data found for student: ${name}`);
-                    document.getElementById('studentDetails').innerHTML += `<p>No data found for ${name}.</p>`;
+                    container.innerHTML += `<p>No data found for ${name}.</p>`;
                 }
             } catch (error) {
                 console.error(`Error fetching data for ${name}:`, error);
-                document.getElementById('studentDetails').innerHTML += `<p>Error fetching data for ${name}.</p>`;
+                container.innerHTML += `<p>Error fetching data for ${name}.</p>`;
             }
         }
     }
     
-    function displayStudentDetails(student) {
-        const details = `
-            <p><strong>Username:</strong> ${student.username || 'N/A'}</p>
-            <p><strong>Course:</strong> ${student.course || 'N/A'}</p>
-            <p><strong>Table Number:</strong> ${student.tableNumber || 'N/A'}</p>
-            <p><strong>Period:</strong> ${student.period || 'N/A'}</p>
-        `;
+    // Function to create a student card with a profile picture
+    function createStudentCard(student, container) {
+        const card = document.createElement('div');
+        card.className = 'student-card';
+        card.style.backgroundColor = '#181818';
+        card.style.borderRadius = '10px';
+        card.style.padding = '20px';
+        card.style.width = '250px';  // Fixed width for uniformity
+        card.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.6)';
+        card.style.textAlign = 'center';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.alignItems = 'center';
+        card.style.transition = 'transform 0.2s ease-in-out, border-color 0.3s ease-in-out';
+        card.style.border = '2px solid transparent';
+        card.style.flexShrink = '0';  // Prevents shrinking when scrolling
     
-        const studentDetailsElement = document.getElementById('studentDetails');
-        if (studentDetailsElement) {
-            console.log('Displaying student details in #studentDetails');
-            studentDetailsElement.innerHTML += details; // Append data instead of overwriting
-        } else {
-            console.error('#studentDetails div not found in the DOM!');
-        }
+        card.addEventListener('mouseover', () => {
+            card.style.transform = 'scale(1.05)';
+            card.style.borderColor = '#5fafff';
+        });
+    
+        card.addEventListener('mouseout', () => {
+            card.style.transform = 'scale(1)';
+            card.style.borderColor = 'transparent';
+        });
+    
+        // Fetch student GitHub profile picture
+        fetch(`https://api.github.com/users/${student.username}`)
+            .then(response => response.json())
+            .then(githubData => {
+                const imageUrl = githubData.avatar_url || "default-profile.jpg"; // Fallback image if GitHub doesn't return one
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${student.username}'s Profile Picture" class="student-image" 
+                         style="width:100px; height:100px; border-radius:50%; margin-bottom:10px; border:3px solid #4c5c75;">
+                    <h3 style="color: #e0e0e0;">Username: ${student.username}</h3>
+                    <p style="color: #e0e0e0;">Course: ${student.course}</p>
+                    <p style="color: #e0e0e0;">Table Number: ${student.tableNumber}</p>
+                    <p style="color: #e0e0e0;">Period: ${student.period}</p>
+                `;
+            })
+            .catch(error => {
+                console.error("GitHub profile fetch error:", error);
+                card.innerHTML = `
+                    <img src="default-profile.jpg" alt="Default Profile Picture" class="student-image" 
+                         style="width:100px; height:100px; border-radius:50%; margin-bottom:10px; border:3px solid #4c5c75;">
+                    <h3 style="color: #e0e0e0;">Username: ${student.username}</h3>
+                    <p style="color: #e0e0e0;">Course: ${student.course}</p>
+                    <p style="color: #e0e0e0;">Table Number: ${student.tableNumber}</p>
+                    <p style="color: #e0e0e0;">Period: ${student.period}</p>
+                `;
+            });
+    
+        container.appendChild(card);
     }
     
     
