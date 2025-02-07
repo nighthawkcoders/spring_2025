@@ -40,7 +40,7 @@
 
                     <!-- The 'username' input field. The 'uid' field is mapped to 'username' for Spring Security authentication -->
                     <tr>
-                        <td><input type="uid" id='username' name="username" placeholder="GitHub ID" size="20" required style="margin-bottom: 10px; margin-left: 10px;"></td>
+                        <td><input type="text" id='username' name="username" placeholder="GitHub ID" size="20" required style="margin-bottom: 10px; margin-left: 10px;"></td>
                     </tr>
 
                     <!-- Password input field with added margin for spacing -->
@@ -60,15 +60,6 @@
                     <tr>
                         <td><a th:href="@{/mvc/person/create}" style="margin-left: 10px;">Sign Up</a></td>
                     </tr>
-    
-
-             <!-- 'email' is mapped to 'username' for Spring Security -->
-                        <tr><th><label for="username">Username</label></th></tr>
-                        <tr><td><input type="username" id='username' name="username" size="20" required></td></tr>
-                        <tr><th><label for="password">Password</label></th></tr>
-                        <tr><td><input type="password" id="password" name="password" size="20" required></td></tr>
-                        <tr><th><input type="submit" value="Submit"></th></tr>
-                        <tr><td><a th:href="@{/mvc/person/create}">Sign Up</a></td></tr>
 
                     </table>
 
