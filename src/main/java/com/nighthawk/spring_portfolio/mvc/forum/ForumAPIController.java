@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +27,7 @@ public class ForumAPIController {
     @Autowired
     private ForumRepository forumRepository; // Inject the repository
 
+    
     @PostMapping("/issue/post")
     public String getInput(@RequestBody RequestBodyData requestBodyData) {
         System.out.println("Received message: " + requestBodyData.getTitle());
@@ -70,9 +73,6 @@ public class ForumAPIController {
     public List<Forum> getAllPosts() {
         return forumRepository.findAll();
     }
-
-
-
 
 
     @PostMapping("/blog/remove")
@@ -121,6 +121,8 @@ public class ForumAPIController {
             return "An error occurred while writing the blog: " + e.getMessage();
         }
     }
+
+
 
     public static class RequestBlogData {
         private String title;
