@@ -107,7 +107,7 @@ public class StudentInfo {
             students.add(new StudentInfo("nitinsandiego", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Nitin"));
             students.add(new StudentInfo("SrinivasNampalli", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Srini"));
             students.add(new StudentInfo("SriS126", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Sri"));
-            students.add(new StudentInfo("SGTech08", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Saatvik"));
+            students.add(new StudentInfo("SGTech08", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Saathvik"));
             students.add(new StudentInfo("AidanLau10", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Aidan"));
             students.add(new StudentInfo("tanav-kambhampati", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Tanav"));
             students.add(new StudentInfo("hanlunli", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1")), new ArrayList<String>(Arrays.asList("Task 1")), 2, 1, "Hanlun"));
