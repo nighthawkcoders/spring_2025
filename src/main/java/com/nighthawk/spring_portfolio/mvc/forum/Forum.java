@@ -40,11 +40,11 @@ public class Forum {
     }
 
     // Static method for creating Forum objects
-    public static Forum createQuestion(String author, String context, String title) {
+    public static Forum createQuestion(String author, String title, String context) {
         Forum forum = new Forum();
         forum.setAuthor(author);
-        forum.setContext(context);
         forum.setTitle(title);
+        forum.setContext(context);
 
         return forum;
     }
@@ -54,11 +54,11 @@ public class Forum {
         ArrayList<Forum> forums = new ArrayList<>();
         
         // Using the createQuestion method to add forums to the list
-        forums.add(createQuestion("Hippo", "Let's discuss the basics of Java programming!", "Introduction to Java"));
-        forums.add(createQuestion("Cheetah", "How do you optimize Spring Boot applications for performance?", "Spring Boot Tips"));
-        forums.add(createQuestion("Elephant", "What are the best practices for indexing in SQL databases?", "Database Optimization"));
-        forums.add(createQuestion("Falcon", "Which one do you prefer working on and why?", "Frontend vs Backend"));
-        forums.add(createQuestion("Dolphin", "What are the latest trends in AI and machine learning?", "Machine Learning Trends"));
+        forums.add(createQuestion("Hippo", "Introduction to Java", "Let's discuss the basics of Java programming!"));
+        forums.add(createQuestion("Cheetah", "Spring Boot Tips",  "How do you optimize Spring Boot applications for performance?"));
+        forums.add(createQuestion("Elephant", "Database Optimization",  "What are the best practices for indexing in SQL databases?"));
+        forums.add(createQuestion("Falcon", "Frontend vs Backend",  "Which one do you prefer working on and why?"));
+        forums.add(createQuestion("Dolphin", "Machine Learning Trends",  "What are the latest trends in AI and machine learning?"));
     
         return forums.toArray(new Forum[0]);
     }
