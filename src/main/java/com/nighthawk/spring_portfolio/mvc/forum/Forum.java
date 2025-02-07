@@ -1,5 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.forum;
 
+import java.util.ArrayList;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,8 +12,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
 
 @Data // Lombok annotation to generate boilerplate code (getters, setters, toString, etc.)
 @Entity // JPA annotation to specify that this class is an entity
@@ -27,11 +27,11 @@ public class Forum {
     @Column(name = "author", nullable=false)
     private String author; // Name of the associated person
 
-    @Column(name = "context", nullable=false)
-    private String context; // Context of the post
-
     @Column(name = "title", nullable=false)
     private String title; // Title of the post
+
+    @Column(name = "context", nullable=false)
+    private String context; // Context of the post
 
     public Forum(String author, String title, String context) {
         this.author = author;
