@@ -346,7 +346,12 @@ public class PersonApiController {
         // Return NOT_FOUND if the person with the given ID does not exist
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+    @GetMapping("/top5bybalance")
+    public ResponseEntity<List<Person>> getTop5ByBalance() {
+        List<Person> top5Users = repository.findTop5ByOrderByBalanceDesc();
+        return new ResponseEntity<>(top5Users, HttpStatus.OK);
+    }
+
     /**
      * Retrieves the balance of a Person entity by its ID.
      *
@@ -438,4 +443,5 @@ public class PersonApiController {
         // return Bad ID
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    
 }

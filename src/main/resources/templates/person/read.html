@@ -1,56 +1,277 @@
-<!DOCTYPE HTML>
+<!DOCTYPE HTML> 
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/base}" lang="en">
 
 <head>
     <title>Person List</title>
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
+    <style>
+        /* Ensures that the custom checkbox images are appropriately sized */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Highlights the header when hovering over a sortable column */
+        th.sortable:hover {
+            cursor: pointer;
+            color: #007bff;
+        }
+
+        /* Styling for the profile picture container */
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Initial styling for the profile picture */
+        .profile-picture-container img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            opacity: 1;
+            transform-origin: bottom center; /* Set anchor point to bottom center */
+        }
+
+        /* Enlarges the profile picture when hovered */
+        .profile-picture-container:hover img {
+            transform: scale(2); /* Enlarges the image */
+            opacity: 1;
+        }
+
+        /* Styling for the search input container */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        /* Uid column styling to limit text and show full uid on hover */
+        td.uid {
+            width: 18ch; /* Limit to 18 characters */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        td.uid:hover {
+            cursor: help;
+        }
+    </style>
+    <script>
+        // Function to check if an image exists by loading it
+        function imageExists(url) {
+            var img = new Image();
+            img.onload = function() {
+                return true;
+            };
+            img.onerror = function() {
+                return false;
+            };
+            img.src = url;
+        }
+
+        // Function to dynamically update the profile picture link
+        function updateProfilePicture(personId) {
+            var imgUrl = 'https://github.com/' + personId + '.png';
+            var link = document.getElementById('profile-link-' + personId);
+            var img = document.getElementById('profile-img-' + personId);
+
+            // If the image exists, set the link to the profile picture; otherwise, remove the link
+            if (imageExists(imgUrl)) {
+                link.href = imgUrl;
+            } else {
+                link.removeAttribute('href');
+            }
+        }
+
+        // Function to filter the table based on the search query
+        function filterTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toLowerCase();
+            table = document.getElementById("personTable");
+            tr = table.getElementsByTagName("tr");
+
+            // Loop through all table rows (starting from row 1 to skip the header)
+            for (i = 1; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td");
+                let matchFound = false;
+
+                // Check each column for a match with the search query
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                            matchFound = true;
+                            break; // Stop checking further columns if a match is found
+                        }
+                    }
+                }
+
+                // Show or hide the row based on whether a match was found
+                if (matchFound) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        // Sorting function
+        var sortDirections = {}; // Track the current sorting direction for each column
+
+        function sortTable(columnIndex, isNumeric) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("personTable");
+            switching = true;
+            dir = sortDirections[columnIndex] === "asc" ? "desc" : "asc"; // Toggle the sort direction
+            sortDirections[columnIndex] = dir; // Store the current direction
+
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+
+                // Loop through all table rows (except for the header)
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("td")[columnIndex];
+                    y = rows[i + 1].getElementsByTagName("td")[columnIndex];
+
+                    // Check if the rows should be switched
+                    if (isNumeric) {
+                        // For numeric columns (ID#, SID, KSM), compare as numbers
+                        var xValue = parseFloat(x.innerText.replace(/[^\d.-]/g, '')); // Remove non-numeric characters
+                        var yValue = parseFloat(y.innerText.replace(/[^\d.-]/g, '')); // Remove non-numeric characters
+
+                        if (dir === "asc") {
+                            if (xValue > yValue) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (xValue < yValue) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        // For text-based columns, compare as strings
+                        if (dir === "asc") {
+                            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (shouldSwitch) {
+                    // If a switch is found, perform the switch and mark switching as true
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    // If no switching has been done and the direction is "asc", change the direction
+                    if (switchcount === 0 && dir === "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        // Add sorting to each sortable column (excluding "Action" and "PFP")
+        window.onload = function() {
+            var ths = document.querySelectorAll("th.sortable");
+            ths.forEach(function(th, index) {
+                if (index !== 5 && index !== 7) {  // Exclude "PFP" (index 5) and "Action" (index 7)
+                    th.onclick = function() {
+                        var isNumeric = index === 0 || index === 6 || index === 4; // Numeric: ID#, SID, KSM
+                        sortTable(index, isNumeric);
+                    };
+                }
+            });
+
+            // Update all profile pictures on page load
+            var personIds = document.querySelectorAll('[data-person-id]');
+            personIds.forEach(function(element) {
+                var personId = element.getAttribute('data-person-id');
+                updateProfilePicture(personId);
+            });
+        };
+    </script>
 </head>
 
 <body>
 <th:block layout:fragment="body" th:remove="tag">
-    <div class="container py-4 bg-primary">
+    <div class="container py-4 bg-primary rounded">
+        <!-- Main page content -->
         <header class="pb-3 mb-4 border-bottom">
             <a href="#" class="d-flex align-items-center text-light text-decoration-none">
                 <span class="fs-4">Database SQL Person</span>
             </a>
         </header>
 
-        <div class="container py-4 text-light bg-success">
-
+        <div class="container py-4 text-light bg-success rounded">
             <h2>Person Viewer</h2>
-            <a th:href="@{/mvc/person/create}">Create Person</a>
+
+            <!-- Search box for filtering users by their UID, name, or username -->
+            <div class="search-container">
+                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search By Properties">
+            </div>
+
             <div class="row align-items-md-stretch">
+                <!-- Table displaying the list of persons -->
                 <table id="personTable" class="table">
                     <thead>
                     <tr>
-                        <th>ID</th>
-                        <th> Student ID </th>
-                        <th>User Github ID</th>
-                        <th>Person Email</th>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Kasm Server Needed</th>
-                        <th>Profile Picture</th>
+                        <th class="sortable">ID#</th>
+                        <th class="sortable">UID</th> <!-- Changed GHID to UID -->
+                        <th class="sortable">UN</th>
+                        <th class="sortable">Email</th> <!-- Added Email column -->
+                        <th>KSM</th>
+                        <th>PFP</th>
+                        <th class="sortable">SID</th>
                         <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="person : ${list}">
                         <td th:text="${person.id}">Person ID</td>
-                        <td th:text="${person.sid}">Person ID</td>
-                        <td th:text="${person.uid}">Github ID</td>
-                        <td th:text="${person.email}">User Email</td>
-                        <td th:text="${person.name}">Name</td>
-                        <td th:if="${person.getAge() != -1}" th:text="${person.getAge()}">Age</td>
-                        <td th:unless="${person.getAge() != -1}" th:text="Unknown">Unknown Age</td>
-                        <td th:text="${person.kasmServerNeeded}">Yes/No</td>
                         <td>
-                            <img th:src="${person.pfp}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">
+                            <a th:href="'https://github.com/' + ${person.uid}" target="_blank" th:text="${person.uid}">User UID</a>
                         </td>
+                        <td th:text="${person.name}">Name</td>
+                        <td th:text="${person.email}">Email</td> <!-- Display Email -->
+                        <!-- Checkbox for Kasm Image status -->
                         <td>
-                            <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}">Update</a>
-                            <a th:href="@{/mvc/person/delete/{id}(id = ${person.id})}">Delete</a>
+                            <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 
+                                 class="custom-checkbox" alt="KSM Status" />
+                        </td>
+                        <!-- Profile Picture column -->
+                        <td>
+                            <div class="profile-picture-container">
+                                <!-- Profile picture with fallback image on error -->
+                                <a id="profile-link-${person.id}" data-person-id="${person.id}" target="_blank">
+                                    <img id="profile-img-${person.id}" th:src="|https://github.com/${person.uid}.png|"
+                                         alt="Profile Picture"
+                                         onerror="this.onerror=null; this.src='https://github.com/user-attachments/assets/13dec9b2-21d6-458e-b099-f5f85ae9caf2';" />
+                                </a>
+                            </div>
+                        </td>
+
+                        <!-- Scrum Group column -->
+                        <td th:text="${person.sid}">Student ID</td>
+
+                        <!-- Actions column for Update and Delete -->
+                        <td>
+                            <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}" class="btn btn-warning btn-sm">Update</a>
+                            <a th:href="@{/mvc/person/delete/{id}(id = ${person.id})}" class="btn btn-danger btn-sm">Delete</a>
                         </td>
                     </tr>
                     </tbody>
@@ -59,10 +280,7 @@
 
         </div>
     </div>
-    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
-    <script>
-        let table = new DataTable('#personTable');
-    </script>
+
 </th:block>
 </body>
 
