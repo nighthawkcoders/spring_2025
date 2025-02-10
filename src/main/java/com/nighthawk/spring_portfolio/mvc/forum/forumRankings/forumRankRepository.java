@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface forumRankRepository extends JpaRepository<forumRankings, Long> {
-
+    forumRankings findByAuthor(String author); // Custom query method to find a forumRankings by author
 }

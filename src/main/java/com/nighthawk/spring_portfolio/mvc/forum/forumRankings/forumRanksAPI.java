@@ -14,7 +14,7 @@ public class forumRanksAPI {
     private forumRankRepository rankRepository; // Inject the repository
 
     @PostMapping("/rank/update")
-    public String getInput(@RequestBody RequestBodyData requestBodyData) {
+    public String updateRank(@RequestBody RequestBodyData requestBodyData) {
         System.out.println("Received message: " + requestBodyData.getTitle());
 
         if (requestBodyData.getTitle() == null || requestBodyData.getTitle().isEmpty() || 
@@ -29,13 +29,17 @@ public class forumRanksAPI {
             String author = requestBodyData.getAuthor();
             int rankInt = requestBodyData.getRankInt();
 
-            // Create a new ForumRankings object and save it to the database
-            forumRankings forumRankTable = new forumRankings(null, author, rankInt);
-            rankRepository.save(forumRankTable); // Save to repository
-
+            forumRankings currentRank = rankRepository.findByAuthor(author);
+            if (currentRank != null) {
+                currentRank.setRankInt(rankInt);
+            } else {
+                currentRank = new forumRankings(null, author, rankInt);
+            }
+            
+            rankRepository.save(currentRank);
             return "Successfully added to database";
         } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
+            System.err.println("An error occurred: " + e.getMessage());
             e.printStackTrace();
             return "An error occurred: " + e.getMessage();
         }
