@@ -69,7 +69,7 @@ public class ForumAPIController {
         return post.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public List<Forum> getAllPosts() {
         return forumRepository.findAll();
     }

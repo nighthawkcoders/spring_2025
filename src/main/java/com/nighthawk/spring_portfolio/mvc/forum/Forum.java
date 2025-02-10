@@ -22,7 +22,7 @@ import lombok.Setter;
 public class Forum {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id; // Primary key for the userStocksTable entity
+    private Long id; // Primary key
 
     @Column(name = "author", nullable=false)
     private String author; // Name of the associated person
