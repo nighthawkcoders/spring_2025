@@ -27,7 +27,6 @@ public class CalendarEventController {
 
     @Autowired
     private CalendarEventService calendarEventService;
-
     @PostMapping("/add")
     public void addEventsFromSlackMessage(@RequestBody Map<String, String> jsonMap) {
         LocalDateTime now = LocalDateTime.now();
@@ -74,27 +73,11 @@ public class CalendarEventController {
         }
     }
 
+
     @GetMapping("/events/{date}")
     public List<CalendarEvent> getEventsByDate(@PathVariable String date) {
-        return calendarEventService.getEventsByDate(LocalDate.parse(date));
-    }
-
-    @DeleteMapping("/delete/{title}")
-    public ResponseEntity<String> deleteEvent(@PathVariable String title) {
-        String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
-        System.out.println("Attempting to delete event with title: " + decodedTitle);
-
-        try {
-            boolean deleted = calendarEventService.deleteEventByTitle(decodedTitle);
-            if (!deleted) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
-            }
-            return ResponseEntity.ok("Event deleted successfully.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred: " + e.getMessage());
-        }
+        LocalDate localDate = LocalDate.parse(date);
+        return calendarEventService.getEventsByDate(localDate);
     }
 
     @PutMapping("/edit/{title}")
@@ -118,7 +101,8 @@ public class CalendarEventController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while updating the event: " + e.getMessage());
         }
-    }
+}
+
 
     @GetMapping("/events")
     public List<CalendarEvent> getAllEvents() {
@@ -134,4 +118,32 @@ public class CalendarEventController {
     public List<CalendarEvent> getNextDayEvents() {
         return calendarEventService.getEventsByDate(LocalDate.now().plusDays(1));
     }
+    @DeleteMapping("/delete/{title}")
+    public ResponseEntity<String> deleteEvent(@PathVariable String title) {
+        // Decode the title to handle multi-word or special character titles
+        String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
+        // Log the decoded title for debugging purposes
+        System.out.println("Attempting to delete event with title: " + decodedTitle);
+        try {
+            // Call your service to delete the event
+            boolean deleted = calendarEventService.deleteEventByTitle(decodedTitle);
+            // If the event wasn't found and deleted, return a 404 response
+            if (!deleted) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
+            }
+            // Return a success response if the event is deleted
+            return ResponseEntity.ok("Event deleted successfully.");
+        } catch (Exception e) {
+            // Log the exception and return a 500 error response
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + e.getMessage());
+        }
+    }
+
+
+
+
+
+
 }

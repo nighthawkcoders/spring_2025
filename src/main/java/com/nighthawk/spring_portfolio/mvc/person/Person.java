@@ -161,6 +161,9 @@ public class Person implements Comparable<Person> {
     @Size(min = 2, max = 30, message = "Name (2 to 30 chars)")
     private String name;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date dob;
+
     /** Profile picture (pfp) in base64 */
     @Column(length = 255, nullable = true)
     private String pfp;
@@ -212,12 +215,13 @@ public class Person implements Comparable<Person> {
      * @param balance,
      * @param dob, a Date
      */
-    public Person(String email, String uid, String password, String sid, String name, String pfp, String balance,  Boolean kasmServerNeeded, PersonRole role) {
+    public Person(String email, String uid, String password, String sid, String name, Date dob, String pfp, String balance,  Boolean kasmServerNeeded, PersonRole role) {
         this.email = email;
         this.uid = uid;
         this.password = password;
         this.sid = sid;
         this.name = name;
+        this.dob = dob;
         this.kasmServerNeeded = kasmServerNeeded;
         this.pfp = pfp;
         this.balance = balance;
@@ -239,7 +243,6 @@ public class Person implements Comparable<Person> {
     /** Custom getter to return age from dob attribute
      * @return int, the age of the person
     */
-    /*
     public int getAge() {
         if (this.dob != null) {
             LocalDate birthDay = this.dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -247,7 +250,6 @@ public class Person implements Comparable<Person> {
         }
         return -1;
     }
-    */
 
     /** Custom compareTo method to compare Person objects by name
      * @param other, a Person object
@@ -286,14 +288,12 @@ public class Person implements Comparable<Person> {
         person.setKasmServerNeeded(kasmServerNeeded);
         person.setBalance(balance);
         person.setPfp(pfp);
-        /* 
         try {
             Date date = new SimpleDateFormat("MM-dd-yyyy").parse(dob);
             person.setDob(date);
         } catch (Exception e) {
             // handle exception
         }
-            */
 
         List<PersonRole> roles = new ArrayList<>();
         for (String roleName : roleNames) {
@@ -323,6 +323,7 @@ public class Person implements Comparable<Person> {
         people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", defaultPassword, "1", "/images/madam.png", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "123", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
+        people.add(createPerson("Alan Turing","alan",  "turing@gmail.com", defaultPassword, "2", "/images/alan.png", false, startingBalance, "06-23-1912", Arrays.asList("ROLE_USER", "ROLE_TESTER","ROLE_STUDENT")));
         
         Collections.sort(people);
         for (Person person : people) {
@@ -347,6 +348,10 @@ public class Person implements Comparable<Person> {
             System.out.println(person);  // print object
             System.out.println();
         }
+    }
+
+    public Date getDob() {
+        return this.dob;
     }
     
     public String getPfp() {

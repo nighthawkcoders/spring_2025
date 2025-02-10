@@ -1,6 +1,4 @@
 package com.nighthawk.spring_portfolio.mvc.person;
-
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -148,6 +147,7 @@ public class PersonApiController {
         private String sid;
         private String password;
         private String name;
+        private String dob;
         private String pfp;
         private double balance;
         private Boolean kasmServerNeeded; 
@@ -162,18 +162,16 @@ public class PersonApiController {
      */
     @PostMapping("/person/create")
     public ResponseEntity<Object> postPerson(@RequestBody PersonDto personDto) {
-        // Validate dob input (not used)
-        /* 
+        // Validate dob input
         Date dob;
         try {
             dob = new SimpleDateFormat("MM-dd-yyyy").parse(personDto.getDob());
         } catch (Exception e) {
             return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
         }
-        */
         // A person object WITHOUT ID will create a new record in the database
         String startingBalance = "100000";
-        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), dob, "pfp1", startingBalance, true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
@@ -267,7 +265,7 @@ public class PersonApiController {
     }
 
 
-
+    @CrossOrigin(origins = {"*"})
     @GetMapping("/{sid}")
     public String getNameById(@PathVariable String sid)
     {
@@ -348,7 +346,12 @@ public class PersonApiController {
         // Return NOT_FOUND if the person with the given ID does not exist
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+    @GetMapping("/top5bybalance")
+    public ResponseEntity<List<Person>> getTop5ByBalance() {
+        List<Person> top5Users = repository.findTop5ByOrderByBalanceDesc();
+        return new ResponseEntity<>(top5Users, HttpStatus.OK);
+    }
+
     /**
      * Retrieves the balance of a Person entity by its ID.
      *
@@ -440,4 +443,5 @@ public class PersonApiController {
         // return Bad ID
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    
 }
