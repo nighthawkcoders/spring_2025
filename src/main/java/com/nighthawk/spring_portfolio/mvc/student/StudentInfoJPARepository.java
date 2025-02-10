@@ -51,5 +51,3 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
     List<Object[]> findSelectedFieldsByPersonName(@Param("person_name") String person_name);
 
 }
-
-
