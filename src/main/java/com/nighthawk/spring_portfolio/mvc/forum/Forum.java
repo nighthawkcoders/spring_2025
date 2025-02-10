@@ -1,7 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.forum;
 
-import java.util.ArrayList;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -47,20 +45,6 @@ public class Forum {
         forum.setContext(context);
 
         return forum;
-    }
-
-    // Method to initialize Forum objects using the createQuestion method
-    public static Forum[] init() {
-        ArrayList<Forum> forums = new ArrayList<>();
-        
-        // Using the createQuestion method to add forums to the list
-        forums.add(createQuestion("Hippo", "Introduction to Java", "Let's discuss the basics of Java programming!"));
-        forums.add(createQuestion("Cheetah", "Spring Boot Tips",  "How do you optimize Spring Boot applications for performance?"));
-        forums.add(createQuestion("Elephant", "Database Optimization",  "What are the best practices for indexing in SQL databases?"));
-        forums.add(createQuestion("Falcon", "Frontend vs Backend",  "Which one do you prefer working on and why?"));
-        forums.add(createQuestion("Dolphin", "Machine Learning Trends",  "What are the latest trends in AI and machine learning?"));
-    
-        return forums.toArray(new Forum[0]);
     }
 
     public String echoMessage(String message) {
