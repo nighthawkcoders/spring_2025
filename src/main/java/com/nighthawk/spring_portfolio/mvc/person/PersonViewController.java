@@ -88,8 +88,6 @@ public class PersonViewController {
         return "person/read";  // Return the template for displaying the person
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////
-/// "" Get and Post mappings
 
     /* Gathers the attributes filled out in the form, tests for and retrieves validation error
     @param - Person object with @Valid
@@ -116,8 +114,7 @@ public class PersonViewController {
         return "person/create";
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////
-/// "Update" Get and Post mappings
+
 
     @PostMapping("/update")
     public String personUpdateSave(Authentication authentication, @Valid Person person, BindingResult bindingResult) {
@@ -256,8 +253,6 @@ public class PersonViewController {
         return "person/read";  // Redirect to the read page after deletion
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////
-/// "Search" Get mapping
 
  @GetMapping("/search")
     public String person() {
