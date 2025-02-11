@@ -90,32 +90,6 @@ public class ForumAPIController {
             return "An error occurred while increasing the view count: " + e.getMessage();
         }
     }
-
-    public static class RequestBlogData {
-        private String title;
-        private String body;
-        private String author;
-
-        public String getTitle() {
-            return title;
-        }
-        public void setTitle(String title) {
-            this.title = title;
-        }
-        public String getBody() {
-            return body;
-        }
-        public void setBody(String body) {
-            this.body = body;
-        }
-        public void setAuthor(String author) {
-            this.author = author;
-        }
-        public String getAuthor() {
-            return author;
-        }
-    }
-
     public static class RequestBodyData {
         private String title;
         private String context;
