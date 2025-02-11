@@ -38,6 +38,7 @@ public class ForumAPIController {
             String title = requestBodyData.getTitle();
             String context = requestBodyData.getContext();
             String author = requestBodyData.getAuthor();
+            int views = requestBodyData.getViews();
 
             // check if the title is already in the database
             if (forumRepository.findByTitle(title) != null) {
@@ -45,7 +46,7 @@ public class ForumAPIController {
             }
             
             // Create a new ForumTableController object and save it to the database
-            Forum forumTable = new Forum(author, title, context);
+            Forum forumTable = new Forum(author, title, context, views);
             forumRepository.save(forumTable); // Use the repository to save
 
             return "Successfully added to database";
@@ -58,7 +59,7 @@ public class ForumAPIController {
 
 
     @GetMapping("/{id}")
-        public ResponseEntity<Forum> getPostById(@PathVariable Long id) {
+    public ResponseEntity<Forum> getPostById(@PathVariable Long id) {
         Optional<Forum> post = forumRepository.findById(id);
         return post.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -66,6 +67,29 @@ public class ForumAPIController {
     @GetMapping("/get")
     public List<Forum> getAllPosts() {
         return forumRepository.findAll();
+    }
+
+    @GetMapping("/increaseView/{title}")
+    public String increaseViewCount(@PathVariable String title) {
+        try {
+            // Find the post by title
+            Forum forumPost = forumRepository.findByTitle(title);
+            if (forumPost == null) {
+                return "Error: Forum post with the given title not found.";
+            }
+
+            // Increment the view count
+            forumPost.setViews(forumPost.getViews() + 1);
+
+            // Save the updated post back to the repository
+            forumRepository.save(forumPost);
+
+            return "View count increased successfully!";
+        } catch (Exception e) {
+            System.out.println("An error occurred while increasing the view count: " + e.getMessage());
+            e.printStackTrace();
+            return "An error occurred while increasing the view count: " + e.getMessage();
+        }
     }
 
 
@@ -147,6 +171,7 @@ public class ForumAPIController {
         private String title;
         private String context;
         private String author;
+        private int views;
 
         public String getTitle() {
             return title;
@@ -170,6 +195,14 @@ public class ForumAPIController {
 
         public void setAuthor(String author) {
             this.author = author;
+        }
+
+        public void setViews(int views) {
+            this.views = views;    // Add this setter
+        }
+
+        public int getViews() { // Fixed the getter
+            return views;
         }
     }
 }

@@ -31,18 +31,23 @@ public class Forum {
     @Column(name = "context", nullable=false)
     private String context; // Context of the post
 
-    public Forum(String author, String title, String context) {
+    @Column(name = "views", nullable=false)
+    private int views;
+
+    public Forum(String author, String title, String context, int views) {
         this.author = author;
         this.title = title;
         this.context = context;
+        this.views = views;
     }
 
     // Static method for creating Forum objects
-    public static Forum createQuestion(String author, String title, String context) {
+    public static Forum createQuestion(String author, String title, String context, int views) {
         Forum forum = new Forum();
         forum.setAuthor(author);
         forum.setTitle(title);
         forum.setContext(context);
+        forum.setViews(views);
 
         return forum;
     }
