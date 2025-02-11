@@ -1,6 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.forum;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,6 +68,7 @@ public class ForumAPIController {
         return forumRepository.findAll();
     }
 
+<<<<<<< Updated upstream
     @GetMapping("/increaseView/{title}")
     public String increaseViewCount(@PathVariable String title) {
         try {
@@ -167,6 +167,8 @@ public class ForumAPIController {
         }
     }
 
+=======
+>>>>>>> Stashed changes
     public static class RequestBodyData {
         private String title;
         private String context;

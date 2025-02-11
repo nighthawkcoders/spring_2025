@@ -31,10 +31,14 @@ public class forumBlogs {
     @Column(nullable=false)
     private String filePath; // Context of the post
 
-    public forumBlogs(String author, String title, String filePath) {
+    @Column(nullable=false)
+    private String date; // Date of the post
+
+    public forumBlogs(String author, String title, String filePath, String date) {
         this.author = author;
         this.title = title;
         this.filePath = filePath;
+        this.date = date;
     }
 
     public String echoMessage(String message) {

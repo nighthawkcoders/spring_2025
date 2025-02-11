@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/forum")
+@RequestMapping("/ranking")
 public class forumRanksAPI {
 
     @Autowired
@@ -15,12 +15,6 @@ public class forumRanksAPI {
 
     @PostMapping("/rank/update")
     public String updateRank(@RequestBody RequestBodyData requestBodyData) {
-        System.out.println("Received message: " + requestBodyData.getTitle());
-
-        if (requestBodyData.getTitle() == null || requestBodyData.getTitle().isEmpty() || 
-            requestBodyData.getContext() == null || requestBodyData.getContext().isEmpty()) {
-            return "Error: Title or Problem is required.";
-        }
         if (requestBodyData.getAuthor() == null || requestBodyData.getAuthor().isEmpty()) {
             return "Error: Author is required.";
         }
@@ -31,13 +25,20 @@ public class forumRanksAPI {
 
             forumRankings currentRank = rankRepository.findByAuthor(author);
             if (currentRank != null) {
-                currentRank.setRankInt(rankInt);
+                currentRank.setRankInt(currentRank.getRankInt() + rankInt);
             } else {
+                // get the current rank for the author and add the rankInt to that value
                 currentRank = new forumRankings(null, author, rankInt);
+            }
+            if (currentRank.getRankInt() < 0) {
+                currentRank.setRankInt(0);
+            }
+            if (currentRank.getRankInt() > 100) {
+                currentRank.setRankInt(100);
             }
             
             rankRepository.save(currentRank);
-            return "Successfully added to database";
+            return "Successfully added to database\n" + author + ": " + currentRank.getRankInt();
         } catch (Exception e) {
             System.err.println("An error occurred: " + e.getMessage());
             e.printStackTrace();
@@ -46,27 +47,8 @@ public class forumRanksAPI {
     }
 
     public static class RequestBodyData {
-        private String title;
-        private String context;
         private String author;
         private int rankInt;
-
-        // Getters and Setters
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getContext() {
-            return context;
-        }
-
-        public void setContext(String context) {
-            this.context = context;
-        }
 
         public String getAuthor() {
             return author;
