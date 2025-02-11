@@ -78,6 +78,29 @@ public class forumBlogAPI {
         }
     }
 
+    @PostMapping("/blog/view")
+    public String getBlog(@RequestBody RequestBlogVite requestBlogView) {
+        try {
+            String title = requestBlogView.getTitle();
+            String fileName = title.replaceAll(" ", "_").toLowerCase() + ".txt";
+            String filePath = "volumes/forumBlogs/" + fileName;
+
+            // check if the file exists
+            if (!Files.exists(Paths.get(filePath))) {
+                return "Error: Blog not found.";
+            }
+
+            // Read the body from the file
+            String body = new String(Files.readAllBytes(Paths.get(filePath)));
+
+            return body;
+        } catch (IOException e) {
+            System.out.println("An error occurred while reading the blog: " + e.getMessage());
+            e.printStackTrace();
+            return "An error occurred while reading the blog: " + e.getMessage();
+        }
+    }
+
     @GetMapping("/blog/get")
     public List<forumBlogs> getLatestBlogs() {
         // return a list of 5 of the latest blogs sorted by most recent date
@@ -85,6 +108,14 @@ public class forumBlogAPI {
                 .sorted((b1, b2) -> b2.getDate().compareTo(b1.getDate()))
                 .limit(4)
                 .toList();
+    }
+
+    public static class RequestBlogVite {
+        private String title;
+
+        public String getTitle() {
+            return title;
+        }
     }
 
     public static class RequestBlogData {

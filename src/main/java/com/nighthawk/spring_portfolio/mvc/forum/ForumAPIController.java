@@ -68,7 +68,6 @@ public class ForumAPIController {
         return forumRepository.findAll();
     }
 
-<<<<<<< Updated upstream
     @GetMapping("/increaseView/{title}")
     public String increaseViewCount(@PathVariable String title) {
         try {
@@ -91,56 +90,6 @@ public class ForumAPIController {
             return "An error occurred while increasing the view count: " + e.getMessage();
         }
     }
-
-
-    @PostMapping("/blog/remove")
-    public String removeBlog(@RequestBody RequestBlogData requestBlogData) {
-        System.out.println("Received message: " + requestBlogData.getTitle());
-        try {
-            String title = requestBlogData.getTitle();
-            String author = requestBlogData.getAuthor();
-
-            String fileName = title.replaceAll(" ", "_").toLowerCase() + ".txt";
-            String filePath = "volumes/forumBlogs/" + fileName;
-            // delete the body to the file
-            java.nio.file.Files.delete(java.nio.file.Paths.get(filePath));
-            return "Successfully removed blog from database";
-        } catch (RestClientException | IOException e) {
-            System.out.println("An error occurred while writing the blog: " + e.getMessage());
-            e.printStackTrace();
-            return "An error occurred while writing the blog: " + e.getMessage();
-        }
-    }
-
-    @PostMapping("/blog/post")
-    public String getInputBlog(@RequestBody RequestBlogData requestBlogData) {
-        System.out.println("Received message: " + requestBlogData.getTitle());
-        try {
-            String title = requestBlogData.getTitle();
-            String body = requestBlogData.getBody();
-            String author = requestBlogData.getAuthor();
-
-            String fileName = title.replaceAll(" ", "_").toLowerCase() + ".txt";
-            String filePath = "volumes/forumBlogs/" + fileName;
-            // check if the title is already in the database
-            if (forumRepository.findByTitle(title) != null) {
-                return "Error: Title already exists.";
-            }
-            if (author == null || author.isEmpty()) {
-                String[] authorEnding = {"Whale", "Pig", "Badger", "Warthog", "Fish", "Cow", "Chicken", "Rabbit", "Wolf", "Bear"};
-                requestBlogData.setAuthor("Anonymous" + authorEnding[(int) (Math.random() * 10)]);
-            }
-            // save the body to the file
-            java.nio.file.Files.write(java.nio.file.Paths.get(filePath), body.getBytes());
-            return "Successfully added blog to database";
-        } catch (RestClientException | IOException e) {
-            System.out.println("An error occurred while writing the blog: " + e.getMessage());
-            e.printStackTrace();
-            return "An error occurred while writing the blog: " + e.getMessage();
-        }
-    }
-
-
 
     public static class RequestBlogData {
         private String title;
@@ -167,8 +116,6 @@ public class ForumAPIController {
         }
     }
 
-=======
->>>>>>> Stashed changes
     public static class RequestBodyData {
         private String title;
         private String context;
