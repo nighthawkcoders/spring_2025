@@ -77,10 +77,8 @@ public class MiningController {
     public ResponseEntity<?> getMiningStats() {
         try {
             MiningUser user = getOrCreateMiningUser();
-            
-            // Calculate profitability
-            miningService.calculateProfitability(user); // Ensure profitability is calculated
-    
+            miningService.calculateProfitability(user);
+
             Map<String, Object> stats = new HashMap<>();
             stats.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
             stats.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
@@ -88,31 +86,39 @@ public class MiningController {
             stats.put("shares", user.getShares());
             stats.put("isMining", user.isMining());
             stats.put("currentPool", user.getCurrentPool());
-            
-            // Add power consumption and temperature
             stats.put("powerConsumption", user.getPowerConsumption());
             stats.put("averageTemperature", user.getAverageTemperature());
+            stats.put("dailyRevenue", user.getDailyRevenue());
+            stats.put("powerCost", user.getPowerCost());
+
+            List<Map<String, Object>> allGpus = user.getOwnedGPUs().stream()
+                .map(gpu -> {
+                    Map<String, Object> gpuInfo = new HashMap<>();
+                    gpuInfo.put("id", gpu.getId());
+                    gpuInfo.put("name", gpu.getName());
+                    gpuInfo.put("hashrate", gpu.getHashRate());
+                    gpuInfo.put("power", gpu.getPowerConsumption());
+                    gpuInfo.put("temp", gpu.getTemp());
+                    gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
+                    return gpuInfo;
+                })
+                .collect(Collectors.toList());
             
-            // Add active GPUs info
+            stats.put("gpus", allGpus);
+            stats.put("activeGPUsCount", allGpus.stream().filter(g -> (Boolean)g.get("isActive")).count());
+
             List<Map<String, Object>> activeGpus = user.getActiveGPUs().stream()
                 .map(gpu -> {
                     Map<String, Object> gpuInfo = new HashMap<>();
                     gpuInfo.put("id", gpu.getId());
                     gpuInfo.put("name", gpu.getName());
                     gpuInfo.put("hashrate", gpu.getHashRate());
-                    gpuInfo.put("power", gpu.getPowerConsumption()); // Use powerConsumption
-                    gpuInfo.put("temp", gpu.getTemp());
                     return gpuInfo;
                 })
                 .collect(Collectors.toList());
             stats.put("activeGPUs", activeGpus);
-            
-            // Add profitability stats
-            stats.put("dailyRevenue", user.getDailyRevenue()); // Ensure this method exists
-            stats.put("powerCost", user.getPowerCost()); // Ensure this method exists
-            
-            System.out.println("Returning stats: " + stats); // Debug log
-            
+
+            System.out.println("最终返回数据: " + stats);
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             e.printStackTrace();
@@ -227,38 +233,56 @@ public class MiningController {
     @GetMapping("/state")
         public ResponseEntity<?> getMiningState() {
             try {
-                MiningUser user = getOrCreateMiningUser(); // Get or create the mining user
+                MiningUser user = getOrCreateMiningUser();
+                miningService.calculateProfitability(user);
 
-                // Prepare the mining state response
-                Map<String, Object> state = new HashMap<>();
-                state.put("isMining", user.isMining());
-                state.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
-                state.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
-                state.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
-                state.put("shares", user.getShares());
-                state.put("currentPool", user.getCurrentPool());
-                state.put("powerConsumption", user.getPowerConsumption());
-                state.put("averageTemperature", user.getAverageTemperature());
+                Map<String, Object> stats = new HashMap<>();
+                stats.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
+                stats.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
+                stats.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
+                stats.put("shares", user.getShares());
+                stats.put("isMining", user.isMining());
+                stats.put("currentPool", user.getCurrentPool());
+                stats.put("powerConsumption", user.getPowerConsumption());
+                stats.put("averageTemperature", user.getAverageTemperature());
+                stats.put("dailyRevenue", user.getDailyRevenue());
+                stats.put("powerCost", user.getPowerCost());
 
-                // Add active GPUs info
-                List<Map<String, Object>> activeGpus = user.getActiveGPUs().stream()
+                // 返回用户拥有的所有GPU及其激活状态
+                List<Map<String, Object>> allGpus = user.getOwnedGPUs().stream()
                     .map(gpu -> {
                         Map<String, Object> gpuInfo = new HashMap<>();
                         gpuInfo.put("id", gpu.getId());
                         gpuInfo.put("name", gpu.getName());
                         gpuInfo.put("hashrate", gpu.getHashRate());
-                        gpuInfo.put("power", gpu.getPowerConsumption());
+                        gpuInfo.put("power", gpu.getPowerConsumption()); // 前端使用power字段
                         gpuInfo.put("temp", gpu.getTemp());
+                        gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
                         return gpuInfo;
                     })
                     .collect(Collectors.toList());
-                state.put("activeGPUs", activeGpus);
+                stats.put("gpus", allGpus); // 关键字段名改为gpus
 
-                return ResponseEntity.ok(state);
+                // 保持原有activeGPUs字段的返回（可选）
+                List<Map<String, Object>> activeGpus = user.getActiveGPUs().stream()
+                    .map(gpu -> {
+                        Map<String, Object> gpuInfo = new HashMap<>();
+                        gpuInfo.put("id", gpu.getId());
+                        gpuInfo.put("name", gpu.getName());
+                        return gpuInfo;
+                    })
+                    .collect(Collectors.toList());
+                stats.put("activeGPUs", activeGpus);
+
+                System.out.println("Final response data: " + stats);
+                return ResponseEntity.ok(stats);
             } catch (Exception e) {
                 e.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(
+                        "error", "获取数据失败: " + e.getMessage(),
+                        "detail", Arrays.toString(e.getStackTrace())
+                    ));
             }
         }
 
