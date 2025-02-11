@@ -11,10 +11,15 @@ public class SocketIOConfig {
     @Value("${socket.port}")
     private Integer port;
 
+    @Value("${socket.host}")
+    private String host;
+    
+
     @Bean
     public SocketIOServer socketIOServer() {
         com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
         config.setPort(port);
+        config.setHostname(host);
         return new SocketIOServer(config);
     }
 
