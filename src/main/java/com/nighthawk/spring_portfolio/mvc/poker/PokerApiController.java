@@ -58,7 +58,7 @@ public class PokerApiController {
     }
 
     @PostMapping("/play")
-    public ResponseEntity<PokerResponse> playGame(@RequestBody PokerRequest pokerRequest) {
+    public ResponseEntity<?> playGame(@RequestBody PokerRequest pokerRequest) {
         if (pokerBoard == null) {
             pokerBoard = new PokerBoard();  // Initialize if not done
         }
@@ -66,18 +66,24 @@ public class PokerApiController {
         // Fetch person by uid
         Person person = personJpaRepository.findByUid(pokerRequest.getUid());
         if (person == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Person not found
+            return new ResponseEntity<>("User not found.", HttpStatus.NOT_FOUND);  // Person not found
         }
 
         double currentBalance = person.getBalanceDouble();
+        double bet = pokerRequest.getBet();
+
+        // Check if the player has enough balance to place the bet
+        if (bet > currentBalance) {
+            return new ResponseEntity<>("Insufficient balance to place bet.", HttpStatus.BAD_REQUEST);
+        }
 
         // Deal hands for the game
         pokerBoard.dealHands();
 
         // Calculate win/loss and update person balance
-        PokerGameResult result = new PokerGameResult(pokerBoard.getPlayerHand(), pokerBoard.getDealerHand(), pokerRequest.getBet());
+        PokerGameResult result = new PokerGameResult(pokerBoard.getPlayerHand(), pokerBoard.getDealerHand(), bet);
         boolean playerWin = result.isPlayerWin();
-        double winnings = playerWin ? pokerRequest.getBet() : -pokerRequest.getBet();
+        double winnings = playerWin ? bet : -bet;
         double updatedBalance = currentBalance + winnings;
 
         // Update the person's balance in the database
@@ -90,12 +96,13 @@ public class PokerApiController {
             pokerBoard.getDealerHand(),
             updatedBalance,
             playerWin,
-            pokerRequest.getBet()
+            bet
         );
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    // to reset the board
+
+    // To reset the board
     @PostMapping("/reset")
     public ResponseEntity<String> resetGame() {
         pokerBoard = new PokerBoard();
