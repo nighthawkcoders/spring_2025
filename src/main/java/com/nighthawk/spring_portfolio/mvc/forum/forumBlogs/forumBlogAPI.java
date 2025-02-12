@@ -90,6 +90,7 @@ public class forumBlogAPI {
             String body = requestBlogData.getBody();
             String author = requestBlogData.getAuthor();
             String date = java.time.LocalDate.now().toString();
+            int views = requestBlogData.getViews();
 
             if (author == null || author.isEmpty()) {
                 String[] authorEnding = {"Whale", "Pig", "Badger", "Warthog", "Fish", "Cow", "Chicken", "Rabbit", "Wolf", "Bear"};
@@ -106,7 +107,7 @@ public class forumBlogAPI {
             }
 
             // Create a new ForumBlogs object and save it to the forumBlog database table
-            forumBlogs forumTable = new forumBlogs(null, author, title, filePath, date, 0);
+            forumBlogs forumTable = new forumBlogs(null, author, date, filePath, title, 0);
             blogRepository.save(forumTable); // Use the repository to save
 
             // Save the body to the file
@@ -177,6 +178,7 @@ public class forumBlogAPI {
         private String title;
         private String body;
         private String author;
+        private int views;
 
         public String getTitle() {
             return title;
@@ -196,6 +198,13 @@ public class forumBlogAPI {
         public String getAuthor() {
             return author;
         }
+
+       
+
+        public int getViews() {
+            return views;
+        }
+        
     }
 
 }

@@ -53,6 +53,9 @@ public class forumBlogs {
         this.votes = votes;
     }
 
+    private int views;
+
+   
     public String echoMessage(String message) {
         return message;
     }
