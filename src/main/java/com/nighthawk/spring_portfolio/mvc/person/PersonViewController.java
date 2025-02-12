@@ -5,6 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset.Email;
+import com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset.ResetCode;
+
+import io.github.cdimascio.dotenv.Dotenv;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,14 +22,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.core.GrantedAuthority;
 import jakarta.validation.Valid;
-import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.util.Arrays;
 import java.util.Collections;
 
 
-import jakarta.persistence.Convert;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 // Built using article: https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/mvc.html
@@ -257,6 +259,55 @@ public class PersonViewController {
  @GetMapping("/search")
     public String person() {
         return "person/search";
+    }
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// "Reset" Post mappings
+
+    @Getter
+    public static class PersonPasswordReset {
+        private String uid;
+    }
+
+    @PostMapping("/reset/start")
+    public ResponseEntity<Object> resetPassword(@RequestBody PersonPasswordReset personPasswordReset){
+        Person personToReset = repository.getByUid(personPasswordReset.getUid());
+        if (personToReset == null){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        if (personToReset.getRoles().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getName()))){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED); //cannot do a password reset on an admin account (maybe unneccesary but idk)
+        }
+        if(ResetCode.getCodeForUid(personToReset.getUid()) != null){
+            return new ResponseEntity<>(HttpStatus.TOO_MANY_REQUESTS);
+        }
+        Email.sendEmail(personToReset.getEmail(), ResetCode.GenerateResetCode(personToReset.getUid()));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Getter
+    public static class PersonPasswordResetCode {
+        private String uid;
+        private String code;
+    }
+
+    @PostMapping("/reset/check")
+    public ResponseEntity<Object> resetPasswordCheck(@RequestBody PersonPasswordResetCode personPasswordResetCode){
+        Person personToReset = repository.getByUid(personPasswordResetCode.getUid());
+        if (personToReset == null){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        if(ResetCode.getCodeForUid(personToReset.getUid()).equals(personPasswordResetCode.getCode())){
+            ResetCode.removeCodeByUid(personToReset.getUid());
+            
+            final Dotenv dotenv = Dotenv.load();
+            final String defaultPassword = dotenv.get("DEFAULT_PASSWORD");
+            personToReset.setPassword(defaultPassword);
+            repository.save(personToReset, false);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }
