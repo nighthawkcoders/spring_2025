@@ -91,8 +91,7 @@ public class forumBlogAPI {
             String body = requestBlogData.getBody();
             String author = requestBlogData.getAuthor();
             String date = java.time.LocalDate.now().toString();
-            int views = requestBlogData.getViews();
-
+            
             if (author == null || author.isEmpty()) {
                 String[] authorEnding = {"Whale", "Pig", "Badger", "Warthog", "Fish", "Cow", "Chicken", "Rabbit", "Wolf", "Bear"};
                 author = "Anonymous" + authorEnding[(int) (Math.random() * 10)];
