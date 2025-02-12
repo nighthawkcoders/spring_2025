@@ -66,6 +66,49 @@ public class forumBlogAPI {
         }
     }
 
+    @PostMapping("/blog/voteCount")
+    public String getVote(@RequestBody RequestBlogVote requestBlogVote) {
+        try {
+            String title = requestBlogVote.getTitle();
+            System.out.println(title);
+            forumBlogs blog = blogRepository.findByTitle(title);
+            if (blog == null) {
+                return "{\"error\": \"Blog not found.\"}";
+            }
+            // Format to JSON format
+            return "{\"votes\": " + blog.getVotes() + "}";
+        } catch (Exception e) {
+            System.out.println("An error occurred while getting the blog: " + e.getMessage());
+            e.printStackTrace();
+            return "{\"error\": \"An error occurred while getting the blog: " + e.getMessage() + "\"}";
+        }
+    }
+
+    @PostMapping("/blog/vote")
+    public String postVote(@RequestBody RequestBlogVote requestBlogVote) {
+        try {
+            String title = requestBlogVote.getTitle();
+            String vote = requestBlogVote.getVote();
+            forumBlogs blog = blogRepository.findByTitle(title);
+            if (blog == null) {
+                return "Error: Blog not found.";
+            }
+            int currentVotes = blog.getVotes();
+            if (vote.equals("up")) {
+                currentVotes++;
+            } else if (vote.equals("down")) {
+                currentVotes--;
+            }
+            blog.setVotes(currentVotes);
+            blogRepository.save(blog);
+            return "Successfully voted blog";
+        } catch (Exception e) {
+            System.out.println("An error occurred while voting the blog: " + e.getMessage());
+            e.printStackTrace();
+            return "An error occurred while voting the blog: " + e.getMessage();
+        }
+    }
+
     @PostMapping("/blog/post")
     public String getInputBlog(@RequestBody RequestBlogData requestBlogData) {
         System.out.println("Received message: " + requestBlogData.getTitle());
@@ -74,8 +117,7 @@ public class forumBlogAPI {
             String body = requestBlogData.getBody();
             String author = requestBlogData.getAuthor();
             String date = java.time.LocalDate.now().toString();
-            int views = requestBlogData.getViews();
-
+            
             if (author == null || author.isEmpty()) {
                 String[] authorEnding = {"Whale", "Pig", "Badger", "Warthog", "Fish", "Cow", "Chicken", "Rabbit", "Wolf", "Bear"};
                 author = "Anonymous" + authorEnding[(int) (Math.random() * 10)];
@@ -91,7 +133,7 @@ public class forumBlogAPI {
             }
 
             // Create a new ForumBlogs object and save it to the forumBlog database table
-            forumBlogs forumTable = new forumBlogs(null, author, title, filePath, date, views);
+            forumBlogs forumTable = new forumBlogs(author, title, filePath, date, 0);
             blogRepository.save(forumTable); // Use the repository to save
 
             // Save the body to the file
@@ -106,7 +148,7 @@ public class forumBlogAPI {
     }
 
     @PostMapping("/blog/view")
-    public String getBlog(@RequestBody RequestBlogVite requestBlogView) {
+    public String getBlog(@RequestBody RequestBlogVote requestBlogView) {
         try {
             String title = requestBlogView.getTitle();
             String fileName = title.replaceAll(" ", "_").toLowerCase() + ".txt";
@@ -137,11 +179,24 @@ public class forumBlogAPI {
                 .toList();
     }
 
-    public static class RequestBlogVite {
+    public static class RequestBlogVote {
         private String title;
-
+        private String vote;
+    
         public String getTitle() {
             return title;
+        }
+    
+        public void setTitle(String title) {
+            this.title = title;
+        }
+    
+        public String getVote() {
+            return vote;
+        }
+    
+        public void setVote(String vote) {
+            this.vote = vote;
         }
     }
 
