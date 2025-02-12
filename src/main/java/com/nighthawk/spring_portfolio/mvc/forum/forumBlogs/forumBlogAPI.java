@@ -44,16 +44,17 @@ public class forumBlogAPI {
     public String getVote(@RequestBody RequestBlogVote requestBlogVote) {
         try {
             String title = requestBlogVote.getTitle();
+            System.out.println(title);
             forumBlogs blog = blogRepository.findByTitle(title);
             if (blog == null) {
-                return "Error: Blog not found.";
+                return "{\"error\": \"Blog not found.\"}";
             }
-            //format to json format
+            // Format to JSON format
             return "{\"votes\": " + blog.getVotes() + "}";
         } catch (Exception e) {
             System.out.println("An error occurred while getting the blog: " + e.getMessage());
             e.printStackTrace();
-            return "An error occurred while getting the blog: " + e.getMessage();
+            return "{\"error\": \"An error occurred while getting the blog: " + e.getMessage() + "\"}";
         }
     }
 
