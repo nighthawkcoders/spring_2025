@@ -83,13 +83,12 @@ public class AssignmentSubmissionAPIController {
             @PathVariable Long assignmentId,
             @RequestParam Long studentId,
             @RequestParam String content,
-            @RequestParam String comment,
-            @RequestParam Boolean isLate
+            @RequestParam String comment
     ) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
-            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content, comment,isLate);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content, comment);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
