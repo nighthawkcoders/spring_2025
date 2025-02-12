@@ -34,11 +34,23 @@ public class forumBlogs {
     @Column(nullable=false)
     private String date; // Date of the post
 
-    public forumBlogs(String author, String title, String filePath, String date) {
+    @Column(nullable=false)
+    private int votes; // Number of votes for the post
+
+    public forumBlogs(String author, String title, String filePath, String date, int votes) {
         this.author = author;
         this.title = title;
         this.filePath = filePath;
         this.date = date;
+        this.votes = votes;
+    }
+
+    public int getVotes() {
+        return votes;
+    }
+
+    public void setVotes(int votes) {
+        this.votes = votes;
     }
 
     public String echoMessage(String message) {
