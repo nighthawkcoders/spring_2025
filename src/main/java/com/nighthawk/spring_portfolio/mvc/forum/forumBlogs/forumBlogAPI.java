@@ -7,11 +7,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
+
+import com.nighthawk.spring_portfolio.mvc.forum.Forum;
 
 @RestController
 @RequestMapping("/blogs")
@@ -20,6 +23,29 @@ public class forumBlogAPI {
     @Autowired
     private forumBlogRepository blogRepository; // Inject the repository
 
+
+    @GetMapping("/increase/{title}")
+    public String increaseViewCount(@PathVariable String title) {
+        try {
+            // Find the post by title
+            forumBlogs forumBlogs = blogRepository.findByTitle(title);
+            if (forumBlogs == null) {
+                return "Error: Forum post with the given title not found.";
+            }
+
+            // Increment the view count
+            forumBlogs.setViews(forumBlogs.getViews() + 1);
+
+            // Save the updated post back to the repository
+            blogRepository.save(forumBlogs);
+
+            return "View count increased successfully!";
+        } catch (Exception e) {
+            System.out.println("An error occurred while increasing the view count: " + e.getMessage());
+            e.printStackTrace();
+            return "An error occurred while increasing the view count: " + e.getMessage();
+        }
+    }
 
     @PostMapping("/blog/remove")
     public String removeBlog(@RequestBody RequestBlogData requestBlogData) {

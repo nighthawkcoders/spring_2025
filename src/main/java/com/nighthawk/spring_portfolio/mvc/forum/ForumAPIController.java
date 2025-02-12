@@ -21,6 +21,8 @@ public class ForumAPIController {
     private ForumRepository forumRepository; // Inject the repository
 
     
+
+    
     @PostMapping("/issue/post")
     public String getInput(@RequestBody RequestBodyData requestBodyData) {
         System.out.println("Received message: " + requestBodyData.getTitle());
