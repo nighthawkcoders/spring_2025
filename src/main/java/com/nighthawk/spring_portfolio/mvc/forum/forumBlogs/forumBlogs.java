@@ -37,6 +37,9 @@ public class forumBlogs {
     @Column(nullable=false)
     private int votes; // Number of votes for the post
 
+    @Column(nullable=false)
+    private int views;
+
     public forumBlogs(String author, String title, String filePath, String date, int votes) {
         this.author = author;
         this.title = title;
@@ -53,9 +56,6 @@ public class forumBlogs {
         this.votes = votes;
     }
 
-    private int views;
-
-   
     public String echoMessage(String message) {
         return message;
     }
