@@ -43,8 +43,10 @@ public class AssignmentSubmission {
     private String comment;
 
     private long assignmentid;
+
+    private boolean isLate;
     
-    public AssignmentSubmission(Assignment assignment, Person student, String content, String comment) {
+    public AssignmentSubmission(Assignment assignment, Person student, String content, String comment, boolean isLate) {
         this.assignment = assignment;
         this.student = student;
         this.content = content;
@@ -52,6 +54,8 @@ public class AssignmentSubmission {
         this.feedback = null;
         this.comment = comment;
         this.assignmentid=assignment.getId();
+        this.isLate=isLate;
+
     }
 
     // Getters and Setters (if not using Lombok)
