@@ -32,6 +32,10 @@ public class SagaiMessage implements Comparable<SagaiMessage> {
     @Column(unique=true)
     private String content;
 
+    
+    @Column(unique=false)
+    private String subject;
+
 
     @JsonManagedReference
     @OneToMany(mappedBy = "message", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -90,17 +94,22 @@ public class SagaiMessage implements Comparable<SagaiMessage> {
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
                 
                 String result =  jsonNode.get("choices").get(0).get("message").get("content").asText();
+                logger.warn("result is {}", result);
                 if("TRUE".equals(result)){
+                    logger.info("result is true");
                     return 1;
                 }
             } else {
                 logger.error("Error calling Groq API: {}", response.getStatusCode());
+                logger.info("result is false");
                 return 0;
             }
         } catch (Exception e) {
             logger.error("Exception while calling Groq API: {}", e.getMessage());
+            logger.info("result is false");
             return 0;
         }
+        logger.info("result is false");
         return 0;
     }
 
