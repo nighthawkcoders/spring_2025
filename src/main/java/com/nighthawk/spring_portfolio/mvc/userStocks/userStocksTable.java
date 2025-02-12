@@ -78,7 +78,7 @@ public class userStocksTable {
     public static userStocksTable[] init(Person[] persons) {
         ArrayList<userStocksTable> stocks = new ArrayList<>();
         for (Person person : persons) {
-            stocks.add(new userStocksTable(null, "BTC,ETH", startingBalance, person.getEmail(), person, false));
+            stocks.add(new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person, false));
         }
         return stocks.toArray(new userStocksTable[0]);
     }
