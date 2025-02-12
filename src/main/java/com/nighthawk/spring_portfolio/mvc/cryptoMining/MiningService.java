@@ -20,56 +20,88 @@ public class MiningService {
     @Autowired
     private GPURepository gpuRepository;
 
-    private static final double HASH_TO_BTC = 0.0001; // 初始系数
-    private static final double COST_PER_KWH = 0.12;
-    private static final double REVENUE_COEFFICIENT = 0.000001; // 可配置参数
-    private static final double ELECTRICITY_RATE = 0.12; // 美元/千瓦时
-    private static final double BTC_PRICE = 45000.0; // BTC价格
+    // Fine-tune constants
+    public static final double HASH_TO_BTC_RATE = 0.0001; // Current rate
+    public static final double DIFFICULTY_FACTOR = 1.0;
+    public static final int MINING_INTERVAL = 10000; // 10 seconds
+    public static final int BALANCE_TRANSFER_INTERVAL = 10000; // 10 seconds
+    public static final double ELECTRICITY_RATE = 0.12; // USD per kWh
+    public static final double BTC_PRICE = 45000.0;
 
-    @Scheduled(fixedRate = 10000) // 改为10秒方便测试
+    @Scheduled(fixedRate = MINING_INTERVAL)
     @Transactional
     public void processMining() {
-        System.out.println("\n=== Mining Process Started ===");
-        System.out.println("Current Time: " + new Date());
+        System.out.println("\n=== Mining Process Debug Log ===");
+        System.out.println("Time: " + new Date());
         
         List<MiningUser> activeMiners = miningUserRepository.findAll().stream()
-            .filter(user -> {
-                boolean isMining = user.isMining();
-                System.out.println("User " + user.getPerson().getEmail() + 
-                    " | Mining: " + isMining +
-                    " | Active GPUs: " + user.getActiveGPUs().size());
-                return isMining;
-            })
+            .filter(user -> user.isMining() && !user.getActiveGPUs().isEmpty())
             .collect(Collectors.toList());
 
-        System.out.println("Active Miners Count: " + activeMiners.size());
-        
         activeMiners.forEach(miner -> {
-            double btcMined = miner.getCurrentHashrate() * 0.0001;
-            miner.setPendingBalance(miner.getPendingBalance() + btcMined);
+            double hashrate = miner.getCurrentHashrate();
+            if (hashrate <= 0) {
+                return;
+            }
+
+            // Calculate mining reward
+            double timeInHours = MINING_INTERVAL / (1000.0 * 60.0 * 60.0);
+            double btcMined = hashrate * HASH_TO_BTC_RATE * timeInHours;
+            
+            // Update pending balance
+            double oldPending = miner.getPendingBalance();
+            double newPending = oldPending + btcMined;
+            miner.setPendingBalance(newPending);
+            miner.setShares(miner.getShares() + 1);
+            
+            // Detailed mining log with USD values
+            System.out.println("\nMining Session Details:");
+            System.out.println("Miner: " + miner.getPerson().getEmail());
+            System.out.println("GPU: " + miner.getActiveGPUs().get(0).getName());
+            System.out.println("Hashrate: " + String.format("%.2f", hashrate) + " MH/s");
+            System.out.println("\nMining Results:");
+            System.out.println("BTC Mined: " + String.format("%.8f", btcMined) + " BTC");
+            System.out.println("USD Value: $" + String.format("%.4f", btcMined * BTC_PRICE));
+            System.out.println("\nCurrent Balances:");
+            System.out.println(String.format("Pending: %.8f BTC ($%.4f)", newPending, newPending * BTC_PRICE));
+            System.out.println(String.format("Confirmed: %.8f BTC ($%.4f)", miner.getBtcBalance(), miner.getBtcBalance() * BTC_PRICE));
+            System.out.println("Total Value: $" + String.format("%.4f", (newPending + miner.getBtcBalance()) * BTC_PRICE));
+            
+            // Update profitability calculations
+            calculateProfitability(miner);
+            
+            miningUserRepository.save(miner);
         });
-        
-        System.out.println("=== Mining Process Completed ===\n");
     }
 
-    @Scheduled(fixedRate = 30000) // 改为30秒测试
+    @Scheduled(fixedRate = BALANCE_TRANSFER_INTERVAL)
     @Transactional
     public void processPendingBalances() {
-        List<MiningUser> miners = miningUserRepository.findAll();
+        System.out.println("\n=== Processing Pending Balances ===");
+        System.out.println("Time: " + new Date());
         
+        List<MiningUser> miners = miningUserRepository.findAll();
         for (MiningUser miner : miners) {
             double pending = miner.getPendingBalance();
             if (pending > 0) {
-                miner.setBtcBalance(miner.getBtcBalance() + pending);
+                double oldBalance = miner.getBtcBalance();
+                double newBalance = oldBalance + pending;
+                
+                System.out.println("\nTransferring Balance for: " + miner.getPerson().getEmail());
+                System.out.println(String.format("Transferring: %.8f BTC ($%.4f)", pending, pending * BTC_PRICE));
+                System.out.println("From Pending to Confirmed Balance");
+                
+                miner.setBtcBalance(newBalance);
                 miner.setPendingBalance(0.0);
                 
-                System.out.println("[" + new Date() + "] Balance Update for user: " + miner.getPerson().getEmail());
-                System.out.println("Transferred pending balance: " + pending);
-                System.out.println("New BTC Balance: " + miner.getBtcBalance());
+                System.out.println("\nNew Balances:");
+                System.out.println(String.format("Confirmed: %.8f BTC ($%.4f)", newBalance, newBalance * BTC_PRICE));
+                System.out.println("Pending: 0.00000000 BTC ($0.0000)");
                 
                 miningUserRepository.save(miner);
             }
         }
+        System.out.println("\n=== Balance Processing Complete ===");
     }
 
     public Map<String, Object> buyGPU(MiningUser user, Long gpuId) {
@@ -89,18 +121,31 @@ public class MiningService {
     }
 
     public void calculateProfitability(MiningUser miner) {
-        double totalRevenue = 0.0;
-        double totalPowerCost = 0.0;
+        double hashrate = miner.getCurrentHashrate();
         
-        for (GPU gpu : miner.getActiveGPUs()) {
-            double dailyRevenue = gpu.getHashRate() * 86400 * 0.00000001;
-            double dailyPowerCost = (gpu.getPowerConsumption() * 24) * COST_PER_KWH;
-            
-            totalRevenue += dailyRevenue;
-            totalPowerCost += dailyPowerCost;
-        }
+        // Calculate daily earnings (24 hours)
+        double dailyBTC = hashrate * HASH_TO_BTC_RATE * 24.0;
+        double dailyUSD = dailyBTC * BTC_PRICE;
         
-        miner.setDailyRevenue(totalRevenue);
-        miner.setPowerCost(totalPowerCost);
+        // Calculate power costs
+        double dailyPowerKWH = miner.getActiveGPUs().stream()
+            .mapToDouble(gpu -> gpu.getPowerConsumption() * 24.0 / 1000.0)
+            .sum();
+        double dailyPowerCost = dailyPowerKWH * ELECTRICITY_RATE;
+        
+        // Set values
+        miner.setDailyRevenue(dailyUSD);
+        miner.setPowerCost(dailyPowerCost);
+        
+        // Log profitability details
+        System.out.println("\nDaily Mining Projections:");
+        System.out.println("GPU: " + miner.getActiveGPUs().get(0).getName());
+        System.out.println("Hashrate: " + String.format("%.2f", hashrate) + " MH/s");
+        System.out.println("BTC Revenue: " + String.format("%.8f", dailyBTC) + " BTC");
+        System.out.println("USD Revenue: $" + String.format("%.2f", dailyUSD));
+        System.out.println("Power Cost: $" + String.format("%.2f", dailyPowerCost));
+        System.out.println("Net Profit: $" + String.format("%.2f", dailyUSD - dailyPowerCost));
+        System.out.println("ROI (days): " + String.format("%.1f", 
+            (miner.getActiveGPUs().get(0).getPrice() / (dailyUSD - dailyPowerCost))));
     }
 }
