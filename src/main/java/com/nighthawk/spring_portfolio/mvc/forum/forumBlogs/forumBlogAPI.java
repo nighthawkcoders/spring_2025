@@ -107,7 +107,7 @@ public class forumBlogAPI {
             }
 
             // Create a new ForumBlogs object and save it to the forumBlog database table
-            forumBlogs forumTable = new forumBlogs(null, author, date, filePath, title, 0);
+            forumBlogs forumTable = new forumBlogs(author, title, filePath, date, 0);
             blogRepository.save(forumTable); // Use the repository to save
 
             // Save the body to the file
