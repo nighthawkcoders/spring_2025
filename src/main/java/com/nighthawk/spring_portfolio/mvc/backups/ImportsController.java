@@ -1,245 +1,210 @@
 package com.nighthawk.spring_portfolio.mvc.backups;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nighthawk.spring_portfolio.mvc.assignments.*;
-import com.nighthawk.spring_portfolio.mvc.person.Person;
-import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
-import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.ParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-
+@Component
 @RestController
-@RequestMapping("/api/imports")
+@RequestMapping("/api/imports/")
 public class ImportsController {
 
-    @Autowired
-    private PersonJpaRepository personRepo;
-    
-    @Autowired
-    private AssignmentJpaRepository assignmentRepo;
-    
-    @Autowired
-    private AssignmentSubmissionJPA submissionRepo;
-
-    @Autowired
-    private PersonRoleJpaRepository roleRepo;
+    private static final String DB_PATH = "./volumes/sqlite.db";
+    private static final String BACKUP_DIR = "./volumes/backups/";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @PostMapping("/persons")
-    public ResponseEntity<String> importPersons(@RequestParam("file") MultipartFile file) {
+    // Automatically import from the most recent backup on application startup
+    @EventListener(ApplicationReadyEvent.class)
+    public void importFromMostRecentBackup() {
+        File mostRecentBackup = getMostRecentBackupFile();
+        if (mostRecentBackup != null) {
+            importFromFile(mostRecentBackup);
+        } else {
+            System.out.println("No backup files found to import.");
+        }
+    }
+
+    @PostMapping("/manual")
+    public String manualImport(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File is empty");
+            return "No file uploaded.";
         }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String line;
-            boolean isHeader = true;
-            while ((line = reader.readLine()) != null) {
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
-                }
-                String[] data = line.split(",");
-                if (data.length < 11) continue;
-                
-                try {
-                    Person person = new Person();
-                    person.setId(Long.parseLong(data[0]));
-                    person.setBalance(data[1]);
-                    person.setDob(parseDate(data[2]));
-                    person.setEmail(data[3]);
-                    person.setKasmServerNeeded(Boolean.parseBoolean(data[4]));
-                    person.setName(data[5]);
-                    person.setPassword(data[6]);
-                    person.setPfp(data[7]);
-                    person.setSid(data[8]);
-                    person.setGrades(new ArrayList<>());
-                    person.setSubmissions(new ArrayList<>());
-                    
-                    if (!data[9].isEmpty()) {
-                        Map<String, Map<String, Object>> statsMap = objectMapper.readValue(data[9], 
-                            new TypeReference<Map<String, Map<String, Object>>>() {});
-                        person.setStats(statsMap);
-                    }
-                    person.setUid(data[10]);
-                    personRepo.save(person);
-                } catch (Exception e) {
-                    System.err.println("Skipping invalid row: " + Arrays.toString(data) + " | Error: " + e.getMessage());
-                }
-            }
-            return ResponseEntity.ok("Persons imported successfully");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to import persons: " + e.getMessage());
-        }
-    }
 
-    @PostMapping("/assignments")
-    public ResponseEntity<String> importAssignments(@RequestParam("file") MultipartFile file) {
-        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-            String[] fields;
-            boolean isHeader = true;
-            while ((fields = reader.readNext()) != null) {
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
-                }
-                if (fields.length < 9) continue;
-
-                try {
-                    Long id = Long.parseLong(fields[0]);
-                    String assignmentQueueJson = fields[1];
-                    String description = fields[2];
-                    String dueDate = fields[3];
-                    String name = fields[4];
-                    Double points = fields[5].isEmpty() ? 0.0 : Double.parseDouble(fields[5]);
-                    Long presentationLength = fields[6].isEmpty() ? null : Long.parseLong(fields[6]);
-                    String timestamp = fields[7];
-                    String type = fields[8];
-
-                    Assignment assignment = new Assignment(name, type, description, points, dueDate);
-                    assignment.setId(id);
-                    assignment.setTimestamp(timestamp);
-                    assignment.setPresentationLength(presentationLength);
-
-                    AssignmentQueue assignmentQueue = objectMapper.readValue(assignmentQueueJson, AssignmentQueue.class);
-                    assignment.setAssignmentQueue(assignmentQueue);
-
-                    // Ensure the grades collection is not replaced
-                    assignment.setGrades(new ArrayList<>());
-                    assignment.setSubmissions(new ArrayList<>());
-
-                    assignmentRepo.save(assignment);
-                } catch (Exception e) {
-                    System.err.println("Skipping invalid row: " + Arrays.toString(fields) + " | Error: " + e.getMessage());
-                }
-            }
-            return ResponseEntity.ok("Assignments imported successfully");
-        } catch (IOException | CsvValidationException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error importing assignments: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/submissions")
-    public ResponseEntity<String> importSubmissions(@RequestParam("file") MultipartFile file) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String line;
-            boolean isHeader = true;
-            while ((line = reader.readLine()) != null) {
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
-                }
-                String[] data = line.split(",");
-                if (data.length < 8) continue;
-                
-                try {
-                    AssignmentSubmission submission = new AssignmentSubmission();
-                    submission.setId(Long.parseLong(data[0]));
-                    submission.setAssignment(assignmentRepo.findById(Long.parseLong(data[1])).orElse(null));
-                    submission.setComment(data[2]);
-                    submission.setContent(data[3]);
-                    submission.setFeedback(data[4].isEmpty() ? null : data[4]);
-                    submission.setGrade(data[5].isEmpty() ? null : Double.parseDouble(data[5]));
-                    submission.setStudent(personRepo.findById(Long.parseLong(data[7])).orElse(null));
-                    
-                    submissionRepo.save(submission);
-                } catch (Exception e) {
-                    System.err.println("Skipping invalid row: " + Arrays.toString(data) + " | Error: " + e.getMessage());
-                }
-            }
-            return ResponseEntity.ok("Submissions imported successfully");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to import submissions: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/roles")
-    public ResponseEntity<String> importRoles(@RequestParam("file") MultipartFile file) {
-        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-            String[] line;
-            boolean isHeader = true;
-
-            while ((line = reader.readNext()) != null) {
-                if (isHeader) {
-                    isHeader = false; // Skip header row
-                    continue;
-                }
-
-                // Parse CSV row
-                Long personId = Long.parseLong(line[0]);
-                Long roleId = Long.parseLong(line[1]);
-
-                // Fetch Person and Role entities
-                Person person = personRepo.findById(personId)
-                    .orElseThrow(() -> new RuntimeException("Person not found with id: " + personId));
-                PersonRole role = roleRepo.findById(roleId)
-                    .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
-
-                // Add role to person
-                person.getRoles().add(role);
-                personRepo.save(person); // Save the updated person entity
-            }
-
-            return ResponseEntity.ok("Roles imported successfully");
-        } catch (IOException | CsvValidationException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error importing roles: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/roles_mapping")
-    public ResponseEntity<String> importRolesMapping(@RequestParam("file") MultipartFile file) {
-        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-            String[] line;
-            boolean isHeader = true;
-
-            while ((line = reader.readNext()) != null) {
-                if (isHeader) {
-                    isHeader = false; // Skip header row
-                    continue;
-                }
-
-                // Parse CSV row
-                Long roleId = Long.parseLong(line[0]);
-                String roleName = line[1];
-
-                // Create or update Role entity
-                PersonRole role = roleRepo.findById(roleId).orElse(new PersonRole());
-                role.setId(roleId);
-                role.setName(roleName);
-
-                roleRepo.save(role); // Save the role entity
-            }
-
-            return ResponseEntity.ok("Roles mapping imported successfully");
-        } catch (IOException | CsvValidationException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error importing roles mapping: " + e.getMessage());
-        }
-    }
-
-    private Date parseDate(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) return null;
         try {
-            return new SimpleDateFormat("MM/dd/yyyy").parse(dateStr);
-        } catch (ParseException e) {
-            System.err.println("Invalid date format: " + dateStr);
+            // Import data directly from the uploaded file
+            String result = importFromMultipartFile(file);
+
+            // Manage backups to keep only the three most recent ones
+            manageBackups();
+
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Failed to process the uploaded file: " + e.getMessage();
+        }
+    }
+
+    // Helper method to import data directly from a MultipartFile
+    private String importFromMultipartFile(MultipartFile file) {
+        try {
+            // Parse the JSON content directly from the MultipartFile
+            Map<String, List<Map<String, Object>>> data = objectMapper.readValue(file.getInputStream(), Map.class);
+
+            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+                for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
+                    String tableName = entry.getKey();
+                    List<Map<String, Object>> tableData = entry.getValue();
+                    insertTableData(connection, tableName, tableData);
+                }
+            }
+
+            return "Data imported successfully from uploaded file: " + file.getOriginalFilename();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Failed to import data: " + e.getMessage();
+        }
+    }
+
+    // Helper method to import data from a JSON file
+    private String importFromFile(File jsonFile) {
+        try {
+            Map<String, List<Map<String, Object>>> data = objectMapper.readValue(jsonFile, Map.class);
+
+            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+                for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
+                    String tableName = entry.getKey();
+                    List<Map<String, Object>> tableData = entry.getValue();
+                    insertTableData(connection, tableName, tableData);
+                }
+            }
+
+            return "Data imported successfully from JSON file: " + jsonFile.getAbsolutePath();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Failed to import data: " + e.getMessage();
+        }
+    }
+
+    // Helper method to find the most recent backup file
+    private File getMostRecentBackupFile() {
+        File backupsDir = new File(BACKUP_DIR);
+        if (!backupsDir.exists() || !backupsDir.isDirectory()) {
             return null;
+        }
+
+        File[] backupFiles = backupsDir.listFiles((dir, name) -> name.startsWith("backup_") && name.endsWith(".json"));
+        if (backupFiles == null || backupFiles.length == 0) {
+            return null;
+        }
+
+        // Sort files by last modified date (most recent first)
+        Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified).reversed());
+
+        return backupFiles[0]; // Return the most recent file
+    }
+
+    // Helper method to insert data into a table
+    private void insertTableData(Connection connection, String tableName, List<Map<String, Object>> tableData) throws SQLException {
+        if (tableData.isEmpty()) {
+            return;
+        }
+
+        Set<String> columns = tableData.get(0).keySet();
+        String sql = buildInsertQuery(tableName, columns);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            for (Map<String, Object> row : tableData) {
+                if (!isRowExists(connection, tableName, row)) {
+                    int index = 1;
+                    for (String column : columns) {
+                        preparedStatement.setObject(index++, row.get(column));
+                    }
+                    preparedStatement.addBatch();
+                }
+            }
+
+            try {
+                preparedStatement.executeBatch();
+            } catch (SQLException e) {
+                System.err.println("Skipping duplicate entries: " + e.getMessage());
+            }
+        }
+    }
+
+    // Helper method to check if a row already exists in the table
+    private boolean isRowExists(Connection connection, String tableName, Map<String, Object> row) throws SQLException {
+        StringBuilder queryBuilder = new StringBuilder("SELECT 1 FROM " + tableName + " WHERE ");
+        List<Object> values = new ArrayList<>();
+
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            queryBuilder.append(entry.getKey()).append(" = ? AND ");
+            values.add(entry.getValue());
+        }
+
+        queryBuilder.delete(queryBuilder.length() - 5, queryBuilder.length()); // Remove the last " AND "
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+            int index = 1;
+            for (Object value : values) {
+                preparedStatement.setObject(index++, value);
+            }
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
+    // Helper method to build the INSERT query
+    private String buildInsertQuery(String tableName, Set<String> columns) {
+        StringBuilder columnsBuilder = new StringBuilder();
+        StringBuilder valuesBuilder = new StringBuilder();
+
+        for (String column : columns) {
+            columnsBuilder.append(column).append(",");
+            valuesBuilder.append("?,");
+        }
+
+        columnsBuilder.deleteCharAt(columnsBuilder.length() - 1);
+        valuesBuilder.deleteCharAt(valuesBuilder.length() - 1);
+
+        return "INSERT OR IGNORE INTO " + tableName + " (" + columnsBuilder + ") VALUES (" + valuesBuilder + ")";
+    }
+
+     private void manageBackups() {
+        File backupsDir = new File(BACKUP_DIR);
+        if (!backupsDir.exists() || !backupsDir.isDirectory()) {
+            return;
+        }
+
+        // Get all backup files
+        File[] backupFiles = backupsDir.listFiles((dir, name) -> name.startsWith("backup_") && name.endsWith(".json"));
+
+        if (backupFiles == null || backupFiles.length <= 3) {
+            return;
+        }
+
+        // Sort files by last modified date (oldest first)
+        Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified));
+
+        // Delete the oldest files if there are more than three
+        for (int i = 0; i < backupFiles.length - 3; i++) {
+            if (backupFiles[i].delete()) {
+                System.out.println("Deleted old backup: " + backupFiles[i].getName());
+            } else {
+                System.out.println("Failed to delete old backup: " + backupFiles[i].getName());
+            }
         }
     }
 }
