@@ -503,7 +503,7 @@
             card.style.borderColor = 'transparent';
         });
         // Construct analytics page URL
-        const analyticsURL = `http://localhost:8085/mvc/student/studentinfo?username=${encodeURIComponent(student.username)}&course=${encodeURIComponent(student.course)}&trimester=2&period=${student.period}`;
+        const analyticsURL = `/mvc/student/studentinfo?username=${encodeURIComponent(student.username)}&course=${encodeURIComponent(student.course)}&trimester=2&period=${student.period}`;
         // Fetch student GitHub profile picture
         fetch(`https://api.github.com/users/${student.username}`)
             .then(response => response.json())
