@@ -53,6 +53,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/person/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/synergy/grades/requests").hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/synergy/**").hasAnyAuthority("ROLE_TEACHER", "ROLE_ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/synergy/saigai/").hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
+
                 )
                 .cors(Customizer.withDefaults())
                 .headers(headers -> headers
@@ -74,13 +77,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/mvc/person/search/**").authenticated()
                         .requestMatchers("/mvc/person/create/**").permitAll()
+                        .requestMatchers("mvc/person/reset/**").permitAll()
                         .requestMatchers("/mvc/person/read/**").authenticated()
-                        .requestMatchers("/mvc/person/update/**").authenticated()
                         .requestMatchers(HttpMethod.GET,"/mvc/person/update/user").authenticated()
-                        .requestMatchers(HttpMethod.GET,"/mvc/person/update/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/mvc/person/update/**").authenticated()
                         .requestMatchers(HttpMethod.POST,"/mvc/person/update/").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/mvc/person/update/role").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST,"/mvc/person/update/roles").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/**").permitAll() 
                         .requestMatchers("/mvc/person/delete/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/mvc/bathroom/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/login").permitAll()

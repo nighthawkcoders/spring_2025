@@ -1,8 +1,10 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,6 +30,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+
 
 @Data
 @NoArgsConstructor
@@ -148,4 +152,55 @@ public class Assignment {
     public String toString(){
         return this.name;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getType() {
+        return type;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public String getDueDate() {
+        return dueDate;
+    }
+    
+    public String getTimestamp() {
+        return timestamp;
+    }
+    
+    public List<AssignmentSubmission> getSubmissions() {
+        return submissions;
+    }
+    
+    public List<SynergyGrade> getGrades() {
+        return grades;
+    }
+    
+    public Double getPoints() {
+        return points;
+    }
+    
+    public Long getPresentationLength() {
+        return presentationLength;
+    }
+    
+    public AssignmentQueue getAssignmentQueue() {
+        return assignmentQueue;
+    }
+
+    public String formatTimestamp(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(date);
+    }
+    
 }

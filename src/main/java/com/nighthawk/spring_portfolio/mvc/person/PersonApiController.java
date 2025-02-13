@@ -1,6 +1,4 @@
 package com.nighthawk.spring_portfolio.mvc.person;
-
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -266,7 +265,7 @@ public class PersonApiController {
     }
 
 
-
+    @CrossOrigin(origins = {"*"})
     @GetMapping("/{sid}")
     public String getNameById(@PathVariable String sid)
     {
@@ -347,7 +346,12 @@ public class PersonApiController {
         // Return NOT_FOUND if the person with the given ID does not exist
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+    @GetMapping("/top5bybalance")
+    public ResponseEntity<List<Person>> getTop5ByBalance() {
+        List<Person> top5Users = repository.findTop5ByOrderByBalanceDesc();
+        return new ResponseEntity<>(top5Users, HttpStatus.OK);
+    }
+
     /**
      * Retrieves the balance of a Person entity by its ID.
      *
