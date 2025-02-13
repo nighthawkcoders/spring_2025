@@ -141,6 +141,9 @@ public class PersonViewController {
         if (person.getKasmServerNeeded() != null && !person.getKasmServerNeeded().equals(personToUpdate.getKasmServerNeeded())) {
             personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
         }
+        if (person.getSid() != null && !person.getSid().equals(personToUpdate.getSid())) {
+            personToUpdate.setSid(person.getSid());
+        }
 
         // Save the updated person and ensure the roles are correctly maintained
         repository.save(personToUpdate, samePassword);

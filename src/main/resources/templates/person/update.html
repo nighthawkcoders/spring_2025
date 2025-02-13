@@ -97,79 +97,11 @@
 
             // Continue with form submission after validation
             form.submit();
-
-<script>
-    window.addEventListener("load", () => {
-        document.getElementById("addRoleButton").addEventListener("click", () => {
-            var roleNames = [];
-            if (document.getElementById("addRole1").checked == true) {
-                roleNames.push("ROLE_USER");
-            }
-            if (document.getElementById("addRole2").checked == true) {
-                roleNames.push("ROLE_ADMIN");
-            }
-            if (document.getElementById("addRole3").checked == true) {
-                roleNames.push("ROLE_TESTER");
-            }
-            if (document.getElementById("addRole4").checked == true) {
-                roleNames.push("ROLE_TEACHER");
-            }
-            if (document.getElementById("addRole5").checked == true) {
-                roleNames.push("ROLE_STUDENT");
-            }
-            if (roleNames.length == 0) { return; }
-            var body = {
-                uid: document.getElementById("uid").value,
-                roleNames: roleNames,
-            }
-            fetch("/mvc/person/update/roles", {
-                method: "POST",
-                credentials: "include",
-                body: JSON.stringify(body),
-                cache: "no-cache",
-                headers: new Headers({
-                    "content-type": "application/json"
-                })
-            }).then(function (response) {
-                if (response.status !== 200) {
-                    const errorMsg = 'Database response error: ' + response.status;
-                    console.error(errorMsg);
-                    document.getElementById("footerInfo").style.color = "red";
-                    document.getElementById("footerInfo").innerText = "Failed to update roles.";
-                    if (response.status = 403) {
-                        document.getElementById("footerInfo").innerText = "Unauthorized action, you must be an admin to update roles.";
-                    }
-                    return;
-                }
-                else {
-                    document.getElementById("footerInfo").style.color = "green";
-                    document.getElementById("footerInfo").innerText = "Successfully updated roles";
-                    return;
-                }
-            })
-        })
-    });
-
-    /**
-     * @Function validateForm(); // Function to validate the form (password confirmation)
-     * @Param @Event event, form Submission event
-    **/
-    function validateForm(event) {
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirm_password").value;
-
-        // Check if passwords match
-        if (password !== confirmPassword) {
-            alert("Passwords do not match!");
-            event.preventDefault(); // Prevent form submission
-            return;
-
         }
 
         window.addEventListener("load", () => {
             document.getElementById("addRoleButton").addEventListener("click", () => {
                 var roleNames = [];
-
                 if (document.getElementById("addRole1").checked == true) {
                     roleNames.push("ROLE_USER");
                 }
@@ -185,7 +117,6 @@
                 if (document.getElementById("addRole5").checked == true) {
                     roleNames.push("ROLE_STUDENT");
                 }
-
                 if (roleNames.length == 0) { return; }
                 var body = {
                     uid: document.getElementById("uid").value,
@@ -218,6 +149,11 @@
                 })
             })
         });
+
+    /**
+     * @Function validateForm(); // Function to validate the form (password confirmation)
+     * @Param @Event event, form Submission event
+    **/
     </script>
 
 </head>
@@ -244,7 +180,7 @@
                                             <input type="text" th:field="*{name}" id="name" placeholder="Display Name">
                                         </div>
 
-                                        <div class="form-group mb-2 mr-sm-2">
+                                        <div class="form-group mb-2 mr-sm-2" style="display: none;">
                                             <input type="text" th:field="*{uid}" id="uid" placeholder="Uid Address" required>
                                         </div>
 
