@@ -176,7 +176,7 @@ public class PersonApiController {
 
         personDetailsService.save(person);
 
-        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person, false, true, "");
+        userStocksTable userStocks = new userStocksTable(null, "BTC", "1000", person.getEmail(), person, false, true, "");
         userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
