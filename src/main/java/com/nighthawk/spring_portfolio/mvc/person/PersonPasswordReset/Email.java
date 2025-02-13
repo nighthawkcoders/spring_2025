@@ -15,7 +15,7 @@ import jakarta.mail.internet.MimeMultipart;
 public class Email  
 { 
   
-   public static void sendEmail(String recipient,String code){
+   public static void sendPasswordResetEmail(String recipient,String code){
       // email ID of Recipient. 
   
       // email ID of  Sender. 
@@ -34,7 +34,7 @@ public class Email
       // creating session object to get properties 
       Session session = Session.getDefaultInstance(properties,new Authenticator() {
         protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication("trystan.yt.2@gmail.com","mlneyqihivhipuce"); // email and password, see this for app passwords https://support.google.com/accounts/answer/185833?visit_id=638748419667916449-2613033234&p=InvalidSecondFactor&rd=1
+            return new PasswordAuthentication("delnortecoders@gmail.com","ubtiajaxhvorngnu"); // email and password, see this for app passwords https://support.google.com/accounts/answer/185833?visit_id=638748419667916449-2613033234&p=InvalidSecondFactor&rd=1
         }
     }); 
   
@@ -55,7 +55,7 @@ public class Email
          MimeMultipart emailContent = new MimeMultipart();
          
          MimeBodyPart body1 = new MimeBodyPart();
-         body1.setContent("<h1>To reset your email use the following code:</h1>","text/html");
+         body1.setContent("<h1>To reset your password use the following code:</h1>","text/html");
          MimeBodyPart body2 = new MimeBodyPart();
          body2.setContent("<code style=\"background-color: lightblue; font-size: 50px; border-radius: 15px;\">"+code+"</code>","text/html");
 
