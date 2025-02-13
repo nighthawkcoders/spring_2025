@@ -315,6 +315,10 @@ public class PersonViewController {
             return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
         }
 
+        if(ResetCode.getCodeForUid(personToReset.getUid()) == null){
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+        }
+
         //if there is a code submitted for the given uid, and it matches the code that is expected, then reset the users password
         if(ResetCode.getCodeForUid(personToReset.getUid()).equals(personPasswordResetCode.getCode())){
             ResetCode.removeCodeByUid(personToReset.getUid());

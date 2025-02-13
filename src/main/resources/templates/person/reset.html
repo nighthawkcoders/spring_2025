@@ -33,7 +33,9 @@
                     })
                 }).then(function (response) {
                     if (response.status !== 200) {
-                        return;
+                        message.style.color = "red";
+                        message.innerText = "Something went wrong. Double check that you inputted the correct uid. Also remember, admins and auto-generated users cannot have their passwords reset by email. You cannot send multiple requests for a password change at a time, each request expires after 5 minutes.";
+                        message.style.display = "block";
                     }
                     else {
                         window.location.replace("/mvc/person/reset/check");
@@ -62,14 +64,21 @@
                         <th><input type="button" value="submit" onclick="validation(event)" style="margin-left: 10px;" class="btn btn-secondary"></th>
                     </tr>
                 </table>
+                <table>
+                    <!-- Link to the signup page for users who don't have an account, with added left margin -->
+                    <tr>
+                        <td><a th:href="@{/mvc/person/reset/check}" style="margin-left: 10px;">Already have a code?</a></td>
+                    </tr>
+                </table>
 
                 <table>
                     <!-- Link to the signup page for users who don't have an account, with added left margin -->
                     <tr>
-                        <td><a th:href="@{/login}" style="margin-left: 10px;">Login</a></td>
+                        <td><a th:href="@{/login}" style="margin-left: 10px;">Login Page</a></td>
                     </tr>
 
                 </table>
+                <label id="message" style="display: none;"></label>
             </div>
         </div>
     </div>
