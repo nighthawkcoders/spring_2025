@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,8 @@ import lombok.Setter;
 @RestController
 @RequestMapping("/api/students")
 public class StudentInfoApiController {
+
+    private final Dotenv dotenv = Dotenv.load();
     
     @Autowired
     private StudentInfoJPARepository studentJPARepository;
@@ -75,6 +78,12 @@ public class StudentInfoApiController {
         } else {
             return ResponseEntity.status(404).body("Student with username '" + username + "' not found.");
         }
+    }
+
+    @GetMapping("/apiKey")
+    public String getApiKey() {
+        String apiUrl = dotenv.get("GITHUB_TOKEN");
+        return apiUrl;
     }
 
     @Getter
