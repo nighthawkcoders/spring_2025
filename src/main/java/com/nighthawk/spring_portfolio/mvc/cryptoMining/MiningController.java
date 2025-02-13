@@ -80,8 +80,13 @@ public class MiningController {
             miningService.calculateProfitability(user);
 
             Map<String, Object> stats = new HashMap<>();
-            stats.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
-            stats.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
+            double pendingBTC = user.getPendingBalance();
+            double confirmedBTC = user.getBtcBalance();
+            
+            stats.put("btcBalance", String.format("%.8f", confirmedBTC));
+            stats.put("pendingBalance", String.format("%.8f", pendingBTC));
+            stats.put("totalBalanceUSD", String.format("%.2f", (pendingBTC + confirmedBTC) * MiningService.BTC_PRICE));
+            
             stats.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
             stats.put("shares", user.getShares());
             stats.put("isMining", user.isMining());
