@@ -255,12 +255,6 @@ public class PersonViewController {
         return "person/read";  // Redirect to the read page after deletion
     }
 
-
- @GetMapping("/search")
-    public String person() {
-        return "person/search";
-    }
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// "Reset" Post mappings
 
@@ -272,17 +266,33 @@ public class PersonViewController {
     @PostMapping("/reset/start")
     public ResponseEntity<Object> resetPassword(@RequestBody PersonPasswordReset personPasswordReset){
         Person personToReset = repository.getByUid(personPasswordReset.getUid());
+        
+        //person not found
         if (personToReset == null){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
         }
+
+        //don't allow people to reset the passwords of admins
         if (personToReset.getRoles().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getName()))){
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED); //cannot do a password reset on an admin account (maybe unneccesary but idk)
+            return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
         }
+
+        //dont allow people to send emails/ reset password of default users (such as toby)
+        Person[] databasePersons = Person.init();
+        for (Person person : databasePersons) {
+            if(person.getUid().equals(personToReset.getUid())){
+                return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
+            }
+        }
+
+        // if there is already an active code emailed to a user, don't send a second one
         if(ResetCode.getCodeForUid(personToReset.getUid()) != null){
-            return new ResponseEntity<>(HttpStatus.TOO_MANY_REQUESTS);
+            return new ResponseEntity<Object>(HttpStatus.TOO_MANY_REQUESTS);
         }
-        Email.sendEmail(personToReset.getEmail(), ResetCode.GenerateResetCode(personToReset.getUid()));
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        //finally send a password reset email to the person
+        Email.sendPasswordResetEmail(personToReset.getEmail(), ResetCode.GenerateResetCode(personToReset.getUid()));
+        return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
     @Getter
@@ -294,9 +304,18 @@ public class PersonViewController {
     @PostMapping("/reset/check")
     public ResponseEntity<Object> resetPasswordCheck(@RequestBody PersonPasswordResetCode personPasswordResetCode){
         Person personToReset = repository.getByUid(personPasswordResetCode.getUid());
+
+        //person not found
         if (personToReset == null){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
         }
+
+        // code to check doesn't exist
+        if(personPasswordResetCode.getCode() == null){
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+        }
+
+        //if there is a code submitted for the given uid, and it matches the code that is expected, then reset the users password
         if(ResetCode.getCodeForUid(personToReset.getUid()).equals(personPasswordResetCode.getCode())){
             ResetCode.removeCodeByUid(personToReset.getUid());
             
@@ -305,9 +324,19 @@ public class PersonViewController {
             personToReset.setPassword(defaultPassword);
             repository.save(personToReset, false);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<Object>(HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
     }
 
+
+    @GetMapping("/reset")
+    public String reset() {
+        return "person/reset";
+    }
+
+    @GetMapping("/reset/check")
+    public String resetCheck() {
+        return "person/resetCheck";
+    }
 }
