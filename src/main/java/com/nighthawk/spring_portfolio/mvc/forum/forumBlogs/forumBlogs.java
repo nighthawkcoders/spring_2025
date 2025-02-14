@@ -56,6 +56,14 @@ public class forumBlogs {
         this.votes = votes;
     }
 
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
     public String echoMessage(String message) {
         return message;
     }
