@@ -175,7 +175,7 @@
             <p th:text="'Course: ' + ${student.course}"></p>
             <p th:text="'Trimester: ' + ${student.trimester}"></p>
             <p th:text="'Period: ' + ${student.period}"></p>
-            <p th:text="'Rating: ' + ${student.averageRating}"></p>
+            <p th:text="'Average Rating: ' + ${student.averageRating}"></p>
             <p>
                 <strong>Tasks:</strong>
                 <span th:if="${#lists.isEmpty(student.tasks)}">No tasks assigned</span>
@@ -308,7 +308,7 @@
                             <p>Course: ${student.course}</p>
                             <p>Trimester: ${student.trimester}</p>
                             <p>Period: ${student.period}</p>
-                            <p><strong>Rating:</strong> ${student.averageRating ? student.averageRating.toFixed(1) + " ⭐" : "Not Rated"}</p>
+                            <p><strong>Average Rating:</strong> ${student.averageRating ? student.averageRating.toFixed(1) + " ⭐" : "Not Rated"}</p>
                             <p>
                                 <strong>Tasks:</strong> 
                                 ${student.tasks.length > 0 
@@ -331,7 +331,7 @@
                             <p>Course: ${student.course}</p>
                             <p>Trimester: ${student.trimester}</p>
                             <p>Period: ${student.period}</p>
-                            <p><strong>Rating:</strong> ${student.averageRating ? student.averageRating.toFixed(1) + " ⭐" : "Not Rated"}</p>
+                            <p><strong>Average Rating:</strong> ${student.averageRating ? student.averageRating.toFixed(1) + " ⭐" : "Not Rated"}</p>
                             <p>
                                 <strong>Tasks:</strong> 
                                 ${student.tasks.length > 0 
