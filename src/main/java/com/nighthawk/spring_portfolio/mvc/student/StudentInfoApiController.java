@@ -82,8 +82,8 @@ public class StudentInfoApiController {
 
     @GetMapping("/apiKey")
     public ResponseEntity<String> getApiKey() {
-        String apiUrl = dotenv.get("GITHUB_TOKEN");
-        return ResponseEntity.ok(apiUrl);
+        String apiKey = dotenv.get("GITHUB_TOKEN");
+        return ResponseEntity.ok(apiKey);
     }
 
     @Getter
