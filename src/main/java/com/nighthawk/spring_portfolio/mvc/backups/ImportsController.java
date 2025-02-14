@@ -65,7 +65,6 @@ public class ImportsController {
                 for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
                     String tableName = entry.getKey();
                     List<Map<String, Object>> tableData = entry.getValue();
-                    ensureTableExists(connection, tableName, tableData);
                     insertTableData(connection, tableName, tableData);
                 }
             }
@@ -86,7 +85,6 @@ public class ImportsController {
                 for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
                     String tableName = entry.getKey();
                     List<Map<String, Object>> tableData = entry.getValue();
-                    ensureTableExists(connection, tableName, tableData);
                     insertTableData(connection, tableName, tableData);
                 }
             }
@@ -184,7 +182,7 @@ public class ImportsController {
         return "INSERT OR IGNORE INTO " + tableName + " (" + columnsBuilder + ") VALUES (" + valuesBuilder + ")";
     }
 
-    private void manageBackups() {
+     private void manageBackups() {
         File backupsDir = new File(BACKUP_DIR);
         if (!backupsDir.exists() || !backupsDir.isDirectory()) {
             return;
@@ -207,62 +205,6 @@ public class ImportsController {
             } else {
                 System.out.println("Failed to delete old backup: " + backupFiles[i].getName());
             }
-        }
-    }
-
-    // Helper method to ensure a table exists, and create it if it doesn't
-    private void ensureTableExists(Connection connection, String tableName, List<Map<String, Object>> tableData) throws SQLException {
-        if (tableData.isEmpty()) {
-            return;
-        }
-
-        Set<String> columns = tableData.get(0).keySet();
-        if (!tableExists(connection, tableName)) {
-            createTable(connection, tableName, columns);
-        } else {
-            for (String column : columns) {
-                if (!columnExists(connection, tableName, column)) {
-                    addColumn(connection, tableName, column);
-                }
-            }
-        }
-    }
-
-    // Helper method to check if a table exists
-    private boolean tableExists(Connection connection, String tableName) throws SQLException {
-        DatabaseMetaData meta = connection.getMetaData();
-        try (ResultSet resultSet = meta.getTables(null, null, tableName, null)) {
-            return resultSet.next();
-        }
-    }
-
-    // Helper method to create a table
-    private void createTable(Connection connection, String tableName, Set<String> columns) throws SQLException {
-        StringBuilder sqlBuilder = new StringBuilder("CREATE TABLE " + tableName + " (");
-        for (String column : columns) {
-            sqlBuilder.append(column).append(" TEXT,");
-        }
-        sqlBuilder.deleteCharAt(sqlBuilder.length() - 1); // Remove the last comma
-        sqlBuilder.append(")");
-
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(sqlBuilder.toString());
-        }
-    }
-
-    // Helper method to check if a column exists in a table
-    private boolean columnExists(Connection connection, String tableName, String columnName) throws SQLException {
-        DatabaseMetaData meta = connection.getMetaData();
-        try (ResultSet resultSet = meta.getColumns(null, null, tableName, columnName)) {
-            return resultSet.next();
-        }
-    }
-
-    // Helper method to add a column to a table
-    private void addColumn(Connection connection, String tableName, String columnName) throws SQLException {
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " TEXT";
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(sql);
         }
     }
 }
