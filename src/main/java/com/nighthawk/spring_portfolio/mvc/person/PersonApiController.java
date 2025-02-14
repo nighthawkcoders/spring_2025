@@ -175,7 +175,7 @@ public class PersonApiController {
 
         personDetailsService.save(person);
 
-        userStocksTable userStocks = new userStocksTable(null, "BTC", "1000", person.getEmail(), person, false, true, "");
+        userStocksTable userStocks = new userStocksTable("AAPL", "BTC", "1000", person.getEmail(), person, false);
         userStocksRepository.save(userStocks);
 
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -443,4 +443,5 @@ public class PersonApiController {
         // return Bad ID
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    
 }
