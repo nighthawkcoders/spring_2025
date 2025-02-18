@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.json.JSONObject;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -18,6 +19,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.add(session);
     }
+
+    @Override
+	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        if(session.getId().equals(broadcasterID))
+        {
+            broadcasterID=null;
+        }
+	}
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -56,6 +65,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 break;
 
             case "viewerAcceptClient":
+            if (broadcasterID == null) {
+                return;
+            }
                 sdp = messageAsJson.getString("sdp");
                 returnID = messageAsJson.getString("returnID");
                 if (returnID == null) {
@@ -73,7 +85,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        break;
                     }
                 }
                 break;
@@ -99,6 +110,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
             break;
 
             case "iceToViewerClient":
+            if (broadcasterID == null) {
+                return;
+            }
                 candidate = messageAsJson.getString("candidate");
                 payload.put("candidate", candidate);
                 payload.put("context","iceToViewerServer");
