@@ -130,7 +130,7 @@
             }).then(response => {
                 if (response.ok) {
                     console.log(`Approved: ${studentName}, now adding to queue with timeIn: ${timeIn}`);
-                    location.reload(); // Refresh page after approval
+                    fetchPendingRequests(); // Refresh table after approval
                 } else {
                     console.log(`Failed to approve request.`);
                 }
@@ -146,12 +146,53 @@
             }).then(response => {
                 if (response.ok) {
                     console.log(`Denied: ${studentName}`);
-                    location.reload(); // Refresh page after denial
+                    fetchPendingRequests(); // Refresh table after denial
                 } else {
                     alert("Failed to deny request.");
                 }
             });
         }
+
+        // Auto-refresh function to update the table every 5 seconds
+        function fetchPendingRequests() {
+            fetch(javaURI + "/api/approval/pendingRequests")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Auto-refreshing Approval Requests:", data);
+                    
+                    const tableBody = document.querySelector("#approvalTable tbody");
+                    tableBody.innerHTML = ""; // Clear table before repopulating
+
+                    data.forEach(request => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${request.studentName}</td>
+                            <td>
+                                <button class="btn approve-btn" 
+                                        data-teacher-email="${request.teacherEmail}" 
+                                        data-student-name="${request.studentName}"
+                                        onclick="approveStudent('${request.teacherEmail}', '${request.studentName}')">
+                                    Approve
+                                </button>
+                                <button class="btn deny-btn" 
+                                        data-teacher-email="${request.teacherEmail}" 
+                                        data-student-name="${request.studentName}"
+                                        onclick="denyStudent('${request.teacherEmail}', '${request.studentName}')">
+                                    Deny
+                                </button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.log("Error fetching pending requests:", error));
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(fetchPendingRequests, 5000);
+
+        // Initial load
+        document.addEventListener("DOMContentLoaded", fetchPendingRequests);
     </script>
 </head>
 
@@ -161,7 +202,7 @@
 
     <div class="container">
         <h2>Pending Approval Requests</h2>
-        <table>
+        <table id="approvalTable">
             <thead>
                 <tr>
                     <th>Student Name</th>
@@ -169,23 +210,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="request : ${pendingRequests}">
-                    <td th:text="${request.studentName}"></td>
-                    <td>
-                        <button class="btn approve-btn"
-                                th:data-teacher-email="${request.teacherEmail}" 
-                                th:data-student-name="${request.studentName}"
-                                onclick="approveStudent(this.getAttribute('data-teacher-email'), this.getAttribute('data-student-name'))">
-                            Approve
-                        </button>
-                        <button class="btn deny-btn" 
-                                th:data-teacher-email="${request.teacherEmail}" 
-                                th:data-student-name="${request.studentName}"
-                                onclick="denyStudent(this.getAttribute('data-teacher-email'), this.getAttribute('data-student-name'))">
-                            Deny
-                        </button>
-                    </td>
-                </tr>
+                <!-- Table rows auto-populated via JavaScript -->
             </tbody>
         </table>
     </div>
