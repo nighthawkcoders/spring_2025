@@ -3,48 +3,41 @@
 <head>
     <title>Approval Requests</title>
     <script>
+        if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+            javaURI = "http://localhost:8085";
+        } else {
+            javaURI = "https://spring2025.nighthawkcodingsociety.com";
+        }
         // ✅ Approve Student: Remove from requests & Add to Queue
         function approveStudent(teacherEmail, studentName) {
-            fetch("http://127.0.0.1:8085/api/approval/approveRequest", {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, "0");
+            const minutes = now.getMinutes().toString().padStart(2, "0");
+            const seconds = now.getSeconds().toString().padStart(2, "0");
+            const timeIn = `${hours}:${minutes}:${seconds}`; // ✅ Correct local time format
+        
+            fetch(javaURI + "/api/approval/approveRequest", { // Use javaURI instead of hardcoded localhost
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ teacherEmail, studentName })
+                body: JSON.stringify({ teacherEmail, studentName, timeIn }) 
             }).then(response => {
                 if (response.ok) {
-                    console.log(`✅ Approved: ${studentName}, now adding to queue...`);
-                    addToQueue(teacherEmail, studentName);
+                    console.log(`✅ Approved: ${studentName}, now adding to queue with timeIn: ${timeIn}`);
                 } else {
-                    alert("Failed to approve request.");
-                }
-            });
-        }
-
-        // ✅ Add Student to Queue After Approval
-        function addToQueue(teacherEmail, studentName) {
-            fetch("http://127.0.0.1:8085/api/queue/add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ teacherEmail, studentName })
-            }).then(response => {
-                if (response.ok) {
-                    console.log(`✅ Added to queue: ${studentName}`);
-                    document.querySelector(`[data-student-name="${studentName}"]`).remove(); // ✅ Remove from UI
-                } else {
-                    alert("Failed to add student to queue.");
+                    console.log(`Failed to approve request.`);
                 }
             });
         }
 
         // ✅ Deny Student: Remove from requests only
         function denyStudent(teacherEmail, studentName) {
-            fetch("http://127.0.0.1:8085/api/approval/denyRequest", { 
+            fetch(javaURI + "/api/approval/denyRequest", { 
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ teacherEmail, studentName })
             }).then(response => {
                 if (response.ok) {
                     console.log(`❌ Denied: ${studentName}`);
-                    document.querySelector(`[data-student-name="${studentName}"]`).remove(); // ✅ Remove from UI
                 } else {
                     alert("Failed to deny request.");
                 }

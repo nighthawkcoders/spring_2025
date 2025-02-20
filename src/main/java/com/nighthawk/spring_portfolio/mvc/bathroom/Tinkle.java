@@ -78,6 +78,12 @@ public class Tinkle {
     }
 
     // Initializing data for the sqlite db
+    public String getTimeIn() {
+        return this.timeIn;
+    }
+    
+    //Initializing ddata for the sqlite db
+
     public static Tinkle[] init(Person[] persons) {
         ArrayList<Tinkle> tinkles = new ArrayList<>();
 
