@@ -52,57 +52,57 @@ public class ApprovalRequestApiController {
         return new ResponseEntity<>(pendingRequests, HttpStatus.OK);
     }
 
-    // ✅ Approve Request (Removes the request from the database)
+    // Approve Request (Removes the request from the database)
     // @PreAuthorize("isAuthenticated()")
     @PostMapping("/approveRequest")
     public ResponseEntity<Object> approveRequest(@RequestBody ApprovalRequest requestDto) {
-        System.out.println("🟢 Received Approval Request for: " + requestDto.getStudentName() 
+        System.out.println("Received Approval Request for: " + requestDto.getStudentName() 
             + " (Teacher: " + requestDto.getTeacherEmail() + ") at time: " + requestDto.getTimeIn());
 
         Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(
                 requestDto.getTeacherEmail(), requestDto.getStudentName());
 
         if (request.isPresent()) {
-            System.out.println("✅ Request Found in Approval Table: " + requestDto.getStudentName());
+            System.out.println("Request Found in Approval Table: " + requestDto.getStudentName());
 
-            // ✅ Remove from approval table
+            // Remove from approval table
             approvalRepository.delete(request.get());
-            System.out.println("✅ Removed from Approval Table");
+            System.out.println("Removed from Approval Table");
 
-            // ✅ Try finding student in Person DB
+            // Try finding student in Person DB
             Person student = personRepository.findByName(requestDto.getStudentName());
 
             if (student == null) {
-                System.out.println("❌ ERROR: Student not found in Person DB");
+                System.out.println("ERROR: Student not found in Person DB");
                 return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
             }
 
-            System.out.println("✅ Student Found: " + student.getEmail());
+            System.out.println("Student Found: " + student.getEmail());
 
-           // ✅ Directly parse without try-catch (assuming frontend always sends "HH:mm:ss")
+           // Directly parse without try-catch (assuming frontend always sends "HH:mm:ss")
            String timeInRaw = requestDto.getTimeIn();
         if (timeInRaw == null || timeInRaw.trim().isEmpty()) {
-            System.out.println("❌ ERROR: Received empty timeIn value");
+            System.out.println("ERROR: Received empty timeIn value");
             return new ResponseEntity<>("Invalid time format", HttpStatus.BAD_REQUEST);
         }
 
             LocalTime parsedTimeIn = LocalTime.parse(timeInRaw);
-            String formattedTimeIn = parsedTimeIn.format(DateTimeFormatter.ofPattern("HH:mm:ss")); // ✅ 24-hour format
+            String formattedTimeIn = parsedTimeIn.format(DateTimeFormatter.ofPattern("HH:mm:ss")); // 24-hour format
 
             timeInMap.put(student.getName(), formattedTimeIn);
-            System.out.println("✅ Stored timeIn in memory for " + student.getName() + ": " + formattedTimeIn);
+            System.out.println("Stored timeIn in memory for " + student.getName() + ": " + formattedTimeIn);
     
-            // ✅ Add student to queue
+            // Add student to queue
             BathroomQueue newQueueEntry = new BathroomQueue(requestDto.getTeacherEmail(), requestDto.getStudentName());
             newQueueEntry.approveStudent();
             bathroomQueueRepository.save(newQueueEntry);
-            System.out.println("✅ Added to Queue: " + student.getEmail());
+            System.out.println("Added to Queue: " + student.getEmail());
 
-            System.out.println("✅ TimeIn Stored in DB: " + formattedTimeIn);
+            System.out.println("TimeIn Stored in DB: " + formattedTimeIn);
             return new ResponseEntity<>("Student approved, added to queue, and timeIn saved", HttpStatus.OK);
     }
 
-    System.out.println("❌ ERROR: Request not found in Approval Table");
+    System.out.println("ERROR: Request not found in Approval Table");
     return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND); 
 }
 
@@ -110,7 +110,7 @@ public class ApprovalRequestApiController {
         return timeInMap.get(studentName);
     }
 
-    // ✅ Deny Request (Same logic as Approve, just deleting request)
+    // Deny Request (Same logic as Approve, just deleting request)
     @DeleteMapping("/denyRequest")
     public ResponseEntity<Object> denyRequest(@RequestBody ApprovalRequest requestDto) {
         Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(

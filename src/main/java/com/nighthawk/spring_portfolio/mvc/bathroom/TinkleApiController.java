@@ -67,14 +67,14 @@ public class TinkleApiController {
     public ResponseEntity<Object> getTimeIn(@PathVariable String studentName) {
         System.out.println("🔍 Fetching timeIn for: " + studentName);
     
-        // ✅ Retrieve stored timeIn from memory (ApprovalRequestApiController)
+        // Retrieve stored timeIn from memory (ApprovalRequestApiController)
         String timeIn = ApprovalRequestApiController.getTimeInFromMemory(studentName);
 
         if (timeIn != null) {
-            System.out.println("✅ Retrieved timeIn from memory for " + studentName + ": " + timeIn);
-            return ResponseEntity.ok(timeIn); // ✅ Return timeIn value
+            System.out.println("Retrieved timeIn from memory for " + studentName + ": " + timeIn);
+            return ResponseEntity.ok(timeIn); // Return timeIn value
         } else {
-            System.out.println("❌ Student not found in memory: " + studentName);
+            System.out.println("Student not found in memory: " + studentName);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
         }
     }

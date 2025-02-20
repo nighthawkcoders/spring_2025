@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,6 +43,7 @@ public class Tinkle {
 
     // List to store arrays of LocalDateTime pairs for time in and out
     @Column
+    @Convert(converter = TimeInOutPairsConverter.class)
     private List<LocalDateTime[]> timeInOutPairs = new ArrayList<>();
 
     @Column
@@ -60,13 +62,24 @@ public class Tinkle {
     // Logic to add time in and out pairs
     public void addTimeIn(String timeInOutPairs) {
         if (timeInOutPairs != null && !timeInOutPairs.isEmpty()) {
+            if (this.timeInOutPairs == null || this.timeInOutPairs.isEmpty()) {
+                this.timeInOutPairs = new ArrayList<>();  
+            } else {
+                this.timeInOutPairs = new ArrayList<>(this.timeInOutPairs); 
+            }
             String[] pairs = timeInOutPairs.split(",");
             for (String pair : pairs) {
-                String[] times = pair.split("--");
+                String[] times = pair.split("-");
                 if (times.length == 2) {
-                    LocalDateTime timeIn = LocalDateTime.parse(times[0], formatter);
-                    LocalDateTime timeOut = LocalDateTime.parse(times[1], formatter);
-                    this.timeInOutPairs.add(new LocalDateTime[]{timeIn, timeOut});
+                    if (times[0].matches("\\d{2}:\\d{2}:\\d{2}")) { // If only time is given
+                        times[0] = LocalDateTime.now().toLocalDate() + " " + times[0]; // Prepend current date
+                    }
+                    if (times[1].matches("\\d{2}:\\d{2}:\\d{2}")) { // If only time is given
+                        times[1] = LocalDateTime.now().toLocalDate() + " " + times[1]; // Prepend current date
+                    }
+                    LocalDateTime parsedTimeIn = LocalDateTime.parse(times[0], formatter);
+                    LocalDateTime parsedTimeOut = LocalDateTime.parse(times[1], formatter);
+                    this.timeInOutPairs.add(new LocalDateTime[]{parsedTimeIn, parsedTimeOut});
                 }
             }
         }
