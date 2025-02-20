@@ -5,6 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset.Email;
+import com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset.ResetCode;
+
+import io.github.cdimascio.dotenv.Dotenv;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,14 +22,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.core.GrantedAuthority;
 import jakarta.validation.Valid;
-import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.util.Arrays;
 import java.util.Collections;
 
 
-import jakarta.persistence.Convert;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 // Built using article: https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/mvc.html
@@ -253,10 +255,92 @@ public class PersonViewController {
         return "person/read";  // Redirect to the read page after deletion
     }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+/// "Reset" Post mappings
 
- @GetMapping("/search")
-    public String person() {
-        return "person/search";
+    @Getter
+    public static class PersonPasswordReset {
+        private String uid;
     }
 
+    @PostMapping("/reset/start")
+    public ResponseEntity<Object> resetPassword(@RequestBody PersonPasswordReset personPasswordReset){
+        Person personToReset = repository.getByUid(personPasswordReset.getUid());
+        
+        //person not found
+        if (personToReset == null){
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+        }
+
+        //don't allow people to reset the passwords of admins
+        if (personToReset.getRoles().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getName()))){
+            return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //dont allow people to send emails/ reset password of default users (such as toby)
+        Person[] databasePersons = Person.init();
+        for (Person person : databasePersons) {
+            if(person.getUid().equals(personToReset.getUid())){
+                return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
+            }
+        }
+
+        // if there is already an active code emailed to a user, don't send a second one
+        if(ResetCode.getCodeForUid(personToReset.getUid()) != null){
+            return new ResponseEntity<Object>(HttpStatus.TOO_MANY_REQUESTS);
+        }
+
+        //finally send a password reset email to the person
+        Email.sendPasswordResetEmail(personToReset.getEmail(), ResetCode.GenerateResetCode(personToReset.getUid()));
+        return new ResponseEntity<Object>(HttpStatus.OK);
+    }
+
+    @Getter
+    public static class PersonPasswordResetCode {
+        private String uid;
+        private String code;
+    }
+
+    @PostMapping("/reset/check")
+    public ResponseEntity<Object> resetPasswordCheck(@RequestBody PersonPasswordResetCode personPasswordResetCode){
+        Person personToReset = repository.getByUid(personPasswordResetCode.getUid());
+
+        //person not found
+        if (personToReset == null){
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+        }
+
+        // code to check doesn't exist
+        if(personPasswordResetCode.getCode() == null){
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+        }
+
+        if(ResetCode.getCodeForUid(personToReset.getUid()) == null){
+            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+        }
+
+        //if there is a code submitted for the given uid, and it matches the code that is expected, then reset the users password
+        if(ResetCode.getCodeForUid(personToReset.getUid()).equals(personPasswordResetCode.getCode())){
+            ResetCode.removeCodeByUid(personToReset.getUid());
+            
+            final Dotenv dotenv = Dotenv.load();
+            final String defaultPassword = dotenv.get("DEFAULT_PASSWORD");
+            personToReset.setPassword(defaultPassword);
+            repository.save(personToReset, false);
+
+            return new ResponseEntity<Object>(HttpStatus.OK);
+        }
+        return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+    }
+
+
+    @GetMapping("/reset")
+    public String reset() {
+        return "person/reset";
+    }
+
+    @GetMapping("/reset/check")
+    public String resetCheck() {
+        return "person/resetCheck";
+    }
 }
