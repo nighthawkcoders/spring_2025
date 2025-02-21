@@ -3,9 +3,15 @@ package com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset;
 
 // Java program to send email 
   
-import java.util.*;
+import java.util.Properties;
 
-import jakarta.mail.*;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
@@ -15,7 +21,7 @@ import jakarta.mail.internet.MimeMultipart;
 public class Email  
 { 
   
-   public static void sendPasswordResetEmail(String recipient,String code){
+   public static void sendEmail(String recipient, String subject, Multipart multipart){
       // email ID of Recipient. 
   
       // email ID of  Sender. 
@@ -50,10 +56,44 @@ public class Email
          message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient)); 
   
          // Set Subject: subject of the email 
-         message.setSubject("Password Reset"); 
+         message.setSubject(subject); 
   
+         // SetContent: content (Multipart) of the email
+         message.setContent(multipart);
+
+  
+         // Send email. 
+         Transport.send(message); 
+         System.out.println("Mail successfully sent"); 
+      } 
+      catch (MessagingException mex)  
+      { 
+         mex.printStackTrace(); 
+      } 
+   }
+
+   public static void sendEmail(String recipient, String subject, String content){
+
+      try{
          MimeMultipart emailContent = new MimeMultipart();
-         
+         MimeBodyPart body1 = new MimeBodyPart();
+         body1.setContent("<p>content</p>","text/html");
+
+         emailContent.addBodyPart(body1);
+
+         sendEmail(recipient, subject, emailContent);
+      }
+      catch (MessagingException mex)  
+      { 
+         mex.printStackTrace(); 
+      } 
+   }
+
+   public static void sendPasswordResetEmail(String recipient,String code){
+
+      try{
+         MimeMultipart emailContent = new MimeMultipart();
+
          MimeBodyPart body1 = new MimeBodyPart();
          body1.setContent("<h1>To reset your password use the following code:</h1>","text/html");
          MimeBodyPart body2 = new MimeBodyPart();
@@ -62,13 +102,8 @@ public class Email
          emailContent.addBodyPart(body1);
          emailContent.addBodyPart(body2);
 
-         message.setContent(emailContent);
-
-  
-         // Send email. 
-         Transport.send(message); 
-         System.out.println("Mail successfully sent"); 
-      } 
+         sendEmail(recipient, "Password Reset", emailContent);
+      }
       catch (MessagingException mex)  
       { 
          mex.printStackTrace(); 
