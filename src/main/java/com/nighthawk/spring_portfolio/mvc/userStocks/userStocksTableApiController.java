@@ -122,15 +122,13 @@ public class userStocksTableApiController {
     @ResponseBody
     public ResponseEntity<String> simulateStocks(@RequestBody SimulationRequest request) {
         try {
-            double updatedBalance = userService.simulateStockValueChange(request.getUsername(), request.getStocks(), request.isPeriod1());
-            return ResponseEntity.ok("Stock simulation completed successfully! Updated Balance: " + updatedBalance);
+            userService.simulateStockValueChange(request.getUsername(), request.getStocks());
+            return ResponseEntity.ok("Stock simulation completed successfully!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                 .body("An error occurred during simulation: " + e.getMessage());
         }
     }
-
-
 
 
 }
@@ -153,10 +151,8 @@ class UserStockInfo {
 @AllArgsConstructor
 class SimulationRequest {
     private String username;
-    private List<UserStockInfo> stocks;
-    private boolean period1;  // New field
+    private List<UserStockInfo> stocks; // List of stocks with quantity and symbol
 }
-
 
 
 /**
@@ -428,12 +424,17 @@ class UserStocksTableService implements UserDetailsService {
  * @param username The username of the user initiating the simulation.
  * @param stocks List of stocks with quantities and symbols sent from the request.
  */
-public double simulateStockValueChange(String username, List<UserStockInfo> stocks, boolean period1) {
+public void simulateStockValueChange(String username, List<UserStockInfo> stocks) {
+    // Force fetch the latest user data to avoid caching issues
     userStocksTable user = userRepository.findByEmail(username);
     if (user == null) {
         throw new RuntimeException("User not found");
     }
 
+    // Debugging: Print hasSimulated value
+    System.out.println("Checking hasSimulated for user " + username + ": " + user.isHasSimulated());
+
+    // Ensure simulation cannot be re-run
     if (user.isHasSimulated()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Simulation has already been completed.");
     }
@@ -446,6 +447,7 @@ public double simulateStockValueChange(String username, List<UserStockInfo> stoc
         int quantity = stock.getQuantity();
 
         try {
+            // Fetch price 5 years ago (initial purchase price)
             String apiUrl = "https://nitdpython.stu.nighthawkcodingsociety.com/api/stocks/price_five_years_ago/" + stockSymbol;
             ResponseEntity<String> oldPriceResponse = restTemplate.getForEntity(apiUrl, String.class);
 
@@ -453,11 +455,14 @@ public double simulateStockValueChange(String username, List<UserStockInfo> stoc
                 JSONObject jsonResponse = new JSONObject(oldPriceResponse.getBody());
                 double oldPrice = jsonResponse.getDouble("price_five_years_ago");
 
+                // Fetch the current price
                 double currentPrice = getCurrentStockPrice(stockSymbol);
 
+                // Subtract the original purchase cost (old price * quantity)
                 double totalPurchaseCost = oldPrice * quantity;
                 updatedBalance -= totalPurchaseCost;
 
+                // Add the current value (current price * quantity)
                 double totalCurrentValue = currentPrice * quantity;
                 updatedBalance += totalCurrentValue;
             }
@@ -466,21 +471,20 @@ public double simulateStockValueChange(String username, List<UserStockInfo> stoc
         }
     }
 
+    // Update balance, clear stocks, and set hasSimulated to true
     user.setBalance(String.valueOf(updatedBalance));
-    user.setStonks("");
-    user.setHasSimulated(true);
-    user.setPeriod1(period1);
-
+    user.setStonks(""); // Clears all stocks
+    user.setHasSimulated(true); //  Ensure hasSimulated is properly set
     userRepository.save(user);
-    userRepository.flush();
 
+    // Force refresh user in database
+    userRepository.flush();  // This ensures immediate persistence
+
+    // Ensure the updated value is saved in the person table as well
     com.nighthawk.spring_portfolio.mvc.person.Person person = user.getPerson();
     person.setBalance(user.getBalance());
     personJpaRepository.save(person);
-
-    return updatedBalance; // Return updated balance
 }
-
 
 
 
