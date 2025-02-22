@@ -18,13 +18,28 @@ public class HallPassController {
 
     @Autowired private HallPassService hallPassService;
     @Getter
-    public static class HallPassRequestDTO
-    {
+    public static class HallPassRequestDTO {
         private String userName;
-        private Long teacherId;
+        private String teacherFirstName;
+        private String teacherLastName;
         private int period;
         private String activity;
-        
+    
+        // Getters and setters
+        public String getUserName() { return userName; }
+        public void setUserName(String userName) { this.userName = userName; }
+    
+        public String getTeacherFirstName() { return teacherFirstName; }
+        public void setTeacherFirstName(String teacherFirstName) { this.teacherFirstName = teacherFirstName; }
+    
+        public String getTeacherLastName() { return teacherLastName; }
+        public void setTeacherLastName(String teacherLastName) { this.teacherLastName = teacherLastName; }
+    
+        public int getPeriod() { return period; }
+        public void setPeriod(int period) { this.period = period; }
+    
+        public String getActivity() { return activity; }
+        public void setActivity(String activity) { this.activity = activity; }
     }
     /**
      * Endpoint to request a hall pass by providing the user's email address.
@@ -33,12 +48,24 @@ public class HallPassController {
     @PostMapping("/request")
     public ResponseEntity<Object> requestHallPass(@RequestBody HallPassRequestDTO request) {
         try {
-            HallPass pass = hallPassService.requestPass(    
-                request.getTeacherId(),
+            // Fetch the teacher using first and last name
+            Teacher teacher = hallPassService.getTeacherByName(request.getTeacherFirstName(), request.getTeacherLastName());
+
+            if (teacher == null) {
+                return ResponseEntity.badRequest().body("Error: Teacher not found.");
+            }
+
+            // Create hall pass
+            HallPass pass = hallPassService.requestPass(
+                teacher.getId(),  // Now we have the ID after lookup
                 request.getPeriod(),
                 request.getActivity(),
                 request.getUserName()
             );
+
+            // Set teacher details before returning response
+            pass.setTeacher(teacher);  
+
             return ResponseEntity.ok(pass);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

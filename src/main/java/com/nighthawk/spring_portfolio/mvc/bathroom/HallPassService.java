@@ -19,7 +19,7 @@ public class HallPassService {
 
     public Teacher getTeacherByName(String firstName, String lastName) {
         List<Teacher> teachers = teacherRepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase(firstName, lastName);
-        return teachers.isEmpty() ? null : teachers.get(0);
+        return teachers.isEmpty() ? null : teachers.get(0); // Return first match
     }
 
     public HallPass getActivePassForUser(String username) {
