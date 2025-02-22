@@ -2,6 +2,8 @@ package com.nighthawk.spring_portfolio.mvc.cryptoMining;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,9 @@ public class MiningController {
 
     @Autowired
     private MiningService miningService;
+
+    @Autowired
+    private UserStocksRepository userStocksRepo;
 
     private MiningUser getOrCreateMiningUser() {
         // Get authentication details
@@ -170,23 +175,49 @@ public class MiningController {
             
             // Check if user already owns this GPU
             if (user.ownsGPUById(gpuId)) {
-                System.out.println("User already owns GPU with ID: " + gpuId); // Debug log
                 return ResponseEntity.badRequest()
                     .body(Map.of(
                         "success", false,
                         "message", "You already own this GPU"
                     ));
             }
+
+            // Get user's crypto balance
+            userStocksTable userStocks = userStocksRepo.findByEmail(user.getPerson().getEmail());
+            if (userStocks == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "success", false,
+                        "message", "User balance not found"
+                    ));
+            }
+
+            // Check if user has enough balance
+            double currentBalance = Double.parseDouble(userStocks.getBalance());
+            if (currentBalance < gpu.getPrice()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "success", false,
+                        "message", "Insufficient balance to buy this GPU"
+                    ));
+            }
+
+            // Deduct GPU price from balance
+            double newBalance = currentBalance - gpu.getPrice();
+            userStocks.setBalance(String.format("%.2f", newBalance));
+            userStocksRepo.save(userStocks);
             
+            // Add GPU to user's inventory
             user.addGPU(gpu);
             miningUserRepository.save(user);
             
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Successfully purchased " + gpu.getName()
+                "message", "Successfully purchased " + gpu.getName(),
+                "newBalance", String.format("%.2f", newBalance)
             ));
         } catch (Exception e) {
-            e.printStackTrace(); // Print stack trace for debugging
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
         }
@@ -323,15 +354,37 @@ public class MiningController {
         try {
             MiningUser user = getOrCreateMiningUser();
             
+            // Get user's crypto balance
+            userStocksTable userStocks = userStocksRepo.findByEmail(user.getPerson().getEmail());
+            if (userStocks == null) {
+                return ResponseEntity.status(404).body("User balance not found");
+            }
+
+            double userBalance = Double.parseDouble(userStocks.getBalance());
+            
             Map<String, Object> status = new HashMap<>();
             double pendingBTC = user.getPendingBalance();
             double confirmedBTC = user.getBtcBalance();
             
+            // Calculate USD values using current balance
+            double btcPrice = MiningService.BTC_PRICE;
+            double pendingUSD = pendingBTC * btcPrice;
+            double confirmedUSD = confirmedBTC * btcPrice;
+            double totalUSD = pendingUSD + confirmedUSD;
+
+            // Update user's balance with mining profits
+            if (totalUSD > 0) {
+                double newBalance = userBalance + totalUSD;
+                userStocks.setBalance(String.format("%.2f", newBalance));
+                userStocksRepo.save(userStocks);
+            }
+            
             status.put("pendingBalance", String.format("%.8f", pendingBTC));
-            status.put("pendingBalanceUSD", String.format("%.2f", pendingBTC * MiningService.BTC_PRICE));
+            status.put("pendingBalanceUSD", String.format("%.2f", pendingUSD));
             status.put("confirmedBalance", String.format("%.8f", confirmedBTC));
-            status.put("confirmedBalanceUSD", String.format("%.2f", confirmedBTC * MiningService.BTC_PRICE));
-            status.put("totalBalanceUSD", String.format("%.2f", (pendingBTC + confirmedBTC) * MiningService.BTC_PRICE));
+            status.put("confirmedBalanceUSD", String.format("%.2f", confirmedUSD));
+            status.put("totalBalanceUSD", String.format("%.2f", totalUSD));
+            status.put("userBalance", String.format("%.2f", userBalance));
             status.put("isMining", user.isMining());
             status.put("activeGPUs", user.getActiveGPUs().size());
             status.put("currentHashrate", String.format("%.2f", user.getCurrentHashrate()));
