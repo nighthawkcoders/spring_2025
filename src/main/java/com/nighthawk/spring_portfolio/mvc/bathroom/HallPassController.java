@@ -77,7 +77,25 @@ public class HallPassController {
     public ResponseEntity<Object> getPass(@RequestParam("email") String emailAddress) {
         try {
             HallPass hallpass = hallPassService.getActivePassForUser(emailAddress);
+            
+            if (hallpass == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Fetch the teacher details
+            Teacher teacher = hallPassService.getTeacherById(hallpass.getTeacherId());
+            hallpass.setTeacher(teacher);  // Attach the full teacher object to the response
+
             return ResponseEntity.ok(hallpass);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+    @GetMapping("/getTeacherById")
+    public ResponseEntity<Object> getTeacherById(@RequestParam("id") Long teacherId) {
+        try {
+            Teacher teacher = hallPassService.getTeacherById(teacherId);
+            return ResponseEntity.ok(teacher);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

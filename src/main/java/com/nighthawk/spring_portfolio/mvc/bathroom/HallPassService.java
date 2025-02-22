@@ -31,7 +31,7 @@ public class HallPassService {
     }
 
     public HallPass requestPass(Long teacherId, int period, String activity, String email) {
-        
+
         if (email != null) {
             HallPass pass = new HallPass();
             pass.setPersonId(email);
@@ -45,7 +45,7 @@ public class HallPassService {
     }
 
     public boolean checkoutPass(String email) {
-        
+
         if (email != null) {
             Optional<HallPass> activePass = tinkleRepository.findByPersonIdAndCheckoutIsNull(email);
             if (activePass.isPresent()) {
@@ -57,5 +57,8 @@ public class HallPassService {
         }
         return false;
     }
-}
 
+    public Teacher getTeacherById(Long id) {
+        return teacherRepository.findById(id).orElse(null);
+    }
+}
