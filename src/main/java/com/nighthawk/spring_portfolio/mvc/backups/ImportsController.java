@@ -83,7 +83,17 @@ public class ImportsController {
             InputStream inputStream = file.getInputStream();
             String rawJson = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
+
             Map<String, List<Map<String, Object>>> data = objectMapper.readValue(rawJson, Map.class);
+
+            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+                for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
+                    String tableName = entry.getKey();
+                    List<Map<String, Object>> tableData = entry.getValue();
+                    insertTableData(connection, tableName, tableData);
+                }
+            }
+
 
             sanitizeAndProcessData(data);
             return "Data imported successfully from uploaded file: " + file.getOriginalFilename();
@@ -97,6 +107,7 @@ public class ImportsController {
         int retries = 3;
         while (retries > 0) {
             try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+
                 connection.setAutoCommit(false); // Start transaction
 
                 // Enable WAL mode for better concurrency
@@ -135,6 +146,12 @@ public class ImportsController {
                 } else {
                     e.printStackTrace();
                     return "Failed to import data: " + e.getMessage();
+
+                for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
+                    String tableName = entry.getKey();
+                    List<Map<String, Object>> tableData = entry.getValue();
+                    insertTableData(connection, tableName, tableData);
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -300,7 +317,11 @@ public class ImportsController {
         return tableName.replaceAll("[^a-zA-Z0-9_]", "_");
     }
 
+
     private File getMostRecentBackupFile() {
+
+     private void manageBackups() {
+
         File backupsDir = new File(BACKUP_DIR);
         if (!backupsDir.exists() || !backupsDir.isDirectory()) {
             return null;
@@ -335,6 +356,7 @@ public class ImportsController {
             preparedStatement.executeBatch();
         }
     }
+
 
     private String buildUpsertQuery(String tableName, Set<String> columns) {
         String columnList = String.join(", ", columns);
@@ -414,4 +436,6 @@ public class ImportsController {
             }
         }
     }
+
+
 }

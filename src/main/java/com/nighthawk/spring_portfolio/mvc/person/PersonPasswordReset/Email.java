@@ -15,7 +15,7 @@ import jakarta.mail.internet.MimeMultipart;
 public class Email  
 { 
   
-   public static void sendEmail(String recipient,String code){
+   public static void sendEmail(String recipient, String subject, Multipart multipart){
       // email ID of Recipient. 
   
       // email ID of  Sender. 
@@ -34,7 +34,7 @@ public class Email
       // creating session object to get properties 
       Session session = Session.getDefaultInstance(properties,new Authenticator() {
         protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication("trystan.yt.2@gmail.com","mlneyqihivhipuce"); // email and password, see this for app passwords https://support.google.com/accounts/answer/185833?visit_id=638748419667916449-2613033234&p=InvalidSecondFactor&rd=1
+            return new PasswordAuthentication("delnortecoders@gmail.com","ubtiajaxhvorngnu"); // email and password, see this for app passwords https://support.google.com/accounts/answer/185833?visit_id=638748419667916449-2613033234&p=InvalidSecondFactor&rd=1
         }
     }); 
   
@@ -50,25 +50,54 @@ public class Email
          message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient)); 
   
          // Set Subject: subject of the email 
-         message.setSubject("Password Reset"); 
+         message.setSubject(subject); 
   
-         MimeMultipart emailContent = new MimeMultipart();
-         
-         MimeBodyPart body1 = new MimeBodyPart();
-         body1.setContent("<h1>To reset your email use the following code:</h1>","text/html");
-         MimeBodyPart body2 = new MimeBodyPart();
-         body2.setContent("<code style=\"background-color: lightblue; font-size: 50px; border-radius: 15px;\">"+code+"</code>","text/html");
-
-         emailContent.addBodyPart(body1);
-         emailContent.addBodyPart(body2);
-
-         message.setContent(emailContent);
+         // SetContent: content (Multipart) of the email
+         message.setContent(multipart);
 
   
          // Send email. 
          Transport.send(message); 
          System.out.println("Mail successfully sent"); 
       } 
+      catch (MessagingException mex)  
+      { 
+         mex.printStackTrace(); 
+      } 
+   }
+
+   public static void sendEmail(String recipient, String subject, String content){
+
+      try{
+         MimeMultipart emailContent = new MimeMultipart();
+         MimeBodyPart body1 = new MimeBodyPart();
+         body1.setContent("<p>content</p>","text/html");
+
+         emailContent.addBodyPart(body1);
+
+         sendEmail(recipient, subject, emailContent);
+      }
+      catch (MessagingException mex)  
+      { 
+         mex.printStackTrace(); 
+      } 
+   }
+
+   public static void sendPasswordResetEmail(String recipient,String code){
+
+      try{
+         MimeMultipart emailContent = new MimeMultipart();
+
+         MimeBodyPart body1 = new MimeBodyPart();
+         body1.setContent("<h1>To reset your password use the following code:</h1>","text/html");
+         MimeBodyPart body2 = new MimeBodyPart();
+         body2.setContent("<code style=\"background-color: lightblue; font-size: 50px; border-radius: 15px;\">"+code+"</code>","text/html");
+
+         emailContent.addBodyPart(body1);
+         emailContent.addBodyPart(body2);
+
+         sendEmail(recipient, "Password Reset", emailContent);
+      }
       catch (MessagingException mex)  
       { 
          mex.printStackTrace(); 
