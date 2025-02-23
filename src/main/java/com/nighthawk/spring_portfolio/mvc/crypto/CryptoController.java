@@ -45,7 +45,18 @@ public class CryptoController {
     
         return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"balance\": \"" + userStocks.getBalance() + "\" }");
     }
+    
+    @GetMapping("/balanceById")
+    public ResponseEntity<?> getUserBalanceById(@RequestParam Long id) {
+        userStocksTable userStocks = userStocksRepo.findById(id).orElse(null);
 
+        if (userStocks == null) {
+            return ResponseEntity.status(404).body("User balance not found for ID: " + id);
+        }
+
+        return ResponseEntity.ok("{ \"id\": \"" + id + "\", \"balance\": \"" + userStocks.getBalance() + "\" }");
+    }
+    
     @GetMapping("/live")
     public ResponseEntity<?> getLiveCryptoData() {
         Crypto[] cryptoData = cryptoService.getCryptoData();
