@@ -27,6 +27,7 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.student.StudentInfo.StudentService;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
@@ -53,6 +54,7 @@ public class ModelInit {
     @Autowired StudentInfoJPARepository studentInfoJPA;
     @Autowired SynergyGradeJpaRepository gradeJpaRepository;
     @Autowired StudentQueueJPARepository studentQueueJPA;
+    @Autowired StudentService studentService;
 
     @Bean
     @Transactional
@@ -85,6 +87,8 @@ public class ModelInit {
                     noteRepo.save(n);
                 }
             }
+
+            studentService.initialization();
         };
     }
 }
