@@ -33,49 +33,70 @@ public class MiningController {
     private UserStocksRepository userStocksRepo;
 
     private MiningUser getOrCreateMiningUser() {
-        // Get authentication details
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        String uid = auth.getName();
-        
-        System.out.println("DEBUG - Auth Details:");
-        System.out.println("  UID: " + uid);
-        System.out.println("  Principal: " + auth.getPrincipal());
-        System.out.println("  Authorities: " + auth.getAuthorities());
+        try {
+            // Get authentication details
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null) {
+                System.out.println("ERROR: Authentication object is null");
+                throw new RuntimeException("No authentication context found");
+            }
 
-        if ("anonymousUser".equals(uid)) {
-            throw new RuntimeException("Not authenticated");
+            String uid = auth.getName();
+            System.out.println("\n=== Authentication Debug ===");
+            System.out.println("UID: " + uid);
+            System.out.println("Principal: " + auth.getPrincipal());
+            System.out.println("Authorities: " + auth.getAuthorities());
+            System.out.println("Is Authenticated: " + auth.isAuthenticated());
+
+            if ("anonymousUser".equals(uid)) {
+                System.out.println("WARNING: Anonymous user detected");
+                throw new RuntimeException("User not authenticated");
+            }
+
+            // Find person by UID with detailed logging
+            System.out.println("\n=== Person Lookup ===");
+            System.out.println("Looking up person with UID: " + uid);
+            Person person = personRepository.findByUid(uid);
+            
+            if (person == null) {
+                System.out.println("ERROR: No person found for UID: " + uid);
+                throw new RuntimeException("Person not found for UID: " + uid);
+            }        
+
+            System.out.println("Found person: " + person.getEmail());
+
+            // Find or create mining user with detailed logging
+            System.out.println("\n=== Mining User Lookup/Creation ===");
+            return miningUserRepository.findByPerson(person)
+                .map(existingUser -> {
+                    System.out.println("Found existing mining user for: " + person.getEmail());
+                    return existingUser;
+                })
+                .orElseGet(() -> {
+                    System.out.println("Creating new mining user for: " + person.getEmail());
+                    MiningUser newUser = new MiningUser(person);
+                    
+                    // Add starter GPU if exists
+                    gpuRepository.findById(1L).ifPresentOrElse(
+                        gpu -> {
+                            newUser.addGPU(gpu);
+                            System.out.println("Added starter GPU: " + gpu.getName());
+                        },
+                        () -> System.out.println("WARNING: No starter GPU found with ID 1")
+                    );
+
+                    MiningUser savedUser = miningUserRepository.save(newUser);
+                    System.out.println("Successfully created new mining user with ID: " + savedUser.getId());
+                    return savedUser;
+                });
+
+        } catch (Exception e) {
+            System.out.println("\n=== ERROR in getOrCreateMiningUser ===");
+            System.out.println("Error type: " + e.getClass().getName());
+            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to get or create mining user: " + e.getMessage(), e);
         }
-
-        // Find person by UID instead of email
-        Person person = personRepository.findByUid(uid);
-        if (person == null) {
-            System.out.println("DEBUG - No person found for UID: " + uid);
-            throw new RuntimeException("User not found: " + uid);
-        }        
-
-        System.out.println("DEBUG - Found person with UID: " + person.getUid());
-
-        // Find existing mining user
-        Optional<MiningUser> existingUser = miningUserRepository.findByPerson(person);
-        if (existingUser.isPresent()) {
-            System.out.println("DEBUG - Found existing mining user");
-            return existingUser.get();
-        }
-
-        // Create new mining user using constructor
-        System.out.println("DEBUG - Creating new mining user");
-        MiningUser newUser = new MiningUser(person);
-        
-        // Add starter GPU if exists
-        GPU starterGpu = gpuRepository.findById(1L).orElse(null);
-        if (starterGpu != null) {
-            newUser.addGPU(starterGpu);
-            System.out.println("DEBUG - Added starter GPU: " + starterGpu.getName());
-        } else {
-            System.out.println("DEBUG - No starter GPU found");
-        }
-
-        return miningUserRepository.save(newUser);
     }
 
     @GetMapping("/stats")
@@ -269,57 +290,93 @@ public class MiningController {
     @GetMapping("/state")
     public ResponseEntity<?> getMiningState() {
         try {
+            System.out.println("\n=== Getting Mining State ===");
+            
             MiningUser user = getOrCreateMiningUser();
-            miningService.calculateProfitability(user);
+            if (user == null) {
+                System.out.println("ERROR: getOrCreateMiningUser returned null");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "User not authenticated"));
+            }
 
+            System.out.println("Got mining user: " + user.getPerson().getEmail());
+            
+            // Calculate profitability
+            try {
+                miningService.calculateProfitability(user);
+            } catch (Exception e) {
+                System.out.println("WARNING: Error calculating profitability: " + e.getMessage());
+                // Continue execution even if profitability calculation fails
+            }
+
+            // Create response
             Map<String, Object> stats = new HashMap<>();
-            double pendingBTC = user.getPendingBalance();
-            double confirmedBTC = user.getBtcBalance();
-            
-            // Balance information with USD values
-            stats.put("btcBalance", String.format("%.8f", confirmedBTC));
-            stats.put("btcBalanceUSD", String.format("%.2f", confirmedBTC * MiningService.BTC_PRICE));
-            stats.put("pendingBalance", String.format("%.8f", pendingBTC));
-            stats.put("pendingBalanceUSD", String.format("%.2f", pendingBTC * MiningService.BTC_PRICE));
-            stats.put("totalBalanceUSD", String.format("%.2f", (pendingBTC + confirmedBTC) * MiningService.BTC_PRICE));
-            
-            // Mining status
-            stats.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
-            stats.put("shares", user.getShares());
-            stats.put("isMining", user.isMining());
-            stats.put("currentPool", user.getCurrentPool());
-            
-            // Power and temperature
-            stats.put("powerConsumption", user.getPowerConsumption());
-            stats.put("averageTemperature", user.getAverageTemperature());
-            
-            // Profitability
-            stats.put("dailyRevenueBTC", String.format("%.8f", user.getDailyRevenue() / MiningService.BTC_PRICE));
-            stats.put("dailyRevenueUSD", String.format("%.2f", user.getDailyRevenue()));
-            stats.put("powerCost", user.getPowerCost());
-            stats.put("netProfitUSD", String.format("%.2f", user.getDailyRevenue() - user.getPowerCost()));
+            try {
+                double pendingBTC = user.getPendingBalance();
+                double confirmedBTC = user.getBtcBalance();
+                
+                // Add all stats...
+                stats.put("btcBalance", String.format("%.8f", confirmedBTC));
+                stats.put("btcBalanceUSD", String.format("%.2f", confirmedBTC * MiningService.BTC_PRICE));
+                stats.put("pendingBalance", String.format("%.8f", pendingBTC));
+                stats.put("pendingBalanceUSD", String.format("%.2f", pendingBTC * MiningService.BTC_PRICE));
+                stats.put("totalBalanceUSD", String.format("%.2f", (pendingBTC + confirmedBTC) * MiningService.BTC_PRICE));
+                
+                // Mining status
+                stats.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
+                stats.put("shares", user.getShares());
+                stats.put("isMining", user.isMining());
+                stats.put("currentPool", user.getCurrentPool());
+                
+                // Power and temperature
+                stats.put("powerConsumption", user.getPowerConsumption());
+                stats.put("averageTemperature", user.getAverageTemperature());
+                
+                // Profitability
+                stats.put("dailyRevenueBTC", String.format("%.8f", user.getDailyRevenue() / MiningService.BTC_PRICE));
+                stats.put("dailyRevenueUSD", String.format("%.2f", user.getDailyRevenue()));
+                stats.put("powerCost", user.getPowerCost());
+                stats.put("netProfitUSD", String.format("%.2f", user.getDailyRevenue() - user.getPowerCost()));
 
-            // GPU information
-            List<Map<String, Object>> allGpus = user.getOwnedGPUs().stream()
-                .map(gpu -> {
-                    Map<String, Object> gpuInfo = new HashMap<>();
-                    gpuInfo.put("id", gpu.getId());
-                    gpuInfo.put("name", gpu.getName());
-                    gpuInfo.put("hashrate", gpu.getHashRate());
-                    gpuInfo.put("power", gpu.getPowerConsumption());
-                    gpuInfo.put("temp", gpu.getTemp());
-                    gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
-                    return gpuInfo;
-                })
-                .collect(Collectors.toList());
-            
-            stats.put("gpus", allGpus);
-            stats.put("activeGPUs", user.getActiveGPUs());
+                // GPU information
+                List<Map<String, Object>> allGpus = user.getOwnedGPUs().stream()
+                    .map(gpu -> {
+                        Map<String, Object> gpuInfo = new HashMap<>();
+                        gpuInfo.put("id", gpu.getId());
+                        gpuInfo.put("name", gpu.getName());
+                        gpuInfo.put("hashrate", gpu.getHashRate());
+                        gpuInfo.put("power", gpu.getPowerConsumption());
+                        gpuInfo.put("temp", gpu.getTemp());
+                        gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
+                        return gpuInfo;
+                    })
+                    .collect(Collectors.toList());
+                
+                stats.put("gpus", allGpus);
+                stats.put("activeGPUs", user.getActiveGPUs());
 
-            return ResponseEntity.ok(stats);
+                System.out.println("Successfully compiled mining stats");
+                return ResponseEntity.ok(stats);
+                
+            } catch (Exception e) {
+                System.out.println("ERROR: Failed to compile mining stats: " + e.getMessage());
+                throw e;
+            }
+
         } catch (Exception e) {
+            System.out.println("\n=== ERROR in getMiningState ===");
+            System.out.println("Error type: " + e.getClass().getName());
+            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to get mining state");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("type", e.getClass().getName());
+            errorResponse.put("timestamp", new Date().toString());
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", e.getMessage()));
+                    .body(errorResponse);
         }
     }
 
