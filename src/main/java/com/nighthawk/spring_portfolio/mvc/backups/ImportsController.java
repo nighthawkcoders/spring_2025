@@ -1,29 +1,38 @@
 package com.nighthawk.spring_portfolio.mvc.backups;
 
-import org.springframework.stereotype.Component;
-import org.springframework.context.event.EventListener;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.sqlite.SQLiteException;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
-
-import java.io.File;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.sql.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @RestController
@@ -38,12 +47,14 @@ public class ImportsController {
 
     @EventListener(ApplicationReadyEvent.class)
     public synchronized void importFromMostRecentBackup() {
+        // Initialize the database with proper settings
+        initializeDatabase();
+
         File mostRecentBackup = getMostRecentBackupFile();
         if (mostRecentBackup != null) {
             System.out.println("Importing from backup: " + mostRecentBackup.getName());
             String result = importFromFile(mostRecentBackup);
             System.out.println(result);
-            System.out.println(mostRecentBackup);
         } else {
             System.out.println("No backup files found to import.");
         }
@@ -71,10 +82,8 @@ public class ImportsController {
         try {
             InputStream inputStream = file.getInputStream();
             String rawJson = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            System.out.println("Raw JSON Content:\n" + rawJson);
 
             Map<String, List<Map<String, Object>>> data = objectMapper.readValue(rawJson, Map.class);
-            System.out.println("Parsed data: " + data);
 
             sanitizeAndProcessData(data);
             return "Data imported successfully from uploaded file: " + file.getOriginalFilename();
@@ -87,24 +96,38 @@ public class ImportsController {
     private String importFromFile(File jsonFile) {
         int retries = 3;
         while (retries > 0) {
-            try {
+            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+                connection.setAutoCommit(false); // Start transaction
+
+                // Enable WAL mode for better concurrency
+                enableWalMode(connection);
+                setBusyTimeout(connection, 30000); // 30 seconds
+
+                // Check SQLite version for debugging
+                checkSqliteVersion(connection);
+
+                // Verify database integrity
+                verifyDatabaseIntegrity(connection);
+
+                // Read and parse JSON file
                 String rawJson = new String(Files.readAllBytes(jsonFile.toPath()));
-                System.out.println("Raw JSON content: " + rawJson);
 
                 objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
                 objectMapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
                 BackupData backupData = objectMapper.readValue(rawJson, BackupData.class);
                 Map<String, List<Map<String, Object>>> data = backupData.getTables();
-                System.out.println("Parsed data: " + data);
 
+                // Sanitize and process data
                 sanitizeAndProcessData(data);
+
+                connection.commit(); // Commit transaction
                 return "Data imported successfully from JSON file: " + jsonFile.getAbsolutePath();
             } catch (SQLiteException e) {
                 if (e.getMessage().contains("database is locked")) {
                     retries--;
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(100); // Wait before retrying
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         return "Thread interrupted while waiting to retry.";
@@ -142,9 +165,36 @@ public class ImportsController {
         }
     }
 
+    private void initializeDatabase() {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+            // Enable WAL mode for better concurrency
+            enableWalMode(connection);
+
+            // Set a busy timeout to wait for locks
+            setBusyTimeout(connection, 30000); // 30 seconds
+
+            // Check SQLite version for debugging
+            checkSqliteVersion(connection);
+
+            // Verify database integrity
+            verifyDatabaseIntegrity(connection);
+
+            System.out.println("Database initialized successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Failed to initialize database: " + e.getMessage());
+        }
+    }
+
     private void enableWalMode(Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.execute("PRAGMA journal_mode=WAL;");
+        }
+    }
+
+    private void disableWalMode(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA journal_mode=DELETE;");
         }
     }
 
@@ -154,16 +204,95 @@ public class ImportsController {
         }
     }
 
+    private void checkSqliteVersion(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT sqlite_version();")) {
+            if (resultSet.next()) {
+                System.out.println("SQLite Version: " + resultSet.getString(1));
+            }
+        }
+    }
+
+    private void verifyDatabaseIntegrity(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("PRAGMA integrity_check;")) {
+            while (resultSet.next()) {
+                System.out.println("Integrity Check: " + resultSet.getString(1));
+            }
+        }
+    }
+
     private void sanitizeAndProcessData(Map<String, List<Map<String, Object>>> data) throws SQLException {
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
             enableWalMode(connection);
             setBusyTimeout(connection, 30000); // 30 seconds
+
+            // Update sequence tables first
+            updateSequenceTables(connection, data);
+
+            // Insert data into other tables
             for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
                 String tableName = sanitizeTableName(entry.getKey());
                 List<Map<String, Object>> tableData = entry.getValue();
-                ensureTableExists(connection, tableName, tableData);
-                insertTableData(connection, tableName, tableData);
+                if (!tableName.endsWith("_seq")) { // Skip sequence tables
+                    ensureTableExists(connection, tableName, tableData);
+                    insertTableData(connection, tableName, tableData);
+                }
             }
+        }
+    }
+
+    private void updateSequenceTables(Connection connection, Map<String, List<Map<String, Object>>> data) throws SQLException {
+        for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
+            String tableName = entry.getKey();
+            if (tableName.endsWith("_seq")) { // Check if it's a sequence table
+                // Create the sequence table if it doesn't exist
+                createSequenceTableIfNotExists(connection, tableName);
+
+                List<Map<String, Object>> tableData = entry.getValue();
+                if (!tableData.isEmpty()) {
+                    Object nextValObj = tableData.get(0).get("next_val");
+                    long nextValFromJson = 0;
+
+                    // Safely handle Integer or Long values
+                    if (nextValObj instanceof Number) {
+                        nextValFromJson = ((Number) nextValObj).longValue();
+                    } else {
+                        throw new IllegalArgumentException("next_val must be a number (Integer or Long)");
+                    }
+
+                    updateSequenceValue(connection, tableName, nextValFromJson);
+                }
+            }
+        }
+    }
+
+    private void createSequenceTableIfNotExists(Connection connection, String tableName) throws SQLException {
+        if (!tableExists(connection, tableName)) {
+            String sql = "CREATE TABLE " + tableName + " (next_val BIGINT NOT NULL)";
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(sql);
+                // Initialize the sequence value to 0 or 1
+                String initSql = "INSERT INTO " + tableName + " (next_val) VALUES (0)";
+                statement.execute(initSql);
+                System.out.println("Created table: " + tableName);
+            }
+        }
+    }
+
+    private boolean tableExists(Connection connection, String tableName) throws SQLException {
+        DatabaseMetaData meta = connection.getMetaData();
+        try (ResultSet resultSet = meta.getTables(null, null, tableName, null)) {
+            return resultSet.next();
+        }
+    }
+
+    private void updateSequenceValue(Connection connection, String tableName, long nextValFromJson) throws SQLException {
+        String sql = "UPDATE " + tableName + " SET next_val = CASE WHEN next_val > ? THEN next_val ELSE ? END";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, nextValFromJson);
+            statement.setLong(2, nextValFromJson);
+            statement.executeUpdate();
         }
     }
 
@@ -211,6 +340,7 @@ public class ImportsController {
         String columnList = String.join(", ", columns);
         String valuePlaceholders = String.join(", ", Collections.nCopies(columns.size(), "?"));
 
+        // Use INSERT OR REPLACE to handle duplicates
         return "INSERT OR REPLACE INTO " + tableName + " (" + columnList + ") VALUES (" + valuePlaceholders + ")";
     }
 
@@ -228,13 +358,6 @@ public class ImportsController {
                     addColumn(connection, tableName, column);
                 }
             }
-        }
-    }
-
-    private boolean tableExists(Connection connection, String tableName) throws SQLException {
-        DatabaseMetaData meta = connection.getMetaData();
-        try (ResultSet resultSet = meta.getTables(null, null, tableName, null)) {
-            return resultSet.next();
         }
     }
 
