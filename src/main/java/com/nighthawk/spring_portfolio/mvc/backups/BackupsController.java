@@ -1,7 +1,9 @@
 package com.nighthawk.spring_portfolio.mvc.backups;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,9 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.*;
-import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/api/exports/")
@@ -97,23 +99,10 @@ public class BackupsController {
                 for (int i = 1; i <= columnCount; i++) {
                     String columnName = metaData.getColumnName(i);
                     Object columnValue = resultSet.getObject(i);
-
-                    // Handle special fields (e.g., stats, kasm_server_needed)
-                    if (columnName.equals("stats") && columnValue instanceof String) {
-                        // If stats is stored as a string, parse it as JSON
-                        columnValue = objectMapper.readValue((String) columnValue, Map.class);
-                    } else if (columnName.equals("kasm_server_needed") && columnValue instanceof Integer) {
-                        // If kasm_server_needed is stored as an integer, convert it to boolean
-                        columnValue = ((Integer) columnValue) == 1;
-                    }
-
                     row.put(columnName, columnValue);
                 }
                 tableData.add(row);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new SQLException("Failed to retrieve data from table: " + tableName, e);
         }
 
         return tableData;
