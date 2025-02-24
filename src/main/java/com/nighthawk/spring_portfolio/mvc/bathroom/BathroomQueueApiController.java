@@ -42,7 +42,7 @@ public class BathroomQueueApiController {
     }
 
     // Endpoint to add a student to the queue
-    @CrossOrigin(origins = {"*"})
+    @CrossOrigin(origins = {"http://localhost:8085", "https://nighthawkcoders.github.io/portfolio_2025"})
     @PostMapping("/add")
     public ResponseEntity<Object> addToQueue(@RequestBody QueueDto queueDto) {
         // Check if a queue already exists for the given teacher
@@ -61,7 +61,7 @@ public class BathroomQueueApiController {
 
     
     // Endpoint to remove a student from the queue
-    @CrossOrigin(origins = {"*"})
+    @CrossOrigin(origins = {"http://localhost:8085", "https://nighthawkcoders.github.io/portfolio_2025"})
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
@@ -83,7 +83,7 @@ public class BathroomQueueApiController {
     }
     
 
-    @CrossOrigin(origins = {"*"})
+    @CrossOrigin(origins = {"http://localhost:8085", "https://nighthawkcoders.github.io/portfolio_2025"})
     @DeleteMapping("/removefront/{teacher}")
     public void removeFront(@PathVariable String teacher)
     {
@@ -97,7 +97,7 @@ public class BathroomQueueApiController {
 
 
     // Endpoint to approve the first student in the queue
-    @CrossOrigin(origins = {"*"})
+    @CrossOrigin(origins = {"http://localhost:8085", "https://nighthawkcoders.github.io/portfolio_2025"})
     @PostMapping("/approve")
     public ResponseEntity<Object> approveStudent(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
@@ -184,7 +184,7 @@ public class BathroomQueueApiController {
     }
 
     // Endpoint to retrieve active queues
-    @CrossOrigin(origins = {"*"})
+    @CrossOrigin(origins = {"http://localhost:8085", "https://nighthawkcoders.github.io/portfolio_2025"})
     @GetMapping("/getActive")
     public ResponseEntity<Object> getActiveQueues() {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
