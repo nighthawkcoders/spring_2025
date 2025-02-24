@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+    <title>Cookie Clicker</title>
+    <style>
+        /* Basic Styling for Form */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+        }
+        .jumbotron {
+            background-color: #f7f7f7;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
+        /* Role Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            text-align: left;
+            padding: 10px;
+            background-color: #181818;
+            border-bottom: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        /* Button Styling */
+        .btn-custom {
+            background-color: #28a745; /* Same green color for both buttons */
+            color: black;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-custom:hover {
+            background-color: #218838; /* Darker green for hover effect */
+        }
+
+        /* Error Messages */
+        .error {
+            color: red;
+            font-size: 12px;
+        }
+        /* Footer info styling */
+        #footerInfo {
+            font-size: 14px;
+            font-weight: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <th:block layout:fragment="body" th:remove="tag">
+
+        <div class="container py-4">
+            <!-- Header Section -->
+            <header class="pb-3 mb-4 border-bottom border-primary text-light">
+                <span class="fs-4">Cookie Clicker</span>
+            </header>
+
+            <div class="container py-4 text-light bg-primary rounded">
+                <div class="container bg-secondary py-4 rounded">
+                    <div class="container">
+                        <div class="row justify-content-md-center">
+                            <div class="col8">
+                                <div class="p-5 mb-4 bg-success text-light rounded-3">
+                                    <h3>Cookie Clicker</h3> <!-- Header for Update Info section -->
+                                    <table id="personTable" class="table">
+                                        <thead>
+                                        <tr th:each="person : ${list}">
+                                            <div class="profile-picture-container" id="cookie">
+                                                <!-- Profile picture with fallback image on error -->
+                                                <a id="profile-link-${person.id}" data-person-id="${person.id}" target="_blank">
+                                                    <img id="profile-img-${person.id}" th:src="|https://github.com/${person.uid}.png|"
+                                                         alt="Profile Picture"
+                                                         onerror="this.onerror=null; this.src='https://github.com/user-attachments/assets/13dec9b2-21d6-458e-b099-f5f85ae9caf2';" />
+                                                </a>
+                                            </div>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <td>
+                                                <p>
+                                                    <b id="counter">
+                                                        amount: 0
+                                                    </b>
+                                                </p>
+                                            </td>
+                                            <td>
+                                                <button id="multiplier">basic cookie, 10 cookies</button>
+                                            </td>
+                                            <td>
+                                                <button id="passive">basic cookie oven, 100 cookies</button>
+                                            </td>
+                                            <td>
+                                                <button id="sacrifice">SACRIFICE THE COOKIES!, 1000 cookies</button>
+                                            </td>
+                                        </tbody>
+                                    </table>
+                                    <script type="text/javascript" src="/static/js/cookie-clicker.js" th:src="@{/js/cookie-clicker.js}"></script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </th:block>
+</body>
+
+</html>
