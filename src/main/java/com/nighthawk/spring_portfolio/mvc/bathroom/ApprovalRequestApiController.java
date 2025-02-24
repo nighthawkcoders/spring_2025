@@ -79,32 +79,46 @@ public class ApprovalRequestApiController {
 
             System.out.println("Student Found: " + student.getEmail());
 
-           // Directly parse without try-catch (assuming frontend always sends "HH:mm:ss")
-           String timeInRaw = requestDto.getTimeIn();
-        if (timeInRaw == null || timeInRaw.trim().isEmpty()) {
-            System.out.println("ERROR: Received empty timeIn value");
-            return new ResponseEntity<>("Invalid time format", HttpStatus.BAD_REQUEST);
-        }
+            // Validate and parse timeIn
+            String timeInRaw = requestDto.getTimeIn();
+            if (timeInRaw == null || timeInRaw.trim().isEmpty()) {
+                System.out.println("ERROR: Received empty timeIn value");
+                return new ResponseEntity<>("Invalid time format", HttpStatus.BAD_REQUEST);
+            }
 
             LocalTime parsedTimeIn = LocalTime.parse(timeInRaw);
             String formattedTimeIn = parsedTimeIn.format(DateTimeFormatter.ofPattern("HH:mm:ss")); // 24-hour format
 
             timeInMap.put(student.getName(), formattedTimeIn);
             System.out.println("Stored timeIn in memory for " + student.getName() + ": " + formattedTimeIn);
-    
-            // Add student to queue
-            BathroomQueue newQueueEntry = new BathroomQueue(requestDto.getTeacherEmail(), requestDto.getStudentName());
-            newQueueEntry.approveStudent();
-            bathroomQueueRepository.save(newQueueEntry);
-            System.out.println("Added to Queue: " + student.getEmail());
+
+            // Check if a queue entry already exists for the teacher
+            Optional<BathroomQueue> existingQueueOpt = bathroomQueueRepository.findByTeacherEmail(requestDto.getTeacherEmail());
+
+            BathroomQueue queue;
+            if (existingQueueOpt.isPresent()) {
+                queue = existingQueueOpt.get();  // Use existing queue
+                System.out.println("Existing Queue Found for teacher: " + requestDto.getTeacherEmail());
+            } else {
+                queue = new BathroomQueue(requestDto.getTeacherEmail(), ""); // Create new queue
+                System.out.println("New Queue Created for teacher: " + requestDto.getTeacherEmail());
+            }
+
+            // Add student to the queue using addStudent method
+            queue.addStudent(requestDto.getStudentName());
+            bathroomQueueRepository.save(queue);
+            System.out.println("Student added to queue: " + requestDto.getStudentName());
 
             System.out.println("TimeIn Stored in DB: " + formattedTimeIn);
             return new ResponseEntity<>("Student approved, added to queue, and timeIn saved", HttpStatus.OK);
+        }
+
+        System.out.println("ERROR: Request not found in Approval Table");
+        return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND); 
     }
 
-    System.out.println("ERROR: Request not found in Approval Table");
-    return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND); 
-}
+    
+    
 
     public static String getTimeInFromMemory(String studentName) {
         return timeInMap.get(studentName);
