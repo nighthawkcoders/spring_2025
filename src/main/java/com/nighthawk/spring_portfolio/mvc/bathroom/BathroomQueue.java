@@ -110,6 +110,7 @@ public class BathroomQueue {
      */
     public static BathroomQueue[] init() {
         ArrayList<BathroomQueue> queues = new ArrayList<>();
+        queues.add(new BathroomQueue("jmort1021@gmail.com", ""));
         return queues.toArray(new BathroomQueue[0]);
     }
 }
