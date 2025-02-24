@@ -3,6 +3,7 @@ package com.nighthawk.spring_portfolio.mvc.bathroom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -123,6 +124,36 @@ public class HallPassController {
         try {
             Teacher teacher = hallPassService.getTeacherById(teacherId);
             return ResponseEntity.ok(teacher);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+     //Endpoint to add a new teacher
+    @PostMapping("/addTeacher")
+    public ResponseEntity<Object> addTeacher(@RequestBody TeacherDTO teacherDTO) {
+        try {
+            Teacher teacher = new Teacher();
+            teacher.setFirstName(teacherDTO.getFirstName());
+            teacher.setLastName(teacherDTO.getLastName());
+            teacher.setEmail(teacherDTO.getEmail());
+
+            Teacher savedTeacher = hallPassService.addTeacher(teacher);
+            return ResponseEntity.ok(savedTeacher);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    // Endpoint to remove a teacher by ID
+    @DeleteMapping("/removeTeacher")
+    public ResponseEntity<Object> removeTeacher(@RequestParam("id") Long teacherId) {
+        try {
+            boolean removed = hallPassService.removeTeacher(teacherId);
+            if (removed) {
+                return ResponseEntity.ok("Teacher removed successfully.");
+            } else {
+                return ResponseEntity.badRequest().body("Error: Teacher not found.");
+            }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
