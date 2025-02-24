@@ -93,6 +93,8 @@ public class AssignmentSubmissionAPIController {
         public String type;
         public String description;
         public Double points;
+        public String dueDate;
+        public String timestamp;
 
         public AssignmentReturnDto(Assignment assignment) {
             this.id = assignment.getId();
@@ -100,6 +102,8 @@ public class AssignmentSubmissionAPIController {
             this.type = assignment.getType();
             this.description = assignment.getDescription();
             this.points = assignment.getPoints();
+            this.dueDate = assignment.getDueDate();
+            this.timestamp = assignment.getTimestamp();
         }
     }
 
