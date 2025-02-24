@@ -1,6 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -37,7 +38,7 @@ public class AssignmentSubmission {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Assignment assignment;
 
-    @ManyToMany
+    @ManyToMany(cascade = {jakarta.persistence.CascadeType.MERGE})
     @JoinTable(
         name = "assignment_submission_students",
         joinColumns = @JoinColumn(name = "submission_id"),

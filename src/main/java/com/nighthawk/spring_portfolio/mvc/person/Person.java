@@ -176,6 +176,7 @@ public class Person implements Comparable<Person> {
 
     @Column(nullable=true)
     private String sid;
+    
     /**
      * user_stocks and balance describe properties used by the gamify application
      */
