@@ -178,37 +178,39 @@ public class AssignmentSubmissionAPIController {
      * @return a ResponseEntity indicating success or an error if the submission is not found
      */
     @PostMapping("/grade/{submissionId}")
+    @Transactional
     public ResponseEntity<?> gradeSubmission(
             @PathVariable Long submissionId,
             @RequestParam Double grade,
             @RequestParam(required = false) String feedback
     ) {
         AssignmentSubmission submission = submissionRepo.findById(submissionId).orElse(null);
-        if (submission != null) {
-            // we have a correct submission
-            submission.setGrade(grade);
-            submission.setFeedback(feedback);
-            submissionRepo.save(submission);
-
-            for (Person student : submission.getStudents()) {
-                SynergyGrade assignedGrade = gradesRepo.findByAssignmentAndStudent(submission.getAssignment(), student);
-                if (assignedGrade != null) {
-                    // the assignment has a previously assigned grade, so we are just updating it
-                    assignedGrade.setGrade(grade);
-                }
-                else {
-                    // assignment is not graded, we must create a new grade
-                    SynergyGrade newGrade = new SynergyGrade(grade, submission.getAssignment(), student);
-                    gradesRepo.save(newGrade);
-                }
-            }
-            
-
-            return new ResponseEntity<>("It worked", HttpStatus.OK);
+        if (submission == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Submission not found");
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);    
         }
-        Map<String, String> error = new HashMap<>();
-        error.put("error", "Submission not found");
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+
+        // we have a correct submission
+        submission.setGrade(grade);
+        submission.setFeedback(feedback);
+        submissionRepo.save(submission);
+
+        for (Person student : submission.getStudents()) {
+            SynergyGrade assignedGrade = gradesRepo.findByAssignmentAndStudent(submission.getAssignment(), student);
+            if (assignedGrade != null) {
+                // the assignment has a previously assigned grade, so we are just updating it
+                assignedGrade.setGrade(grade);
+                gradesRepo.save(assignedGrade);
+            }
+            else {
+                // assignment is not graded, we must create a new grade
+                SynergyGrade newGrade = new SynergyGrade(grade, submission.getAssignment(), student);
+                gradesRepo.save(newGrade);
+            }
+        }
+
+        return new ResponseEntity<>("Grade updated successfully", HttpStatus.OK);
     }
 
     /**
