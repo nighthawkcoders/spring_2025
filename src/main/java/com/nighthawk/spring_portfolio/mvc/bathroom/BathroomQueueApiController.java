@@ -24,6 +24,7 @@ import lombok.Getter;
 // REST API controller for managing bathroom queues
 @RestController
 @RequestMapping("/api/queue") // Base URL for all endpoints in this controller
+@CrossOrigin(origins = {"http://localhost:8085", "http://your-production-url.com"})
 public class BathroomQueueApiController {
 
     @Autowired
@@ -64,21 +65,23 @@ public class BathroomQueueApiController {
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeFromQueue(@RequestBody QueueDto queueDto) {
         Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
+    
         if (queueEntry.isPresent()) {
             BathroomQueue bathroomQueue = queueEntry.get();
+    
             try {
                 // Remove the student from the queue
                 bathroomQueue.removeStudent(queueDto.getStudentName());
-                repository.save(bathroomQueue); // Save the updated queue
-                return new ResponseEntity<>("Removed " + queueDto.getStudentName() + " from " + queueDto.getTeacherEmail() + "'s queue", HttpStatus.OK);
+                repository.save(bathroomQueue);
+                return new ResponseEntity<>("Removed " + queueDto.getStudentName(), HttpStatus.OK);
             } catch (IllegalArgumentException e) {
-                // Handle case where student is not in the queue
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
             }
         }
-        // Handle case where no queue exists for the teacher
+    
         return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
+    
 
     @CrossOrigin(origins = {"*"})
     @DeleteMapping("/removefront/{teacher}")
@@ -103,7 +106,6 @@ public class BathroomQueueApiController {
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(queueDto.getStudentName())) {
                 // Approve the student at the front of the queue
-                bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + queueDto.getStudentName(), HttpStatus.OK);
             } else {
@@ -166,7 +168,6 @@ public class BathroomQueueApiController {
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(studentName)) {
                 // Approve the student
-                bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + studentName, HttpStatus.OK);
             } else {
@@ -177,7 +178,6 @@ public class BathroomQueueApiController {
     }
 
     // Endpoint to retrieve all queues
-    @CrossOrigin(origins = {"*"})
     @GetMapping("/all")
     public ResponseEntity<List<BathroomQueue>> getAllQueues() {
         return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
