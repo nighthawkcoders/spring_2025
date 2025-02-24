@@ -24,7 +24,7 @@ import lombok.Getter;
 // REST API controller for managing bathroom queues
 @RestController
 @RequestMapping("/api/queue") // Base URL for all endpoints in this controller
-@CrossOrigin(origins = {"http://localhost:8085", "http://your-production-url.com"})
+@CrossOrigin(origins = {"http://localhost:8085", "https://nighthawkcoders.github.io/portfolio_2025"})
 public class BathroomQueueApiController {
 
     @Autowired
@@ -106,7 +106,6 @@ public class BathroomQueueApiController {
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(queueDto.getStudentName())) {
                 // Approve the student at the front of the queue
-                bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + queueDto.getStudentName(), HttpStatus.OK);
             } else {
@@ -169,7 +168,6 @@ public class BathroomQueueApiController {
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(studentName)) {
                 // Approve the student
-                bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + studentName, HttpStatus.OK);
             } else {
