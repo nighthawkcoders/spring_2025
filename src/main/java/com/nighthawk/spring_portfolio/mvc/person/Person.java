@@ -341,7 +341,7 @@ public class Person implements Comparable<Person> {
         people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         people.add(createPerson("Alan Turing","alan",  "turing@gmail.com", defaultPassword, "2", "/images/alan.png", false, startingBalance, "06-23-1912", Arrays.asList("ROLE_USER", "ROLE_TESTER","ROLE_STUDENT")));
         people.add(createPerson("Mirage Systems","mirage",  "mirage@mirage.tech", miragePassword, "2", "/images/mirage.png", false, startingBalance, "01-01-0001", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_STUDENT")));
-        // /images/mirage.png
+
         Collections.sort(people);
         for (Person person : people) {
             userStocksTable stock = new userStocksTable(null, "BTC,ETH", startingBalance, person.getEmail(), person, false, true, "");
