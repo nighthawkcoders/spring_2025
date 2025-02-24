@@ -5,7 +5,12 @@ import java.util.ArrayList;
 
 public class ResetCode {
     public static char RandomCharacter(){
-        return (char)(int)(Math.random()*43 + 48);
+        char random = (char)(int)(Math.random()*43 + 48);
+        while((int)random >= 58 && (int)random <= 64){
+            random = (char)(int)(Math.random()*43 + 48);
+        }
+        
+        return random;
     }
 
     public static ArrayList<String[]> codes = new ArrayList<String[]>();
