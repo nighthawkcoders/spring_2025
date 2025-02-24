@@ -68,6 +68,7 @@ public class BathroomQueue {
         }
     }
 
+    
     /**
      * @return - returns the student who is at the front of the line, removing the
      *         commas and sanitizing the data
@@ -78,7 +79,6 @@ public class BathroomQueue {
         }
         return null;
     }
-
 
     /**
      * Students need to be approved to go to the bathroom by the teacher
@@ -110,7 +110,7 @@ public class BathroomQueue {
      */
     public static BathroomQueue[] init() {
         ArrayList<BathroomQueue> queues = new ArrayList<>();
-        queues.add(new BathroomQueue("jmort1021@gmail.com", ""));
+        queues.add(new BathroomQueue("jm1021@gmail.com", ""));
         return queues.toArray(new BathroomQueue[0]);
     }
 }
