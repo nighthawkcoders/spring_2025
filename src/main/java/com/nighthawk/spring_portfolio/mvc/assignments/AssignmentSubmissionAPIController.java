@@ -89,7 +89,7 @@ public class AssignmentSubmissionAPIController {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
-            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content, comment,isLate);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, new Person[]{student}, content, comment,isLate);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
@@ -119,15 +119,17 @@ public class AssignmentSubmissionAPIController {
             submission.setFeedback(feedback);
             submissionRepo.save(submission);
 
-            SynergyGrade assignedGrade = gradesRepo.findByAssignmentAndStudent(submission.getAssignment(), submission.getStudent());
-            if(assignedGrade != null){
-                // the assignment has a previously assigned grade, so we are just updating it
-                assignedGrade.setGrade(grade);
-            }
-            else{
-                // assignment is not graded, we must create a new grade
-                SynergyGrade newGrade = new SynergyGrade(grade, submission.getAssignment(), submission.getStudent());
-                gradesRepo.save(newGrade);
+            for (Person student : submission.getStudents()) {
+                SynergyGrade assignedGrade = gradesRepo.findByAssignmentAndStudent(submission.getAssignment(), student);
+                if (assignedGrade != null) {
+                    // the assignment has a previously assigned grade, so we are just updating it
+                    assignedGrade.setGrade(grade);
+                }
+                else {
+                    // assignment is not graded, we must create a new grade
+                    SynergyGrade newGrade = new SynergyGrade(grade, submission.getAssignment(), student);
+                    gradesRepo.save(newGrade);
+                }
             }
             
 

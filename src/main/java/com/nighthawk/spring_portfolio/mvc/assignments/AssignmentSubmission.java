@@ -34,7 +34,7 @@ public class AssignmentSubmission {
     @ManyToOne
     @JoinColumn(name = "student_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Person student;
+    private Person[] students;
 
     private String content;
     private Double grade;
@@ -46,9 +46,9 @@ public class AssignmentSubmission {
 
     private boolean isLate;
     
-    public AssignmentSubmission(Assignment assignment, Person student, String content, String comment, boolean isLate) {
+    public AssignmentSubmission(Assignment assignment, Person[] students, String content, String comment, boolean isLate) {
         this.assignment = assignment;
-        this.student = student;
+        this.students = students;
         this.content = content;
         this.grade = null;
         this.feedback = null;
@@ -71,8 +71,8 @@ public class AssignmentSubmission {
         return assignment;
     }
 
-    public Person getStudent() {
-        return student;
+    public Person[] getStudents() {
+        return students;
     }
 
     public String getContent() {
