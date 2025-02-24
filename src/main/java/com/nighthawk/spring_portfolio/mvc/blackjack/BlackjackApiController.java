@@ -139,7 +139,6 @@ public class BlackjackApiController {
             int dealerScore = (int) game.getGameStateMap().getOrDefault("dealerScore", 0);
             double betAmount = game.getBetAmount();
 
-            // Dealer hits until reaching at least 17
             while (dealerScore < 17 && deck != null && !deck.isEmpty()) {
                 String drawnCard = deck.remove(0);
                 dealerHand.add(drawnCard);
@@ -165,7 +164,7 @@ public class BlackjackApiController {
                 double updatedBalance = person.getBalanceDouble() - betAmount;
                 person.setBalanceString(updatedBalance);
             } else {
-                result = "DRAW"; // No balance change on draw
+                result = "DRAW";
             }
 
             game.getGameStateMap().put("result", result);
@@ -178,5 +177,13 @@ public class BlackjackApiController {
             LOGGER.log(Level.SEVERE, "Error processing stand", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> safeCastToList(Object obj) {
+        if (obj instanceof List) {
+            return (List<String>) obj;
+        }
+        return new ArrayList<>();
     }
 }
