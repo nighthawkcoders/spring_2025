@@ -130,12 +130,13 @@ public class HallPassController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
+    
     @PostMapping("/addTeacher")
     public ResponseEntity<Object> addTeacher(@RequestBody Map<String, String> teacherData) {
         try {
             Teacher teacher = new Teacher();
-            teacher.setFirstname(teacherData.get("firstName"));
-            teacher.setFirstname(teacherData.get("lastName"));
+            teacher.setFirstname(teacherData.get("firstName")); // Correctly set first name
+            teacher.setLastname(teacherData.get("lastName"));  // Correctly set last name
     
             Teacher savedTeacher = hallPassService.addTeacher(teacher);
             return ResponseEntity.ok(savedTeacher);
@@ -143,7 +144,6 @@ public class HallPassController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-    
      
     // Endpoint to remove a teacher by ID
     @DeleteMapping("/removeTeacher")
