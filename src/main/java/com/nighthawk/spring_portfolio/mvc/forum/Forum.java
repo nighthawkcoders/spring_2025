@@ -31,22 +31,28 @@ public class Forum {
     @Column(name = "context", nullable=false)
     private String context; // Context of the post
 
+    @Column(nullable=false)
+    private String date;
+
     @Column(name = "views", nullable=false)
     private int views;
 
-    public Forum(String author, String title, String context, int views) {
+
+    public Forum(String author, String title, String context, String date ,int views) {
         this.author = author;
         this.title = title;
         this.context = context;
+        this.date = date;
         this.views = views;
     }
 
     // Static method for creating Forum objects
-    public static Forum createQuestion(String author, String title, String context, int views) {
+    public static Forum createQuestion(String author, String title, String context, String date,int views) {
         Forum forum = new Forum();
         forum.setAuthor(author);
         forum.setTitle(title);
         forum.setContext(context);
+        forum.setDate(date);
         forum.setViews(views);
 
         return forum;
@@ -58,6 +64,6 @@ public class Forum {
 
     @Override
     public String toString() {
-        return String.format("Forum{author='%s', title='%s', context='%s'}", author, title, context);
+        return String.format("Forum{author='%s', title='%s', context='%s', date='%s', views='%s'}", author, title, context, date, views);
     }
 }

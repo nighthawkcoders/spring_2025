@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface forumBlogRepository extends JpaRepository<forumBlogs, Long> {
     forumBlogs findByTitle(String title);
+    forumBlogs findByAuthor(String author);
+    forumBlogs findById(long id);
 }
