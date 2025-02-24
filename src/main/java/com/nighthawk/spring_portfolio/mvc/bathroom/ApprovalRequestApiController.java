@@ -38,8 +38,6 @@ public class ApprovalRequestApiController {
 
     @PostMapping("/sendApprovalRequest")
     public ResponseEntity<Object> sendApprovalRequest(@RequestBody ApprovalRequest requestDto) {
-        System.out.println("Request received: " + requestDto.getStudentName());
-    
         ApprovalRequest newRequest = new ApprovalRequest(requestDto.getTeacherEmail(), requestDto.getStudentName(), null);
         approvalRepository.save(newRequest);
     
@@ -56,18 +54,12 @@ public class ApprovalRequestApiController {
     // @PreAuthorize("isAuthenticated()")
     @PostMapping("/approveRequest")
     public ResponseEntity<Object> approveRequest(@RequestBody ApprovalRequest requestDto) {
-        System.out.println("Received Approval Request for: " + requestDto.getStudentName() 
-            + " (Teacher: " + requestDto.getTeacherEmail() + ") at time: " + requestDto.getTimeIn());
-
         Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(
                 requestDto.getTeacherEmail(), requestDto.getStudentName());
 
         if (request.isPresent()) {
-            System.out.println("Request Found in Approval Table: " + requestDto.getStudentName());
-
             // Remove from approval table
             approvalRepository.delete(request.get());
-            System.out.println("Removed from Approval Table");
 
             // Try finding student in Person DB
             Person student = personRepository.findByName(requestDto.getStudentName());
@@ -90,7 +82,6 @@ public class ApprovalRequestApiController {
             String formattedTimeIn = parsedTimeIn.format(DateTimeFormatter.ofPattern("HH:mm:ss")); // 24-hour format
 
             timeInMap.put(student.getName(), formattedTimeIn);
-            System.out.println("Stored timeIn in memory for " + student.getName() + ": " + formattedTimeIn);
 
             // Check if a queue entry already exists for the teacher
             Optional<BathroomQueue> existingQueueOpt = bathroomQueueRepository.findByTeacherEmail(requestDto.getTeacherEmail());
@@ -98,7 +89,6 @@ public class ApprovalRequestApiController {
             BathroomQueue queue;
             if (existingQueueOpt.isPresent()) {
                 queue = existingQueueOpt.get();  // Use existing queue
-                System.out.println("Existing Queue Found for teacher: " + requestDto.getTeacherEmail());
             } else {
                 queue = new BathroomQueue(requestDto.getTeacherEmail(), ""); // Create new queue
                 System.out.println("New Queue Created for teacher: " + requestDto.getTeacherEmail());
@@ -107,9 +97,7 @@ public class ApprovalRequestApiController {
             // Add student to the queue using addStudent method
             queue.addStudent(requestDto.getStudentName());
             bathroomQueueRepository.save(queue);
-            System.out.println("Student added to queue: " + requestDto.getStudentName());
 
-            System.out.println("TimeIn Stored in DB: " + formattedTimeIn);
             return new ResponseEntity<>("Student approved, added to queue, and timeIn saved", HttpStatus.OK);
         }
 
