@@ -143,4 +143,8 @@ public class MiningUser {
     public void setPowerCost(double powerCost) {
         this.powerCost = powerCost;
     }
+
+    public List<GPU> getOwnedGPUs() {
+        return this.ownedGPUs;
+    } 
 }

@@ -40,14 +40,14 @@ public class Tinkle {
     private String timeIn;
 
     @Column
-    private String person_name;
+    private String personName;
 
     //Constructor for the Tinkle Object
     public Tinkle(Person person, String statsInput)
     {
         this.person = person;
         this.timeIn = statsInput;
-        this.person_name = person.getName();
+        this.personName = person.getName();
     }
 
     //Logic to add the timeIn value. Example formatting for the timeIn entry: 11:30:12-12:14:10,12:15:14-11:10:9

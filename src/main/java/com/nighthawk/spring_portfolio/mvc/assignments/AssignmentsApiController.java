@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +201,7 @@ public class AssignmentsApiController {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
-            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content,comment,isLate);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, List.of(student), content, comment, isLate);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
