@@ -45,6 +45,68 @@ public class AssignmentSubmissionAPIController {
     @Autowired
     private SynergyGradeJpaRepository gradesRepo;
 
+    @Getter
+    @Setter
+    public static class AssignmentSubmissionReturnDto {
+        public Long id;
+        public AssignmentReturnDto assignment;
+        public List<PersonSubmissionDto> students;
+        public String content;
+        public String comment;
+        public Double grade;
+        public String feedback;
+        public Boolean isLate;
+
+        public AssignmentSubmissionReturnDto(AssignmentSubmission submission) {
+            this.id = submission.getId();
+            this.assignment = new AssignmentReturnDto(submission.getAssignment());
+            this.students = submission.getStudents().stream().map(PersonSubmissionDto::new).toList();
+            this.content = submission.getContent();
+            this.comment = submission.getComment();
+            this.grade = submission.getGrade();
+            this.feedback = submission.getFeedback();
+            this.isLate = submission.getIsLate();
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class PersonSubmissionDto {
+        public Long id;
+        public String name;
+        public String email;
+        public String uid;
+
+        public PersonSubmissionDto(Person person) {
+            this.id = person.getId();
+            this.name = person.getName();
+            this.email = person.getEmail();
+            this.uid = person.getUid();
+        }
+    }
+    
+    @Getter
+    @Setter
+    public static class AssignmentReturnDto {
+        public Long id;
+        public String name;
+        public String type;
+        public String description;
+        public Double points;
+        public String dueDate;
+        public String timestamp;
+
+        public AssignmentReturnDto(Assignment assignment) {
+            this.id = assignment.getId();
+            this.name = assignment.getName();
+            this.type = assignment.getType();
+            this.description = assignment.getDescription();
+            this.points = assignment.getPoints();
+            this.dueDate = assignment.getDueDate();
+            this.timestamp = assignment.getTimestamp();
+        }
+    }
+
     /**
      * Get all submissions for a specific student.
      * 
@@ -53,10 +115,11 @@ public class AssignmentSubmissionAPIController {
      */
     @Transactional
     @GetMapping("/getSubmissions/{studentId}")
-    public ResponseEntity<List<AssignmentSubmission>> getSubmissions(@PathVariable Long studentId) {
-        List<AssignmentSubmission> submissions = submissionRepo.findByStudentId(studentId);
-        ResponseEntity<List<AssignmentSubmission>> responseEntity = new ResponseEntity<>(submissions, HttpStatus.OK);
-        return responseEntity;
+    public ResponseEntity<?> getSubmissions(@PathVariable Long studentId) {
+        List<AssignmentSubmissionReturnDto> submissions = submissionRepo.findByStudentId(studentId).stream()
+        .map(AssignmentSubmissionReturnDto::new)
+        .toList();;
+        return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
 
     /**
@@ -99,7 +162,7 @@ public class AssignmentSubmissionAPIController {
         if (assignment != null) {
             AssignmentSubmission submission = new AssignmentSubmission(assignment, students, requestData.content, requestData.comment,requestData.isLate);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
-            return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
+            return new ResponseEntity<>(new AssignmentSubmissionReturnDto(savedSubmission), HttpStatus.CREATED);
         }
         Map<String, String> error = new HashMap<>();
         error.put("error", "Assignment not found");
@@ -164,7 +227,9 @@ public class AssignmentSubmissionAPIController {
                 HttpStatus.NOT_FOUND
             );
         }
-        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        List<AssignmentSubmissionReturnDto> submissions = submissionRepo.findByAssignmentId(assignmentId).stream()
+            .map(AssignmentSubmissionReturnDto::new)
+            .toList();
         return new ResponseEntity<>(submissions, HttpStatus.OK);
     }
 }
