@@ -24,6 +24,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
@@ -91,7 +92,7 @@ public class Person implements Comparable<Person> {
     @JsonIgnore
     private List<SynergyGrade> grades;
     
-    @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
+    @OneToMany(mappedBy="students", cascade=CascadeType.ALL, orphanRemoval=true)
     @JsonIgnore
     private List<AssignmentSubmission> submissions;
     
@@ -182,14 +183,17 @@ public class Person implements Comparable<Person> {
 
     @Column
     private String balance;
+
     public double getBalanceDouble() {
         var balance_tmp = getBalance();
         return Double.parseDouble(balance_tmp);
     }
+
     public String setBalanceString(double updatedBalance) {
         this.balance = String.valueOf(updatedBalance); // Update the balance as a String
         return this.balance; // Return the updated balance as a String
     }
+
     /**
      * stats is used to store JSON for daily stats
      * --- @JdbcTypeCode annotation is used to specify the JDBC type code for a
@@ -207,6 +211,14 @@ public class Person implements Comparable<Person> {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
+
+    @PreRemove
+    private void removePersonFromSubmissions() {
+        // if a user is deleted, remove them from everything they've submitted
+        for (AssignmentSubmission submission : submissions) {
+            submission.getStudents().remove(this);
+        }
+    }
 
     /** Custom constructor for Person when building a new Person object from an API call
      * @param email, a String

@@ -1,5 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
+import java.util.List;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -11,7 +13,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreRemove;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,10 +36,14 @@ public class AssignmentSubmission {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Assignment assignment;
 
-    @ManyToOne
-    @JoinColumn(name = "student_id")
+    @ManyToMany
+    @JoinTable(
+        name = "assignment_submission_students",
+        joinColumns = @JoinColumn(name = "submission_id"),
+        inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Person[] students;
+    private List<Person> students;
 
     private String content;
     private Double grade;
@@ -45,8 +54,16 @@ public class AssignmentSubmission {
     private long assignmentid;
 
     private boolean isLate;
+
+    @PreRemove
+    private void removeStudentsFromSubmission() {
+        // before the submission is removed, remove the submission from the students' submissions list
+        for (Person student : students) {
+            student.getSubmissions().remove(this);
+        }
+    }
     
-    public AssignmentSubmission(Assignment assignment, Person[] students, String content, String comment, boolean isLate) {
+    public AssignmentSubmission(Assignment assignment, List<Person> students, String content, String comment, boolean isLate) {
         this.assignment = assignment;
         this.students = students;
         this.content = content;
@@ -71,7 +88,7 @@ public class AssignmentSubmission {
         return assignment;
     }
 
-    public Person[] getStudents() {
+    public List<Person> getStudents() {
         return students;
     }
 
