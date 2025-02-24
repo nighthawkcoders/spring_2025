@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -33,6 +34,26 @@ public class MiningUser {
 
     @ManyToMany
     private List<GPU> activeGPUs = new ArrayList<>();
+
+    // New mining statistics fields
+    private long totalMiningTimeMinutes = 0;
+    private long totalSharesMined = 0;
+    private double totalBtcEarned = 0.0;
+    private Date miningStartTime;
+    private long miningSessionCount = 0;
+    
+    // New getters for calculated statistics
+    public long getCurrentSessionDuration() {
+        if (!isMining || miningStartTime == null) {
+            return 0;
+        }
+        return (new Date().getTime() - miningStartTime.getTime()) / (1000 * 60); // in minutes
+    }
+
+    public double getAverageHashrate() {
+        if (totalMiningTimeMinutes == 0) return 0;
+        return (totalSharesMined * 1.0) / totalMiningTimeMinutes;
+    }
 
     public MiningUser(Person person) {
         this.person = person;
@@ -118,7 +139,19 @@ public class MiningUser {
         return this.activeGPUs;
     }
 
+    // Modified setMining method to track sessions
     public void setMining(boolean mining) {
+        if (mining && !this.isMining) {
+            // Starting new mining session
+            this.miningStartTime = new Date();
+            this.miningSessionCount++;
+        } else if (!mining && this.isMining) {
+            // Stopping mining session
+            if (miningStartTime != null) {
+                this.totalMiningTimeMinutes += getCurrentSessionDuration();
+            }
+            this.miningStartTime = null;
+        }
         this.isMining = mining;
         if (!mining) {
             this.currentHashrate = 0.0;

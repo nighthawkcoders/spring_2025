@@ -429,13 +429,6 @@ public class MiningController {
             double confirmedUSD = confirmedBTC * btcPrice;
             double totalUSD = pendingUSD + confirmedUSD;
 
-            // Update user's balance with mining profits
-            if (totalUSD > 0) {
-                double newBalance = userBalance + totalUSD;
-                userStocks.setBalance(String.format("%.2f", newBalance));
-                userStocksRepo.save(userStocks);
-            }
-            
             status.put("pendingBalance", String.format("%.8f", pendingBTC));
             status.put("pendingBalanceUSD", String.format("%.2f", pendingUSD));
             status.put("confirmedBalance", String.format("%.8f", confirmedBTC));
