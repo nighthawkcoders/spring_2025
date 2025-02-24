@@ -20,7 +20,7 @@ public class TinkleStatisticsService {
         // Group durations by person name
         Map<String, List<Long>> userWeeklyDurations = tinkleList.stream()
             .collect(Collectors.groupingBy(
-                Tinkle::getPerson_name,
+                Tinkle::getPersonName,
                 Collectors.mapping(
                     t -> calculateTotalDurationInSeconds(t.getTimeIn()),
                     Collectors.toList()
