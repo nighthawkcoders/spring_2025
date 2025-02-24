@@ -275,10 +275,4 @@ public class Teacher {
         }
     }
 
-
-    public void setEmail(String string) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setEmail'");
-    }
-
 }
