@@ -106,6 +106,7 @@ public class BathroomQueueApiController {
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(queueDto.getStudentName())) {
                 // Approve the student at the front of the queue
+                bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + queueDto.getStudentName(), HttpStatus.OK);
             } else {
@@ -168,6 +169,7 @@ public class BathroomQueueApiController {
             String frontStudent = bathroomQueue.getFrontStudent();
             if (frontStudent != null && frontStudent.equals(studentName)) {
                 // Approve the student
+                bathroomQueue.approveStudent();
                 repository.save(bathroomQueue);
                 return new ResponseEntity<>("Approved " + studentName, HttpStatus.OK);
             } else {
