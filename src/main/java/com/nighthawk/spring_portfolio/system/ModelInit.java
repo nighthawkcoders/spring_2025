@@ -23,6 +23,7 @@ import com.nighthawk.spring_portfolio.mvc.bathroom.Issue;
 import com.nighthawk.spring_portfolio.mvc.bathroom.IssueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Teacher;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TeacherJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.bathroom.TinkleJPARepository;
 import com.nighthawk.spring_portfolio.mvc.comment.Comment;
 import com.nighthawk.spring_portfolio.mvc.comment.CommentJPA;
@@ -144,14 +145,14 @@ public class ModelInit {
                 }
             }
 
-            // Tinkle[] tinkleArray = Tinkle.init(personArray);
-            // for(Tinkle tinkle: tinkleArray) {
-            //     // List<Tinkle> tinkleFound = 
-            //     Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPerson_name());
-            //     if(tinkleFound.isEmpty()) {
-            //         tinkleJPA.save(tinkle);
-            //     }
-            // }
+            Tinkle[] tinkleArray = Tinkle.init(personArray);
+            for(Tinkle tinkle: tinkleArray) {
+                // List<Tinkle> tinkleFound = 
+                Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPersonName());
+                if(tinkleFound.isEmpty()) {
+                    tinkleJPA.save(tinkle);
+                }
+            }
 
             BathroomQueue[] queueArray = BathroomQueue.init();
             for(BathroomQueue queue: queueArray) {
