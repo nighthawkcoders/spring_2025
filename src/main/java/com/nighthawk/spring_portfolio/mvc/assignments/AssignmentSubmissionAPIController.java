@@ -22,6 +22,8 @@ import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * REST API Controller for managing assignment submissions.
@@ -69,6 +71,16 @@ public class AssignmentSubmissionAPIController {
         return new ResponseEntity<>(submission, HttpStatus.CREATED);
     }
 
+    @Getter
+    @Setter
+    public static class SubmissionRequestDto {
+        public Long assignmentId;
+        public List<Long> studentIds;
+        public String content;
+        public String comment;
+        public Boolean isLate;
+    }
+
     /**
      * Submit an assignment for a student.
      * 
@@ -80,16 +92,12 @@ public class AssignmentSubmissionAPIController {
      */
     @PostMapping("/submit/{assignmentId}")
     public ResponseEntity<?> submitAssignment(
-            @PathVariable Long assignmentId,
-            @RequestParam Long studentId,
-            @RequestParam String content,
-            @RequestParam String comment,
-            @RequestParam Boolean isLate
+            @RequestBody SubmissionRequestDto requestData
     ) {
-        Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
-        Person student = personRepo.findById(studentId).orElse(null);
+        Assignment assignment = assignmentRepo.findById(requestData.assignmentId).orElse(null);
+        List<Person> students = personRepo.findAllById(requestData.studentIds);
         if (assignment != null) {
-            AssignmentSubmission submission = new AssignmentSubmission(assignment, List.of(student), content, comment,isLate);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, students, requestData.content, requestData.comment,requestData.isLate);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
@@ -97,7 +105,7 @@ public class AssignmentSubmissionAPIController {
         error.put("error", "Assignment not found");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-
+    
     /**
      * Grade an existing assignment submission.
      * 
