@@ -94,7 +94,7 @@ public class Person implements Comparable<Person> {
     @JsonIgnore
     private List<SynergyGrade> grades;
     
-    @OneToMany(mappedBy="students", cascade=CascadeType.ALL, orphanRemoval=true)
+    @ManyToMany(mappedBy="students", cascade=CascadeType.MERGE)
     @JsonIgnore
     private List<AssignmentSubmission> submissions;
     
@@ -217,9 +217,11 @@ public class Person implements Comparable<Person> {
 
     @PreRemove
     private void removePersonFromSubmissions() {
-        // if a user is deleted, remove them from everything they've submitted
-        for (AssignmentSubmission submission : submissions) {
-            submission.getStudents().remove(this);
+        if (submissions != null) {
+            // if a user is deleted, remove them from everything they've submitted
+            for (AssignmentSubmission submission : submissions) {
+                submission.getStudents().remove(this);
+            }
         }
     }
 
@@ -241,6 +243,7 @@ public class Person implements Comparable<Person> {
         this.pfp = pfp;
         this.balance = balance;
         this.roles.add(role);
+        this.submissions = new ArrayList<>();
     }
 
     public boolean hasRoleWithName(String roleName) {

@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -38,15 +39,13 @@ public class AssignmentSubmission {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Assignment assignment;
 
-    @ManyToMany(cascade = {jakarta.persistence.CascadeType.MERGE})
+    @ManyToMany(cascade = jakarta.persistence.CascadeType.MERGE)
     @JoinTable(
         name = "assignment_submission_students",
         joinColumns = @JoinColumn(name = "submission_id"),
         inverseJoinColumns = @JoinColumn(name = "student_id")
     )
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private List<Person> students;
+    private List<Person> students = new ArrayList<>();
 
     private String content;
     private Double grade;
@@ -60,9 +59,11 @@ public class AssignmentSubmission {
 
     @PreRemove
     private void removeStudentsFromSubmission() {
-        // before the submission is removed, remove the submission from the students' submissions list
-        for (Person student : students) {
-            student.getSubmissions().remove(this);
+        if (students != null) {
+            // before the submission is removed, remove the submission from the students' submissions list
+            for (Person student : students) {
+                student.getSubmissions().remove(this);
+            }
         }
     }
     
