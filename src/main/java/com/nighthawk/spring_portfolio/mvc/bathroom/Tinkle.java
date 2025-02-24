@@ -67,23 +67,45 @@ public class Tinkle {
             } else {
                 this.timeInOutPairs = new ArrayList<>(this.timeInOutPairs); 
             }
+            
             String[] pairs = timeInOutPairs.split(",");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
             for (String pair : pairs) {
                 String[] times = pair.split("-");
                 if (times.length == 2) {
-                    if (times[0].matches("\\d{2}:\\d{2}:\\d{2}")) { // If only time is given
-                        times[0] = LocalDateTime.now().toLocalDate() + " " + times[0]; // Prepend current date
+                    try {
+                        // Ensure both times have leading zeros for single-digit hours
+                        times[0] = formatTime(times[0], timeFormatter);
+                        times[1] = formatTime(times[1], timeFormatter);
+                        
+                        // Prepend the current date
+                        String date = LocalDateTime.now().toLocalDate().toString();
+                        LocalDateTime parsedTimeIn = LocalDateTime.parse(date + " " + times[0], dateTimeFormatter);
+                        LocalDateTime parsedTimeOut = LocalDateTime.parse(date + " " + times[1], dateTimeFormatter);
+    
+                        this.timeInOutPairs.add(new LocalDateTime[]{parsedTimeIn, parsedTimeOut});
+                    } catch (Exception e) {
+                        System.out.println("⚠️ Failed to parse time: " + pair);
                     }
-                    if (times[1].matches("\\d{2}:\\d{2}:\\d{2}")) { // If only time is given
-                        times[1] = LocalDateTime.now().toLocalDate() + " " + times[1]; // Prepend current date
-                    }
-                    LocalDateTime parsedTimeIn = LocalDateTime.parse(times[0], formatter);
-                    LocalDateTime parsedTimeOut = LocalDateTime.parse(times[1], formatter);
-                    this.timeInOutPairs.add(new LocalDateTime[]{parsedTimeIn, parsedTimeOut});
                 }
             }
         }
     }
+    
+    // Helper method to ensure time format is always HH:mm:ss
+    private String formatTime(String time, DateTimeFormatter formatter) {
+        String[] parts = time.split(":");
+        if (parts.length == 3) {
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+            int second = Integer.parseInt(parts[2]);
+            return String.format("%02d:%02d:%02d", hour, minute, second); // Ensures HH:mm:ss format
+        }
+        return time; // Return original if parsing fails
+    }
+    
 
     // Method to add a single time in and out pair
     public void addTimeIn(LocalDateTime timeIn, LocalDateTime timeOut) {
