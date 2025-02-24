@@ -25,6 +25,7 @@ public class BathroomQueue {
     @Column
     private String teacherEmail;
     private String peopleQueue;
+    private int away;
 
     // Custom constructor
 
@@ -37,6 +38,7 @@ public class BathroomQueue {
     public BathroomQueue(String teacherEmail, String peopleQueue) {
         this.teacherEmail = teacherEmail;
         this.peopleQueue = peopleQueue;
+        this.away = 0;
     }
 
     /**
@@ -66,6 +68,7 @@ public class BathroomQueue {
         }
     }
 
+    
     /**
      * @return - returns the student who is at the front of the line, removing the
      *         commas and sanitizing the data
@@ -78,10 +81,36 @@ public class BathroomQueue {
     }
 
     /**
+     * Students need to be approved to go to the bathroom by the teacher
+     * When they are, their status is set to away
+     * When they return, they are removed from the queue
+     */
+    public void approveStudent() {
+        if (this.peopleQueue != null && !this.peopleQueue.isEmpty()) {
+            if (this.away == 0) {
+                // Student is approved to go away
+                this.away = 1;
+            } else {
+                // Student has returned; remove from queue
+                String[] students = this.peopleQueue.split(",");
+                if (students.length > 1) {
+                    this.peopleQueue = String.join(",", Arrays.copyOfRange(students, 1, students.length));
+                } else {
+                    this.peopleQueue = "";
+                }
+                this.away = 0;
+            }
+        } else {
+            throw new IllegalStateException("Queue is empty");
+        }
+    }
+
+    /**
      * @return - initialize the queue
      */
     public static BathroomQueue[] init() {
         ArrayList<BathroomQueue> queues = new ArrayList<>();
+        queues.add(new BathroomQueue("jmort1021@gmail.com", ""));
         return queues.toArray(new BathroomQueue[0]);
     }
 }
