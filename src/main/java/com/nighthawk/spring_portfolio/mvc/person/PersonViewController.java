@@ -259,7 +259,7 @@ public class PersonViewController {
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/// "Reset" Post mappings
+/// "Reset" Post and Get mappings
 
     @Getter
     public static class PersonPasswordReset {
@@ -346,4 +346,18 @@ public class PersonViewController {
     public String resetCheck() {
         return "person/resetCheck";
     }
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// "Cookie-Clicker" Post and Get mappings
+/// 
+    @GetMapping("/cookie-clicker")
+    public String cookieClicker(Authentication authentication, Model model) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        Person person = repository.getByUid(userDetails.getUsername());  // Fetch the person by email
+        List<Person> list = Collections.singletonList(person);  // Create a single element list
+        model.addAttribute("list", list);  // Add the list to the model for the view 
+        return "person/cookie-clicker";  // Return the template for the update form
+    }
+
 }
