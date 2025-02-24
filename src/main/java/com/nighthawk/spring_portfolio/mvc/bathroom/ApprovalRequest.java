@@ -23,11 +23,9 @@ public class ApprovalRequest {
 
     private String teacherEmail;
     private String studentName;
-    private String timeIn;
 
-    public ApprovalRequest(String teacherEmail, String studentName, String timeIn) {
+    public ApprovalRequest(String teacherEmail, String studentName) {
         this.teacherEmail = teacherEmail;
         this.studentName = studentName;
-        this.timeIn = timeIn;
     }
 }
