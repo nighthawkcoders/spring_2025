@@ -1,4 +1,3 @@
-
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
 import java.sql.Date;
@@ -31,7 +30,6 @@ public class HallPassService {
     }
 
     public HallPass requestPass(Long teacherId, int period, String activity, String email) {
-
         if (email != null) {
             HallPass pass = new HallPass();
             pass.setPersonId(email);
@@ -45,7 +43,6 @@ public class HallPassService {
     }
 
     public boolean checkoutPass(String email) {
-
         if (email != null) {
             Optional<HallPass> activePass = tinkleRepository.findByPersonIdAndCheckoutIsNull(email);
             if (activePass.isPresent()) {
@@ -61,4 +58,28 @@ public class HallPassService {
     public Teacher getTeacherById(Long id) {
         return teacherRepository.findById(id).orElse(null);
     }
+
+    /**
+     * Adds a new teacher to the database.
+     * @param teacher The Teacher object to be saved.
+     * @return The saved Teacher object.
+     */
+    public Teacher addTeacher(Teacher teacher) {
+        return teacherRepository.save(teacher);
+    }
+
+    /**
+     * Removes a teacher by ID if they exist.
+     * @param teacherId The ID of the teacher to remove.
+     * @return True if successfully removed, False if teacher does not exist.
+     */
+    public boolean removeTeacher(Long teacherId) {
+        Optional<Teacher> teacher = teacherRepository.findById(teacherId);
+        if (teacher.isPresent()) {
+            teacherRepository.deleteById(teacherId);
+            return true;
+        }
+        return false;
+    }
 }
+
