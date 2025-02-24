@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.nighthawk.spring_portfolio.mvc.bathroom.TeacherDTO;
+import java.util.Map;
 
 
 import lombok.Getter;
@@ -130,22 +130,21 @@ public class HallPassController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-     //Endpoint to add a new teacher
     @PostMapping("/addTeacher")
-    public ResponseEntity<Object> addTeacher(@RequestBody TeacherDTO teacherDTO) {
+    public ResponseEntity<Object> addTeacher(@RequestBody Map<String, String> teacherData) {
         try {
             Teacher teacher = new Teacher();
-            teacher.setFirstName(teacherDTO.getFirstName());
-            teacher.setLastName(teacherDTO.getLastName());
-            teacher.setEmail(teacherDTO.getEmail());
-
+            teacher.setFirstname(teacherData.get("firstName"));
+            teacher.setFirstname(teacherData.get("lastName"));
+    
             Teacher savedTeacher = hallPassService.addTeacher(teacher);
             return ResponseEntity.ok(savedTeacher);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-
+    
+     
     // Endpoint to remove a teacher by ID
     @DeleteMapping("/removeTeacher")
     public ResponseEntity<Object> removeTeacher(@RequestParam("id") Long teacherId) {
