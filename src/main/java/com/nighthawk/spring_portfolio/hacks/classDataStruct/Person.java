@@ -155,10 +155,10 @@ public class Person extends Generics{
                 new SimpleDateFormat("MM-dd-yyyy").parse("10-21-1959")
             );
             p6 = new Person(
-                "tarasehdave@gmail.com", 
-                "123tara",
-                "Tara Sehdave",
-                new SimpleDateFormat("MM-dd-yyyy").parse("12-21-2006")
+                "mirage@mirage.tech", 
+                "mirage",
+                "Mirage Systems",
+                new SimpleDateFormat("MM-dd-yyyy").parse("03-19-2021")
             );
         } catch (Exception e) {
         }
