@@ -51,7 +51,7 @@ public class Blackjack {
 
     // Deal initial hands
     public void dealInitialHands() {
-        List<String> deck = (List<String>) gameStateMap.get("deck");
+        List<String> deck = safeCastToList(gameStateMap.get("deck"));
         List<String> playerHand = new ArrayList<>();
         List<String> dealerHand = new ArrayList<>();
 
@@ -75,15 +75,12 @@ public class Blackjack {
         for (String card : hand) {
             String rank = card.substring(0, card.length() - 1);
             switch (rank) {
-                case "A":
+                case "A" -> {
                     aces++;
-                    score += 11; // Ace initially counts as 11
-                    break;
-                case "K", "Q", "J":
-                    score += 10; // Face cards count as 10
-                    break;
-                default:
-                    score += Integer.parseInt(rank); // Number cards
+                    score += 11;
+                }
+                case "K", "Q", "J" -> score += 10;
+                default -> score += Integer.parseInt(rank);
             }
         }
 
@@ -132,6 +129,7 @@ public class Blackjack {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> fromJsonString(String json) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -139,6 +137,14 @@ public class Blackjack {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to convert JSON string to map", e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> safeCastToList(Object obj) {
+        if (obj instanceof List) {
+            return (List<String>) obj;
+        }
+        return new ArrayList<>();
     }
 
     // Getters and Setters

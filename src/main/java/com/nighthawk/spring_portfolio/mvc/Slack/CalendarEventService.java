@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,16 +54,35 @@ public class CalendarEventService {
     }
     
     // Delete event by title
+
     public boolean deleteEventById(int id) {
         CalendarEvent event = getEventById(id);
         if (event != null) {
 
             // Perform the delete
             calendarEventRepository.delete(event);
+
+    public boolean deleteEventByTitle(String title) {
+        // Retrieve all events from the repository
+        List<CalendarEvent> allEvents = calendarEventRepository.findAll(); 
+    
+        // Filter events that match the given title
+        List<CalendarEvent> eventsToDelete = allEvents.stream()
+                .filter(event -> event.getTitle().equals(title))
+                .toList();
+    
+        // If there are events to delete
+        if (!eventsToDelete.isEmpty()) {
+            // Delete each event manually
+            eventsToDelete.forEach(calendarEventRepository::delete);
+
             return true;
         }
+    
+        // If no events matched the title, return false
         return false;
     }
+    
 
     // Get events within a date range
     public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {

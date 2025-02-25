@@ -1,246 +1,189 @@
-package com.nighthawk.spring_portfolio.mvc.backups;
+// package com.nighthawk.spring_portfolio.mvc.backups;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+// import com.fasterxml.jackson.databind.ObjectMapper;
+// import jakarta.servlet.http.HttpServletResponse;
+// import org.springframework.web.bind.annotation.GetMapping;
+// import org.springframework.web.bind.annotation.RequestMapping;
+// import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nighthawk.spring_portfolio.mvc.assignments.Assignment;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentQueue;
-import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmissionJPA;
-import com.nighthawk.spring_portfolio.mvc.person.Person;
-import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
-import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
-import com.opencsv.CSVWriter;
+// import java.io.File;
+// import java.io.IOException;
+// import java.io.OutputStream;
+// import java.sql.*;
+// import java.util.Date;
+// import java.text.SimpleDateFormat;
+// import java.util.*;
 
-import jakarta.servlet.http.HttpServletResponse;
+// @RestController
+// @RequestMapping("/api/exports/")
+// public class BackupsController {
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+//     // Hardcoded database path
+//     private static final String DB_PATH = "./volumes/sqlite.db";
 
-@RestController
-@RequestMapping("/api/export")
-public class BackupsController {
+//     // Hardcoded JSON file directory
+//     private static final String BACKUP_DIR = "./volumes/backups/";
 
-    @Autowired
-    private PersonJpaRepository personRepo;
+//     // ObjectMapper for JSON serialization
+//     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private AssignmentJpaRepository assignmentRepo;
+//     // Endpoint to retrieve data from all tables in the database
+//     @GetMapping("/getAll")
+//     public void getAllTablesData(HttpServletResponse response) {
+//         // Export data from the database
+//         Map<String, List<Map<String, Object>>> data = exportData();
 
-    @Autowired
-    private AssignmentSubmissionJPA submissionRepo;
+//         // Set response headers for file download
+//         response.setContentType("application/json");
+//         response.setHeader("Content-Disposition", "attachment; filename=exports.json");
 
-    @Autowired
-    private PersonRoleJpaRepository roleRepo;
+//         // Write the JSON data to the response output stream
+//         try (OutputStream out = response.getOutputStream()) {
+//             objectMapper.writerWithDefaultPrettyPrinter().writeValue(out, data);
+//         } catch (IOException e) {
+//             e.printStackTrace();
+//             throw new RuntimeException("Failed to stream JSON data to the client", e);
+//         }
+//     }
 
-    /**
-     * Export all persons to a CSV file.
-     */
-    @GetMapping("/persons")
-    public ResponseEntity<byte[]> exportPersons() throws IOException {
-        // Fetch all persons and map them to CSV rows
-        List<String> data = personRepo.findAll().stream()
-                .map(p -> String.join(",", 
-                    String.valueOf(p.getId()), 
-                    p.getBalance(), 
-                    formatTimestamp(p.getDob()), 
-                    p.getEmail(), 
-                    String.valueOf(p.getKasmServerNeeded()), 
-                    p.getName(), 
-                    p.getPassword(), 
-                    p.getPfp(), 
-                    p.getSid(), 
-                    serializeStats(p.getStats()), // Serialize stats to JSON
-                    p.getUid()
-                ))
-                .collect(Collectors.toList());
-    
-        // Define the CSV header
-        String header = "id,balance,dob,email,kasm_server_needed,name,password,pfp,sid,stats,uid\n";
-    
-        // Combine header and data into a single CSV string
-        String csvContent = header + String.join("\n", data);
-    
-        // Create and return the CSV file as a ResponseEntity
-        return createCSVResponse("persons.csv", csvContent);
-    }
+//     // Method to export data from the database
+//     private Map<String, List<Map<String, Object>>> exportData() {
+//         Map<String, List<Map<String, Object>>> result = new HashMap<>();
 
-    private String serializeStats(Map<String, Map<String, Object>> stats) {
-        if (stats == null || stats.isEmpty()) {
-            return "{}"; // Return an empty JSON object if stats is null or empty
-        }
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(stats); // Serialize stats to JSON
-        } catch (JsonProcessingException e) {
-            return "{}"; // Fallback to an empty JSON object if serialization fails
-        }
-    }
+//         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
+//              Statement statement = connection.createStatement()) {
 
-    /**
-     * Export all assignments to a CSV file.
-     */
-    @Transactional
-    @GetMapping("/assignments")
-    public ResponseEntity<String> exportAssignments() {
-        List<Assignment> assignments = assignmentRepo.findAll();
-        ObjectMapper objectMapper = new ObjectMapper();
+//             // Get the list of tables in the database
+//             List<String> tableNames = getTableNames(connection);
 
-        StringBuilder csvData = new StringBuilder();
-        // Header row
-        csvData.append("id,assignment_queue,description,due_date,name,points,presentation_length,timestamp,type\n");
+//             // Loop through each table and retrieve its data
+//             for (String tableName : tableNames) {
+//                 List<Map<String, Object>> tableData = getTableData(statement, tableName);
+//                 result.put(tableName, tableData);
+//             }
 
-        for (Assignment assignment : assignments) {
-            try {
-                // Serialize AssignmentQueue to JSON
-                String assignmentQueueJson = assignment.getAssignmentQueue() != null
-                        ? objectMapper.writeValueAsString(assignment.getAssignmentQueue())
-                        : "null";
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//             throw new RuntimeException("Failed to retrieve data from the database", e);
+//         }
 
-                // Append each field to the CSV row, ensuring proper escaping
-                csvData.append(escapeCsvField(assignment.getId().toString())).append(",")
-                        .append(escapeCsvField(assignmentQueueJson)).append(",")
-                        .append(escapeCsvField(assignment.getDescription())).append(",")
-                        .append(escapeCsvField(assignment.getDueDate())).append(",")
-                        .append(escapeCsvField(assignment.getName())).append(",")
-                        .append(escapeCsvField(assignment.getPoints().toString())).append(",")
-                        .append(escapeCsvField(assignment.getPresentationLength() != null ? assignment.getPresentationLength().toString() : "")).append(",")
-                        .append(escapeCsvField(assignment.getTimestamp())).append(",")
-                        .append(escapeCsvField(assignment.getType()))
-                        .append("\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-                return new ResponseEntity<>("Error generating CSV", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
+//         return result;
+//     }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=assignments.csv");
-        headers.add(HttpHeaders.CONTENT_TYPE, "text/csv");
+//     // Helper method to get the list of table names in the database
+//     private List<String> getTableNames(Connection connection) throws SQLException {
+//         List<String> tableNames = new ArrayList<>();
 
-        return new ResponseEntity<>(csvData.toString(), headers, HttpStatus.OK);
-    }
+//         try (ResultSet resultSet = connection.getMetaData().getTables(null, null, null, new String[]{"TABLE"})) {
+//             while (resultSet.next()) {
+//                 String tableName = resultSet.getString("TABLE_NAME");
+//                 tableNames.add(tableName);
+//             }
+//         }
 
-    /**
-     * Export all submissions to a CSV file.
-     */
-    @GetMapping("/submissions")
-    public ResponseEntity<byte[]> exportSubmissions() throws IOException {
-        List<String> data = submissionRepo.findAll().stream()
-                .map(s -> String.join(",", 
-                    String.valueOf(s.getId()), 
-                    String.valueOf(s.getAssignment().getId()), 
-                    "\"" + s.getComment() + "\"",  // Encapsulate text fields in quotes
-                    "\"" + s.getContent() + "\"", 
-                    "\"" + (s.getFeedback() != null ? s.getFeedback() : "") + "\"", 
-                    String.valueOf(s.getGrade() != null ? s.getGrade() : ""), 
-                    String.valueOf(s.getAssignment().getId()), 
-                    String.valueOf(s.getStudent().getId())))
-                .collect(Collectors.toList());
+//         return tableNames;
+//     }
 
-        String csvContent = "id,assignmentid,comment,content,feedback,grade,assignment_id,student_id\n" + 
-                            String.join("\n", data);
+//     // Helper method to retrieve data from a specific table
+//     private List<Map<String, Object>> getTableData(Statement statement, String tableName) throws SQLException {
+//         List<Map<String, Object>> tableData = new ArrayList<>();
 
-        return createCSVResponse("submissions.csv", csvContent);
-    }
+//         try (ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName)) {
+//             ResultSetMetaData metaData = resultSet.getMetaData();
+//             int columnCount = metaData.getColumnCount();
 
-    /**
-     * Helper method to create a CSV file response.
-     */
-    private ResponseEntity<byte[]> createCSVResponse(String fileName, String content) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-        writer.write(content);
-        writer.close();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_PLAIN);
-        headers.setContentDispositionFormData("attachment", fileName);
-        return new ResponseEntity<>(outputStream.toByteArray(), headers, HttpStatus.OK);
-    }
+//             while (resultSet.next()) {
+//                 Map<String, Object> row = new HashMap<>();
+//                 for (int i = 1; i <= columnCount; i++) {
+//                     String columnName = metaData.getColumnName(i);
+//                     Object columnValue = resultSet.getObject(i);
 
-    /**
-     * Helper method to format a Date object to a timestamp string.
-     */
-    private String formatTimestamp(Date date) {
-        if (date == null) {
-            return "";
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(date);
-    }
+//                     // Handle special fields (e.g., stats, kasm_server_needed)
+//                     if (columnName.equals("stats") && columnValue instanceof String) {
+//                         // If stats is stored as a string, parse it as JSON
+//                         columnValue = objectMapper.readValue((String) columnValue, Map.class);
+//                     } else if (columnName.equals("kasm_server_needed") && columnValue instanceof Integer) {
+//                         // If kasm_server_needed is stored as an integer, convert it to boolean
+//                         columnValue = ((Integer) columnValue) == 1;
+//                     }
 
-    @GetMapping("/roles")
-    public void exportRoles(HttpServletResponse response) throws IOException {
-        // Set response headers
-        response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=person_roles.csv");
+//                     row.put(columnName, columnValue);
+//                 }
+//                 tableData.add(row);
+//             }
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//             throw new SQLException("Failed to retrieve data from table: " + tableName, e);
+//         }
 
-        // Fetch all PersonRole records using the correct repository
-        Collection<Person> personRoles = personRepo.findAll(); // Correct repository
+//         return tableData;
+//     }
 
-        // Write CSV data
-        try (PrintWriter writer = response.getWriter();
-            CSVWriter csvWriter = new CSVWriter(writer)) {
+//     // This method will be called just before the server stops
+//     @jakarta.annotation.PreDestroy
+//     public void onShutdown() {
+//         System.out.println("Server is stopping. Exporting data...");
 
-            // Write CSV header
-            String[] header = {"person_id", "role_id"};
-            csvWriter.writeNext(header);
+//         // Export data
+//         Map<String, List<Map<String, Object>>> data = exportData();
 
-            // Write CSV rows
-            for (Person personRole : personRoles) {
-                // Loop through each role for the person and create a separate row for each
-                for (PersonRole role : personRole.getRoles()) {
-                    String[] row = {
-                        personRole.getId().toString(),
-                        role.getId().toString()  // Assuming Role has getId() method
-                    };
-                    csvWriter.writeNext(row);
-                }
-            }
-        }
-    }
+//         // Save the data to a JSON file with a timestamp
+//         saveJsonToFile(data);
 
-    @GetMapping("/roles_mapping")
-    public ResponseEntity<byte[]> exportRoles() throws IOException {
-        List<String> data = roleRepo.findAll().stream()
-            .map(role -> role.getId() + "," + role.getName())
-            .collect(Collectors.toList());
+//         // Manage backups to keep only the three most recent ones
+//         manageBackups();
 
-        String csvContent = "id,name\n" + String.join("\n", data);
-        return createCSVResponse("roles.csv", csvContent);
-    }
+//         System.out.println("Data export completed.");
+//     }
 
+//     // Helper method to save the JSON data to a file with a timestamp
+//     private void saveJsonToFile(Map<String, List<Map<String, Object>>> data) {
+//         try {
+//             // Create the backups directory if it doesn't exist
+//             File backupsDir = new File(BACKUP_DIR);
+//             if (!backupsDir.exists()) {
+//                 backupsDir.mkdirs();
+//             }
 
+//             // Generate a timestamp for the filename
+//             String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+//             String fileName = "backup_" + timeStamp + ".json";
+//             File jsonFile = new File(backupsDir, fileName);
 
+//             // Write the JSON data to the file
+//             objectMapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, data);
+//             System.out.println("JSON data saved to: " + jsonFile.getAbsolutePath());
 
-    private String escapeCsvField(String field) {
-        if (field == null) {
-            return "";
-        }
-        // Escape double quotes by doubling them
-        String escapedField = field.replace("\"", "\"\"");
-        // Enclose the field in double quotes if it contains commas, newlines, or double quotes
-        if (escapedField.contains(",") || escapedField.contains("\n") || escapedField.contains("\"")) {
-            return "\"" + escapedField + "\"";
-        }
-        return escapedField;
-    }
-}
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//             throw new RuntimeException("Failed to save JSON data to file", e);
+//         }
+//     }
+
+//     // Helper method to manage backups, keeping only the three most recent ones
+//     private void manageBackups() {
+//         File backupsDir = new File(BACKUP_DIR);
+//         if (!backupsDir.exists() || !backupsDir.isDirectory()) {
+//             return;
+//         }
+
+//         // Get all backup files
+//         File[] backupFiles = backupsDir.listFiles((dir, name) -> name.startsWith("backup_") && name.endsWith(".json"));
+
+//         if (backupFiles == null || backupFiles.length <= 3) {
+//             return;
+//         }
+
+//         // Sort files by last modified date (oldest first)
+//         Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified));
+
+//         // Delete the oldest files if there are more than three
+//         for (int i = 0; i < backupFiles.length - 3; i++) {
+//             if (backupFiles[i].delete()) {
+//                 System.out.println("Deleted old backup: " + backupFiles[i].getName());
+//             } else {
+//                 System.out.println("Failed to delete old backup: " + backupFiles[i].getName());
+//             }
+//         }
+//     }
+// }
