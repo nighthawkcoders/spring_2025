@@ -77,7 +77,7 @@ public class Email
       try{
          MimeMultipart emailContent = new MimeMultipart();
          MimeBodyPart body1 = new MimeBodyPart();
-         body1.setContent("<p>content</p>","text/html");
+         body1.setContent("<p>"+content+"</p>","text/html");
 
          emailContent.addBodyPart(body1);
 

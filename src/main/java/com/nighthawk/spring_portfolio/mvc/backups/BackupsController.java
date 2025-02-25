@@ -1,189 +1,201 @@
-// package com.nighthawk.spring_portfolio.mvc.backups;
+package com.nighthawk.spring_portfolio.mvc.backups;
 
-// import com.fasterxml.jackson.databind.ObjectMapper;
-// import jakarta.servlet.http.HttpServletResponse;
-// import org.springframework.web.bind.annotation.GetMapping;
-// import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.RestController;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-// import java.io.File;
-// import java.io.IOException;
-// import java.io.OutputStream;
-// import java.sql.*;
-// import java.util.Date;
-// import java.text.SimpleDateFormat;
-// import java.util.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-// @RestController
-// @RequestMapping("/api/exports/")
-// public class BackupsController {
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-//     // Hardcoded database path
-//     private static final String DB_PATH = "./volumes/sqlite.db";
+import jakarta.servlet.http.HttpServletResponse;
 
-//     // Hardcoded JSON file directory
-//     private static final String BACKUP_DIR = "./volumes/backups/";
+@RestController
+@RequestMapping("/api/exports/")
+public class BackupsController {
 
-//     // ObjectMapper for JSON serialization
-//     private final ObjectMapper objectMapper = new ObjectMapper();
+    // Hardcoded database path
+    private static final String DB_PATH = "./volumes/sqlite.db";
 
-//     // Endpoint to retrieve data from all tables in the database
-//     @GetMapping("/getAll")
-//     public void getAllTablesData(HttpServletResponse response) {
-//         // Export data from the database
-//         Map<String, List<Map<String, Object>>> data = exportData();
+    // Hardcoded JSON file directory
+    private static final String BACKUP_DIR = "./volumes/backups/";
 
-//         // Set response headers for file download
-//         response.setContentType("application/json");
-//         response.setHeader("Content-Disposition", "attachment; filename=exports.json");
+    // ObjectMapper for JSON serialization
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-//         // Write the JSON data to the response output stream
-//         try (OutputStream out = response.getOutputStream()) {
-//             objectMapper.writerWithDefaultPrettyPrinter().writeValue(out, data);
-//         } catch (IOException e) {
-//             e.printStackTrace();
-//             throw new RuntimeException("Failed to stream JSON data to the client", e);
-//         }
-//     }
+    // Endpoint to retrieve data from all tables in the database
+    @GetMapping("/getAll")
+    public void getAllTablesData(HttpServletResponse response) {
+        // Export data from the database
+        Map<String, List<Map<String, Object>>> data = exportData();
 
-//     // Method to export data from the database
-//     private Map<String, List<Map<String, Object>>> exportData() {
-//         Map<String, List<Map<String, Object>>> result = new HashMap<>();
+        // Set response headers for file download
+        response.setContentType("application/json");
+        response.setHeader("Content-Disposition", "attachment; filename=exports.json");
 
-//         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
-//              Statement statement = connection.createStatement()) {
+        // Write the JSON data to the response output stream
+        try (OutputStream out = response.getOutputStream()) {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(out, data);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to stream JSON data to the client", e);
+        }
+    }
 
-//             // Get the list of tables in the database
-//             List<String> tableNames = getTableNames(connection);
+    // Method to export data from the database
+    private Map<String, List<Map<String, Object>>> exportData() {
+        Map<String, List<Map<String, Object>>> result = new HashMap<>();
 
-//             // Loop through each table and retrieve its data
-//             for (String tableName : tableNames) {
-//                 List<Map<String, Object>> tableData = getTableData(statement, tableName);
-//                 result.put(tableName, tableData);
-//             }
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
+             Statement statement = connection.createStatement()) {
 
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//             throw new RuntimeException("Failed to retrieve data from the database", e);
-//         }
+            // Get the list of tables in the database
+            List<String> tableNames = getTableNames(connection);
 
-//         return result;
-//     }
+            // Loop through each table and retrieve its data
+            for (String tableName : tableNames) {
+                List<Map<String, Object>> tableData = getTableData(statement, tableName);
+                result.put(tableName, tableData);
+            }
 
-//     // Helper method to get the list of table names in the database
-//     private List<String> getTableNames(Connection connection) throws SQLException {
-//         List<String> tableNames = new ArrayList<>();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to retrieve data from the database", e);
+        }
 
-//         try (ResultSet resultSet = connection.getMetaData().getTables(null, null, null, new String[]{"TABLE"})) {
-//             while (resultSet.next()) {
-//                 String tableName = resultSet.getString("TABLE_NAME");
-//                 tableNames.add(tableName);
-//             }
-//         }
+        return result;
+    }
 
-//         return tableNames;
-//     }
+    // Helper method to get the list of table names in the database
+    private List<String> getTableNames(Connection connection) throws SQLException {
+        List<String> tableNames = new ArrayList<>();
 
-//     // Helper method to retrieve data from a specific table
-//     private List<Map<String, Object>> getTableData(Statement statement, String tableName) throws SQLException {
-//         List<Map<String, Object>> tableData = new ArrayList<>();
+        try (ResultSet resultSet = connection.getMetaData().getTables(null, null, null, new String[]{"TABLE"})) {
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                tableNames.add(tableName);
+            }
+        }
 
-//         try (ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName)) {
-//             ResultSetMetaData metaData = resultSet.getMetaData();
-//             int columnCount = metaData.getColumnCount();
+        return tableNames;
+    }
 
-//             while (resultSet.next()) {
-//                 Map<String, Object> row = new HashMap<>();
-//                 for (int i = 1; i <= columnCount; i++) {
-//                     String columnName = metaData.getColumnName(i);
-//                     Object columnValue = resultSet.getObject(i);
+    // Helper method to retrieve data from a specific table
+    private List<Map<String, Object>> getTableData(Statement statement, String tableName) throws SQLException {
+        List<Map<String, Object>> tableData = new ArrayList<>();
 
-//                     // Handle special fields (e.g., stats, kasm_server_needed)
-//                     if (columnName.equals("stats") && columnValue instanceof String) {
-//                         // If stats is stored as a string, parse it as JSON
-//                         columnValue = objectMapper.readValue((String) columnValue, Map.class);
-//                     } else if (columnName.equals("kasm_server_needed") && columnValue instanceof Integer) {
-//                         // If kasm_server_needed is stored as an integer, convert it to boolean
-//                         columnValue = ((Integer) columnValue) == 1;
-//                     }
+        try (ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName)) {
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
 
-//                     row.put(columnName, columnValue);
-//                 }
-//                 tableData.add(row);
-//             }
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//             throw new SQLException("Failed to retrieve data from table: " + tableName, e);
-//         }
+            while (resultSet.next()) {
+                Map<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    Object columnValue = resultSet.getObject(i);
 
-//         return tableData;
-//     }
+                    // Handle special fields (e.g., stats, kasm_server_needed)
+                    if (columnName.equals("stats") && columnValue instanceof String) {
+                        // If stats is stored as a string, parse it as JSON
+                        columnValue = objectMapper.readValue((String) columnValue, Map.class);
+                    } else if (columnName.equals("kasm_server_needed") && columnValue instanceof Integer) {
+                        // If kasm_server_needed is stored as an integer, convert it to boolean
+                        columnValue = ((Integer) columnValue) == 1;
+                    }
 
-//     // This method will be called just before the server stops
-//     @jakarta.annotation.PreDestroy
-//     public void onShutdown() {
-//         System.out.println("Server is stopping. Exporting data...");
+                    row.put(columnName, columnValue);
+                }
+                tableData.add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new SQLException("Failed to retrieve data from table: " + tableName, e);
+        }
 
-//         // Export data
-//         Map<String, List<Map<String, Object>>> data = exportData();
+        return tableData;
+    }
 
-//         // Save the data to a JSON file with a timestamp
-//         saveJsonToFile(data);
+    // This method will be called just before the server stops
+    @jakarta.annotation.PreDestroy
+    public void onShutdown() {
+        System.out.println("Server is stopping. Exporting data...");
 
-//         // Manage backups to keep only the three most recent ones
-//         manageBackups();
+        // Export data
+        Map<String, List<Map<String, Object>>> data = exportData();
 
-//         System.out.println("Data export completed.");
-//     }
+        // Save the data to a JSON file with a timestamp
+        saveJsonToFile(data);
 
-//     // Helper method to save the JSON data to a file with a timestamp
-//     private void saveJsonToFile(Map<String, List<Map<String, Object>>> data) {
-//         try {
-//             // Create the backups directory if it doesn't exist
-//             File backupsDir = new File(BACKUP_DIR);
-//             if (!backupsDir.exists()) {
-//                 backupsDir.mkdirs();
-//             }
+        // Manage backups to keep only the three most recent ones
+        manageBackups();
 
-//             // Generate a timestamp for the filename
-//             String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-//             String fileName = "backup_" + timeStamp + ".json";
-//             File jsonFile = new File(backupsDir, fileName);
+        System.out.println("Data export completed.");
+    }
 
-//             // Write the JSON data to the file
-//             objectMapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, data);
-//             System.out.println("JSON data saved to: " + jsonFile.getAbsolutePath());
+    // Helper method to save the JSON data to a file with a timestamp
+    private void saveJsonToFile(Map<String, List<Map<String, Object>>> data) {
+        try {
+            // Create the backups directory if it doesn't exist
+            File backupsDir = new File(BACKUP_DIR);
+            if (!backupsDir.exists()) {
+                backupsDir.mkdirs();
+            }
 
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//             throw new RuntimeException("Failed to save JSON data to file", e);
-//         }
-//     }
+            // Generate a timestamp for the filename
+            String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String fileName = "backup_" + timeStamp + ".json";
+            File jsonFile = new File(backupsDir, fileName);
 
-//     // Helper method to manage backups, keeping only the three most recent ones
-//     private void manageBackups() {
-//         File backupsDir = new File(BACKUP_DIR);
-//         if (!backupsDir.exists() || !backupsDir.isDirectory()) {
-//             return;
-//         }
+            // Write the JSON data to the file
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, data);
+            System.out.println("JSON data saved to: " + jsonFile.getAbsolutePath());
 
-//         // Get all backup files
-//         File[] backupFiles = backupsDir.listFiles((dir, name) -> name.startsWith("backup_") && name.endsWith(".json"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to save JSON data to file", e);
+        }
+    }
 
-//         if (backupFiles == null || backupFiles.length <= 3) {
-//             return;
-//         }
+    // Helper method to manage backups, keeping only the three most recent ones
+    private void manageBackups() {
+        File backupsDir = new File(BACKUP_DIR);
+        if (!backupsDir.exists() || !backupsDir.isDirectory()) {
+            return;
+        }
 
-//         // Sort files by last modified date (oldest first)
-//         Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified));
+        // Get all backup files
+        File[] backupFiles = backupsDir.listFiles((dir, name) -> name.startsWith("backup_") && name.endsWith(".json"));
 
-//         // Delete the oldest files if there are more than three
-//         for (int i = 0; i < backupFiles.length - 3; i++) {
-//             if (backupFiles[i].delete()) {
-//                 System.out.println("Deleted old backup: " + backupFiles[i].getName());
-//             } else {
-//                 System.out.println("Failed to delete old backup: " + backupFiles[i].getName());
-//             }
-//         }
-//     }
-// }
+        if (backupFiles == null || backupFiles.length <= 3) {
+            return;
+        }
+
+        // Sort files by last modified date (oldest first)
+        Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified));
+
+        // Delete the oldest files if there are more than three
+        for (int i = 0; i < backupFiles.length - 3; i++) {
+            if (backupFiles[i].delete()) {
+                System.out.println("Deleted old backup: " + backupFiles[i].getName());
+            } else {
+                System.out.println("Failed to delete old backup: " + backupFiles[i].getName());
+            }
+        }
+    }
+}
