@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/mvc/person/create/**").permitAll()
                         .requestMatchers("mvc/person/reset/**").permitAll()
                         .requestMatchers("/mvc/person/read/**").authenticated()
+                        .requestMatchers("/mvc/person/cookie-clicker").authenticated()
                         .requestMatchers(HttpMethod.GET,"/mvc/person/update/user").authenticated()
                         .requestMatchers(HttpMethod.GET,"/mvc/person/update/**").authenticated()
                         .requestMatchers(HttpMethod.POST,"/mvc/person/update/").authenticated()
