@@ -40,7 +40,7 @@ public class TinkleApiController {
             repository.save(student.get());
             return new ResponseEntity<>(student.get(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(student, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
         }
     }
 

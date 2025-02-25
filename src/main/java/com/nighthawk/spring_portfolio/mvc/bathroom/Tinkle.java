@@ -51,6 +51,7 @@ public class Tinkle {
 
     public Tinkle(Person person, String statsInput) {
         this.person = person;
+        this.personName = person.getName();
         this.timeIn = statsInput;
         parseAndStoreTimeInOut(statsInput);
     }
