@@ -103,16 +103,29 @@ public class MiningController {
     public ResponseEntity<?> getMiningStats() {
         try {
             MiningUser user = getOrCreateMiningUser();
-            miningService.calculateProfitability(user);
-
             Map<String, Object> stats = new HashMap<>();
-            double pendingBTC = user.getPendingBalance();
-            double confirmedBTC = user.getBtcBalance();
             
-            stats.put("btcBalance", String.format("%.8f", confirmedBTC));
-            stats.put("pendingBalance", String.format("%.8f", pendingBTC));
-            stats.put("totalBalanceUSD", String.format("%.2f", (pendingBTC + confirmedBTC) * MiningService.BTC_PRICE));
+            // Group GPUs by ID and count quantities
+            Map<Long, Map<String, Object>> gpuGroups = new HashMap<>();
+            for (GPU gpu : user.getOwnedGPUs()) {
+                Long gpuId = gpu.getId();
+                if (!gpuGroups.containsKey(gpuId)) {
+                    Map<String, Object> gpuInfo = new HashMap<>();
+                    gpuInfo.put("id", gpuId);
+                    gpuInfo.put("name", gpu.getName());
+                    gpuInfo.put("hashrate", gpu.getHashRate());
+                    gpuInfo.put("power", gpu.getPowerConsumption());
+                    gpuInfo.put("temp", gpu.getTemp());
+                    gpuInfo.put("quantity", user.getGpuQuantity(gpuId));
+                    gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
+                    gpuGroups.put(gpuId, gpuInfo);
+                }
+            }
             
+            stats.put("gpus", new ArrayList<>(gpuGroups.values()));
+            stats.put("btcBalance", String.format("%.8f", user.getBtcBalance()));
+            stats.put("pendingBalance", String.format("%.8f", user.getPendingBalance()));
+            stats.put("totalBalanceUSD", String.format("%.2f", (user.getPendingBalance() + user.getBtcBalance()) * MiningService.BTC_PRICE));
             stats.put("hashrate", String.format("%.2f", user.getCurrentHashrate()));
             stats.put("shares", user.getShares());
             stats.put("isMining", user.isMining());
@@ -121,35 +134,8 @@ public class MiningController {
             stats.put("averageTemperature", user.getAverageTemperature());
             stats.put("dailyRevenue", user.getDailyRevenue());
             stats.put("powerCost", user.getPowerCost());
+            stats.put("activeGPUsCount", user.getActiveGPUs().size());
 
-            List<Map<String, Object>> allGpus = user.getOwnedGPUs().stream()
-                .map(gpu -> {
-                    Map<String, Object> gpuInfo = new HashMap<>();
-                    gpuInfo.put("id", gpu.getId());
-                    gpuInfo.put("name", gpu.getName());
-                    gpuInfo.put("hashrate", gpu.getHashRate());
-                    gpuInfo.put("power", gpu.getPowerConsumption());
-                    gpuInfo.put("temp", gpu.getTemp());
-                    gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
-                    return gpuInfo;
-                })
-                .collect(Collectors.toList());
-            
-            stats.put("gpus", allGpus);
-            stats.put("activeGPUsCount", allGpus.stream().filter(g -> (Boolean)g.get("isActive")).count());
-
-            List<Map<String, Object>> activeGpus = user.getActiveGPUs().stream()
-                .map(gpu -> {
-                    Map<String, Object> gpuInfo = new HashMap<>();
-                    gpuInfo.put("id", gpu.getId());
-                    gpuInfo.put("name", gpu.getName());
-                    gpuInfo.put("hashrate", gpu.getHashRate());
-                    return gpuInfo;
-                })
-                .collect(Collectors.toList());
-            stats.put("activeGPUs", activeGpus);
-
-            System.out.println("**Final Return Data** : " + stats);
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             e.printStackTrace();
@@ -175,7 +161,8 @@ public class MiningController {
                 gpuInfo.put("temp", gpu.getTemp());
                 gpuInfo.put("price", gpu.getPrice());
                 gpuInfo.put("category", gpu.getCategory());
-                gpuInfo.put("owned", user.getGpus().contains(gpu));
+                gpuInfo.put("owned", user.ownsGPUById(gpu.getId()));
+                gpuInfo.put("quantity", user.getGpuQuantity(gpu.getId()));
                 
                 gpuList.add(gpuInfo);
             }
@@ -188,24 +175,40 @@ public class MiningController {
     }
 
     @PostMapping("/gpu/buy/{gpuId}")
-    public ResponseEntity<?> buyGPU(@PathVariable Long gpuId) {
+    public ResponseEntity<?> buyGPU(@PathVariable Long gpuId, @RequestBody(required = false) Map<String, Integer> request) {
         try {
+            System.out.println("\n=== Buy GPU Debug Log ===");
+            System.out.println("GPU ID: " + gpuId);
+            System.out.println("Request body: " + request);
+            
             MiningUser user = getOrCreateMiningUser();
+            System.out.println("User found: " + user.getPerson().getEmail());
+            
             GPU gpu = gpuRepository.findById(gpuId)
                 .orElseThrow(() -> new RuntimeException("GPU not found"));
+            System.out.println("GPU found: " + gpu.getName());
             
-            // Check if user already owns this GPU
-            if (user.ownsGPUById(gpuId)) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of(
-                        "success", false,
-                        "message", "You already own this GPU"
-                    ));
+            // Get quantity from request, default to 1 if not specified
+            int quantity = (request != null && request.containsKey("quantity")) ? request.get("quantity") : 1;
+            System.out.println("Quantity to purchase: " + quantity);
+            
+            // For starter GPU (ID 1), only allow quantity of 1
+            if (gpu.getId() == 1) {
+                if (user.ownsGPUById(1L)) {
+                    System.out.println("Error: User already owns starter GPU");
+                    return ResponseEntity.badRequest()
+                        .body(Map.of(
+                            "success", false,
+                            "message", "You already own the starter GPU"
+                        ));
+                }
+                quantity = 1;
             }
 
             // Get user's crypto balance
             userStocksTable userStocks = userStocksRepo.findByEmail(user.getPerson().getEmail());
             if (userStocks == null) {
+                System.out.println("Error: User balance not found");
                 return ResponseEntity.badRequest()
                     .body(Map.of(
                         "success", false,
@@ -213,31 +216,54 @@ public class MiningController {
                     ));
             }
 
+            // Calculate total cost
+            double totalCost = gpu.getPrice() * quantity;
+            System.out.println("Total cost: $" + totalCost);
+
             // Check if user has enough balance
             double currentBalance = Double.parseDouble(userStocks.getBalance());
-            if (currentBalance < gpu.getPrice()) {
+            System.out.println("Current balance: $" + currentBalance);
+            
+            if (currentBalance < totalCost) {
+                System.out.println("Error: Insufficient balance");
                 return ResponseEntity.badRequest()
                     .body(Map.of(
                         "success", false,
-                        "message", "Insufficient balance to buy this GPU"
+                        "message", "Insufficient balance to buy these GPUs"
                     ));
             }
 
-            // Deduct GPU price from balance
-            double newBalance = currentBalance - gpu.getPrice();
+            // Deduct total GPU price from balance
+            double newBalance = currentBalance - totalCost;
             userStocks.setBalance(String.format("%.2f", newBalance));
             userStocksRepo.save(userStocks);
+            System.out.println("New balance after purchase: $" + newBalance);
             
-            // Add GPU to user's inventory
-            user.addGPU(gpu);
+            // Add GPUs to user's inventory
+            System.out.println("Adding " + quantity + " GPUs to inventory");
+            for (int i = 0; i < quantity; i++) {
+                user.addGPU(gpu);
+            }
+            
+            // Save the updated user
             miningUserRepository.save(user);
+            System.out.println("User saved successfully");
+            
+            // Print final GPU counts
+            System.out.println("Final GPU counts:");
+            System.out.println("Total GPUs: " + user.getOwnedGPUs().size());
+            System.out.println("Active GPUs: " + user.getActiveGPUs().size());
+            System.out.println("GPU quantities: " + user.getGpuQuantities());
             
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Successfully purchased " + gpu.getName(),
+                "message", String.format("Successfully purchased %dx %s", quantity, gpu.getName()),
                 "newBalance", String.format("%.2f", newBalance)
             ));
         } catch (Exception e) {
+            System.out.println("\n=== Buy GPU Error ===");
+            System.out.println("Error type: " + e.getClass().getName());
+            System.out.println("Error message: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
@@ -306,7 +332,6 @@ public class MiningController {
                 miningService.calculateProfitability(user);
             } catch (Exception e) {
                 System.out.println("WARNING: Error calculating profitability: " + e.getMessage());
-                // Continue execution even if profitability calculation fails
             }
 
             // Create response
@@ -338,22 +363,46 @@ public class MiningController {
                 stats.put("powerCost", user.getPowerCost());
                 stats.put("netProfitUSD", String.format("%.2f", user.getDailyRevenue() - user.getPowerCost()));
 
-                // GPU information
-                List<Map<String, Object>> allGpus = user.getOwnedGPUs().stream()
-                    .map(gpu -> {
+                // GPU information - Group by ID
+                Map<Long, Map<String, Object>> gpuGroups = new HashMap<>();
+                for (GPU gpu : user.getOwnedGPUs()) {
+                    Long gpuId = gpu.getId();
+                    if (!gpuGroups.containsKey(gpuId)) {
                         Map<String, Object> gpuInfo = new HashMap<>();
-                        gpuInfo.put("id", gpu.getId());
+                        gpuInfo.put("id", gpuId);
                         gpuInfo.put("name", gpu.getName());
                         gpuInfo.put("hashrate", gpu.getHashRate());
                         gpuInfo.put("power", gpu.getPowerConsumption());
                         gpuInfo.put("temp", gpu.getTemp());
+                        gpuInfo.put("quantity", user.getGpuQuantity(gpuId));
                         gpuInfo.put("isActive", user.getActiveGPUs().contains(gpu));
-                        return gpuInfo;
-                    })
-                    .collect(Collectors.toList());
+                        gpuGroups.put(gpuId, gpuInfo);
+                    }
+                }
                 
-                stats.put("gpus", allGpus);
-                stats.put("activeGPUs", user.getActiveGPUs());
+                stats.put("gpus", new ArrayList<>(gpuGroups.values()));
+
+                // Group active GPUs by ID
+                Map<Long, Map<String, Object>> activeGpuGroups = new HashMap<>();
+                for (GPU gpu : user.getActiveGPUs()) {
+                    Long gpuId = gpu.getId();
+                    if (!activeGpuGroups.containsKey(gpuId)) {
+                        Map<String, Object> gpuInfo = new HashMap<>();
+                        gpuInfo.put("id", gpuId);
+                        gpuInfo.put("name", gpu.getName());
+                        gpuInfo.put("hashRate", gpu.getHashRate());
+                        gpuInfo.put("powerConsumption", gpu.getPowerConsumption());
+                        gpuInfo.put("temp", gpu.getTemp());
+                        gpuInfo.put("price", gpu.getPrice());
+                        gpuInfo.put("category", gpu.getCategory());
+                        gpuInfo.put("available", gpu.isAvailable());
+                        gpuInfo.put("efficiency", gpu.getEfficiency());
+                        gpuInfo.put("quantity", user.getGpuQuantity(gpuId));
+                        activeGpuGroups.put(gpuId, gpuInfo);
+                    }
+                }
+                
+                stats.put("activeGPUs", new ArrayList<>(activeGpuGroups.values()));
 
                 System.out.println("Successfully compiled mining stats");
                 return ResponseEntity.ok(stats);
@@ -429,13 +478,6 @@ public class MiningController {
             double confirmedUSD = confirmedBTC * btcPrice;
             double totalUSD = pendingUSD + confirmedUSD;
 
-            // Update user's balance with mining profits
-            if (totalUSD > 0) {
-                double newBalance = userBalance + totalUSD;
-                userStocks.setBalance(String.format("%.2f", newBalance));
-                userStocksRepo.save(userStocks);
-            }
-            
             status.put("pendingBalance", String.format("%.8f", pendingBTC));
             status.put("pendingBalanceUSD", String.format("%.2f", pendingUSD));
             status.put("confirmedBalance", String.format("%.8f", confirmedBTC));
