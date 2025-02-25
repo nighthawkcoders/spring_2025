@@ -1,15 +1,11 @@
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TinkleStatisticsService {
@@ -52,22 +48,17 @@ public class TinkleStatisticsService {
      * @param timeIn A string containing time pairs (e.g., "08:00:00-08:10:00,10:30:00-10:45:00").
      * @return Total duration in seconds.
      */
-    // Updated calculateTotalDurationInSeconds to use the new "--" delimiter and DateTime parsing with full date-time values.
     public long calculateTotalDurationInSeconds(String timeIn) {
         if (timeIn == null || timeIn.isEmpty()) return 0;
-        
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        
+    
         return Arrays.stream(timeIn.split(","))
             .mapToLong(pair -> {
-                String[] times = pair.split("--"); // Changed delimiter to match new format
+                String[] times = pair.split("-");
                 if (times.length == 2) {
                     try {
-                        LocalDateTime start = LocalDateTime.parse(times[0].trim(), formatter);
-                        LocalDateTime end = LocalDateTime.parse(times[1].trim(), formatter);
-                        return Duration.between(start, end).getSeconds();
+                        return Duration.between(LocalTime.parse(times[0]), LocalTime.parse(times[1])).getSeconds();
                     } catch (Exception e) {
-                        return 0; // skip malformed entries
+                        return 0; // Skip malformed entries
                     }
                 }
                 return 0;

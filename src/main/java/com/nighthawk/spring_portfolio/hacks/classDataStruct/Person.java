@@ -163,20 +163,8 @@ public class Person extends Generics{
         } catch (Exception e) {
         }
 
-        Person p7 = new Person();
-        p7.setName("Mirage Systems");
-        p7.setUid("mirage@mirage.tech");
-        p7.setPassword("mirage");
-        // adding Note to notes collection
-        try {  // All data that converts formats could fail
-            Date d = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-0001");
-            p7.setDob(d);
-        } catch (Exception e) {
-            // no actions as dob default is good enough
-        }
-
         // Array definition and data initialization
-        Person persons[] = {p1, p2, p3, p4, p5, p6, p7};
+        Person persons[] = {p1, p2, p3, p4, p5, p6};
         return(persons);
     }
 
