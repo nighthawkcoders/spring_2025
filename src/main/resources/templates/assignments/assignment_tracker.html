@@ -341,8 +341,19 @@
                     submissions.forEach(submission => {
                         console.log('Processing submission:', submission);
                         const row = document.createElement('tr');
+                        if (submission.students.length === 0) {
+                            submission.students = [{ name: 'Unknown Student'}]
+                        }
+                        let studentNames = "";
+                        submission.students.forEach(student => {
+                            studentNames += student.name + ", ";
+                        });
+                        // for (student in submission.students) {
+                        //     studentNames += student.name + ", ";
+                        // }
+                        studentNames = studentNames.slice(0, -2);
                         row.innerHTML = `
-                            <td>${submission.student ? submission.student.name : 'Unknown Student'}</td>
+                            <td>${studentNames}</td>
                             <td>${submission.content || 'No content'}</td>
                             <td>${submission.comment || 'No comments'}</td>
                             <td>${submission.grade || 'Not graded'}</td>

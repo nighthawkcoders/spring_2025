@@ -1,11 +1,13 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Entity;
@@ -36,13 +38,14 @@ public class AssignmentSubmission {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Assignment assignment;
 
-    @ManyToMany
+    @ManyToMany(cascade = {jakarta.persistence.CascadeType.MERGE})
     @JoinTable(
         name = "assignment_submission_students",
         joinColumns = @JoinColumn(name = "submission_id"),
         inverseJoinColumns = @JoinColumn(name = "student_id")
     )
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private List<Person> students;
 
     private String content;
@@ -111,6 +114,10 @@ public class AssignmentSubmission {
 
     public Double getGrade() {
         return grade;
+    }
+
+    public Boolean getIsLate() {
+        return this.isLate;
     }
 
     public void setFeedback(String feedback) {

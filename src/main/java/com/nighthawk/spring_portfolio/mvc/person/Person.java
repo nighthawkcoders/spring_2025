@@ -37,6 +37,7 @@ import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
@@ -69,6 +70,7 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Convert(attributeName = "person", converter = JsonType.class)
+@JsonIgnoreProperties({"submissions"})
 public class Person implements Comparable<Person> {
 
     private static Person createPerson(String name, String email, String uid, String password, Boolean kasmServerNeeded, String balance, String dob, List<String> asList) {
@@ -174,6 +176,7 @@ public class Person implements Comparable<Person> {
 
     @Column(nullable=true)
     private String sid;
+    
     /**
      * user_stocks and balance describe properties used by the gamify application
      */
