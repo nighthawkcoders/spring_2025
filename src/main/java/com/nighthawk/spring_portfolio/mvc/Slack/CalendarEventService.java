@@ -61,7 +61,8 @@ public class CalendarEventService {
 
             // Perform the delete
             calendarEventRepository.delete(event);
-
+        }
+    }
     public boolean deleteEventByTitle(String title) {
         // Retrieve all events from the repository
         List<CalendarEvent> allEvents = calendarEventRepository.findAll(); 
