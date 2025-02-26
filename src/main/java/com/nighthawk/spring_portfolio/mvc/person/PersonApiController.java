@@ -270,7 +270,14 @@ public class PersonApiController {
     public ResponseEntity<String> getNameById(@PathVariable String sid)
     {
         Person person = repository.findBySid(sid);
-        return ResponseEntity.ok(person.getName());
+        if(person != null)
+        {
+            return ResponseEntity.ok(person.getName());
+        }
+        else
+        {
+            return ResponseEntity.ok("Not a valid barcode");
+        }
     };
     // @PostMapping(value = "/person/setSections", produces = MediaType.APPLICATION_JSON_VALUE)
     // public ResponseEntity<?> setSections(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final List<SectionDTO> sections) {
