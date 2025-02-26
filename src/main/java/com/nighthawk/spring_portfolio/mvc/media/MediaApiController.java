@@ -123,11 +123,13 @@ public class MediaApiController {
             if (existingScore.getScore() < score) {
                 existingScore.setScore(score);
                 mediaJpaRepository.save(existingScore);
+                mediaJpaRepository.flush();
             }
             return new ResponseEntity<>(existingScore, HttpStatus.OK);
         } else {
             Score newScore = new Score(personName, score);
             mediaJpaRepository.save(newScore);
+            mediaJpaRepository.flush();
             return new ResponseEntity<>(newScore, HttpStatus.CREATED);
         }
     }
