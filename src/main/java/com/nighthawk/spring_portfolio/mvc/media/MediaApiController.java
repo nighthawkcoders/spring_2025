@@ -120,8 +120,10 @@ public class MediaApiController {
         List<Score> existingScores = mediaJpaRepository.findByPersonName(personName);
         if (!existingScores.isEmpty()) {
             Score existingScore = existingScores.get(0);
-            existingScore.setScore(score);
-            mediaJpaRepository.save(existingScore);
+            if (existingScore.getScore() < score) {
+                existingScore.setScore(score);
+                mediaJpaRepository.save(existingScore);
+            }
             return new ResponseEntity<>(existingScore, HttpStatus.OK);
         } else {
             Score newScore = new Score(personName, score);
