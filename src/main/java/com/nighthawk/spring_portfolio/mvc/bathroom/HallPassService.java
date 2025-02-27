@@ -22,6 +22,22 @@ public class HallPassService {
         return teachers.isEmpty() ? null : teachers.get(0);
     }
 
+    public Teacher addTeacherByName(String firstName, String lastName) {
+        Teacher teacher = new Teacher();
+        List<Teacher> teachers = teacherRepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase(firstName, lastName);
+        if(teachers.isEmpty()) //add teacher
+        {
+            teacher.setFirstname(firstName);
+            teacher.setLastname(lastName);
+            teacherRepository.save(teacher);
+        }
+        else
+        {
+            teacher = teachers.get(0);
+        }
+        return teacher;
+    }
+
     public HallPass getActivePassForUser(String username) {
         return tinkleRepository.findByPersonIdAndCheckoutIsNull(username).orElse(null);
     }

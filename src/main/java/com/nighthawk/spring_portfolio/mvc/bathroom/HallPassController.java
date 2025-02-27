@@ -72,6 +72,18 @@ public class HallPassController {
         }
     }
 
+    @CrossOrigin(origins = "http://127.0.0.1:8080")
+    @PostMapping("/addTeacher")
+    public ResponseEntity<Object> addTeacher(@RequestParam("fname") String firstName, 
+    @RequestParam("lname") String lastName) {
+        try {
+            Teacher teacher = hallPassService.addTeacherByName(firstName, lastName);
+            return ResponseEntity.ok(teacher);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
     //@CrossOrigin(origins = "http://127.0.0.1:4100")
     @GetMapping("/getactivepass")
     public ResponseEntity<Object> getPass(@RequestParam("email") String emailAddress) {
