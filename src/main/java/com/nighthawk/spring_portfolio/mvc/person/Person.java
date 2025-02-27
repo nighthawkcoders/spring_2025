@@ -244,6 +244,8 @@ public class Person implements Comparable<Person> {
         this.balance = balance;
         this.roles.add(role);
         this.submissions = new ArrayList<>();
+
+        this.timeEntries = new Tinkle(this, "");
     }
 
     public boolean hasRoleWithName(String roleName) {
@@ -342,7 +344,7 @@ public class Person implements Comparable<Person> {
         people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "123", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         people.add(createPerson("Alan Turing","alan",  "turing@gmail.com", defaultPassword, "2", "/images/alan.png", false, startingBalance, "06-23-1912", Arrays.asList("ROLE_USER", "ROLE_TESTER","ROLE_STUDENT")));
-        
+
         Collections.sort(people);
         for (Person person : people) {
             userStocksTable stock = new userStocksTable(null, "BTC,ETH", startingBalance, person.getEmail(), person, false, true, "");

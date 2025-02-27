@@ -31,8 +31,8 @@ public class CalendarEventService {
     }
 
     // Update event by title
-    public boolean updateEventByTitle(String title, String newTitle, String description) {
-        CalendarEvent event = getEventByTitle(title);
+    public boolean updateEventById(int id, String newTitle, String description) {
+        CalendarEvent event = getEventById(id);
         if (event != null) {
             try {
                 // Attempt to send the Slack notification
@@ -54,6 +54,17 @@ public class CalendarEventService {
     }
     
     // Delete event by title
+
+    public boolean deleteEventById(int id) {
+        CalendarEvent event = getEventById(id);
+        if (event != null) {
+
+            // Perform the delete
+            calendarEventRepository.delete(event);
+            return true;
+        }
+        return false;
+    }
     public boolean deleteEventByTitle(String title) {
         // Retrieve all events from the repository
         List<CalendarEvent> allEvents = calendarEventRepository.findAll(); 
@@ -67,6 +78,7 @@ public class CalendarEventService {
         if (!eventsToDelete.isEmpty()) {
             // Delete each event manually
             eventsToDelete.forEach(calendarEventRepository::delete);
+
             return true;
         }
     
@@ -86,8 +98,8 @@ public class CalendarEventService {
     }
 
     // Get event by title
-    public CalendarEvent getEventByTitle(String title) {
-        return calendarEventRepository.findByTitle(title).orElse(null);
+    public CalendarEvent getEventById(int id) {
+        return calendarEventRepository.findById(id);
     }
 
     // Parse Slack message and create events

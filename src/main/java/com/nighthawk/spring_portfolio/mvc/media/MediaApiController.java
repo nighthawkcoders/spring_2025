@@ -116,16 +116,20 @@ public class MediaApiController {
 
     // POST to accept score from frontend
     @PostMapping("/score/{personName}/{score}")
-    public ResponseEntity<Score> postScore(@PathVariable String personName, @PathVariable int score) {
+    public synchronized ResponseEntity<Score> postScore(@PathVariable String personName, @PathVariable int score) {
         List<Score> existingScores = mediaJpaRepository.findByPersonName(personName);
         if (!existingScores.isEmpty()) {
             Score existingScore = existingScores.get(0);
-            existingScore.setScore(score);
-            mediaJpaRepository.save(existingScore);
+            if (existingScore.getScore() < score) {
+                existingScore.setScore(score);
+                mediaJpaRepository.save(existingScore);
+                mediaJpaRepository.flush();
+            }
             return new ResponseEntity<>(existingScore, HttpStatus.OK);
         } else {
             Score newScore = new Score(personName, score);
             mediaJpaRepository.save(newScore);
+            mediaJpaRepository.flush();
             return new ResponseEntity<>(newScore, HttpStatus.CREATED);
         }
     }
