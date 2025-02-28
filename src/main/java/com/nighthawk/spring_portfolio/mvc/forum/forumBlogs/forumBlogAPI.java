@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
-import com.nighthawk.spring_portfolio.mvc.forum.Forum;
-
 @RestController
 @RequestMapping("/blogs")
 public class forumBlogAPI {
@@ -94,6 +92,7 @@ public class forumBlogAPI {
                 return "Error: Blog not found.";
             }
             int currentVotes = blog.getVotes();
+            System.out.println(vote);
             if (vote.equals("up")) {
                 currentVotes++;
             } else if (vote.equals("down")) {
@@ -126,6 +125,7 @@ public class forumBlogAPI {
 
             String fileName = title.replaceAll(" ", "_").toLowerCase() + ".txt";
             String filePath = "volumes/forumBlogs/" + fileName;
+            String formattedTitle = title.toLowerCase();
 
             // Check if the title is already in the database
             if (blogRepository.findByTitle(title) != null) {
@@ -133,7 +133,7 @@ public class forumBlogAPI {
             }
 
             // Create a new ForumBlogs object and save it to the forumBlog database table
-            forumBlogs forumTable = new forumBlogs(author, title, filePath, date, 0);
+            forumBlogs forumTable = new forumBlogs(author, formattedTitle, filePath, date, 0);
             blogRepository.save(forumTable); // Use the repository to save
 
             // Save the body to the file
