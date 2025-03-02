@@ -2,13 +2,15 @@ package com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion;
 
 
 
-import java.util.ArrayList;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubric;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,39 +26,38 @@ public class AdventureQuestion {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(unique = false, nullable = false)
+    @Column(unique = false, nullable = true)
     private String title;
 
     @Column(unique = false, nullable = false)
     private String content;
 
+    @Column(unique = false, nullable = false)
+    private String category;
+
     @Column(nullable = false)
     private int points;
-
-    /* 
-    @Lob
-    @Column(unique = true, nullable = true)    
-    private byte[] badge_icon;
-    */
-
-    // Constructor
-    public AdventureQuestion(String title, String content, int points) {
+    
+    @ManyToOne
+    @JoinColumn(name = "rubric_id", nullable = true)
+    private AdventureRubric rubric;
+    
+    public AdventureQuestion(String title, String content, String category, int points) {
         this.title = title;
         this.content = content;
+        this.category = category;
         this.points = points;
+  
     }
 
-    /* 
-    public static byte[] loadImageAsByteArray(String imagePath) {
-        try {
-            Path path = Path.of(imagePath);
-            return Files.readAllBytes(path);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public AdventureQuestion(String title, String content, String category, int points, AdventureRubric rubric) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.points = points;
+        this.rubric = rubric;
     }
-    */
+
     public static AdventureQuestion createQuestion(String title, String content, int points) {
         AdventureQuestion question = new AdventureQuestion();
         question.setTitle(title);
@@ -66,105 +67,20 @@ public class AdventureQuestion {
         return question;
     }
 
-    public static AdventureQuestion[] init() {
-        ArrayList<AdventureQuestion> questions = new ArrayList<>();
-        
-        // byte[] badgeIcon = loadImageAsByteArray("path/to/your/image.png");
-        questions.add(createQuestion("Unit 1 Popcorn Hack 1", """
-                                                              Which of the following is a valid declaration of a variable of type int in Java?
-                                                              a) int 123variable;
-                                                              b) int variable123;
-                                                              c) int variable#123;
-                                                              d) int variable 123;""" //
-        //
-        //
-        //
-        , 10000));
-        questions.add(createQuestion("Unit 1 Popcorn Hack 2", """
-                                                              What is the value of the following expression in Java: 5 / 2?
-                                                              a) 2.5
-                                                              b) 3
-                                                              c) 2
-                                                              d) 2.0""" //
-        //
-        //
-        //
-        , 10000));
-        questions.add(createQuestion("Unit 1 Popcorn Hack 3", """
-                                                              Which primitive type is used to represent a single character in Java?
-                                                              a) char
-                                                              b) String
-                                                              c) int
-                                                              d) byte""" //
-        //
-        //
-        //
-        , 10000));
-        questions.add(createQuestion("Unit 2 Popcorn Hack 1", """
-                                                              Try and create a class in the following code space to represent a dog.
-                                                              
-                                                              class Dog {
-                                                                  ...
-                                                              }
-                                                              
-                                                              public class Main {
-                                                                  public static void main(String[] args) {
-                                                                      Dog myDog = new Dog("Shelby", "Golden Retriever", 5); // name, breed, age
-                                                                      myDog.bark(); // should print "Woof!"
-                                                                  }
-                                                              }
-                                                              """ //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        , 10000));
-        questions.add(createQuestion("Unit 2 Popcorn Hack 1", //
-        """
-        // Uncomment the following method call to run the code and check your answer!
-        What will the following code segment print?
-        
-        public class Concatentations
-        {
-            public static void main(String[] args)
-            {
-                String name1 = "Skibidi";
-                String name2 = new String("Sigma");
-                String name3 = new String(name1);
-        
-                name1 += "!!"
-                String mystery = name1 + name2 + name3
-        
-                System.out.println(mystery);
-            }
-        }
-        
-        // Concatentations.main(null);""" //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        , 10000));
-
-        return questions.toArray(new AdventureQuestion[0]);
+    public static String[][] init() {
+        // Create SynergyGrade objects
+        return new String[][] {
+            {"GitHub Command Quiz", "Which command is used to clone a repository?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to add changes to the staging area?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to commit changes?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to push changes to a remote repository?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to pull changes from a remote repository?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to check the status of the working directory and staging area?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to create a new branch?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to switch to a different branch?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to merge branches?", "Octocat", "10000", "null"},
+            {"GitHub Command Quiz", "Which command is used to view the commit history?", "Octocat", "10000", "null"},
+            
+        };
     }
 }

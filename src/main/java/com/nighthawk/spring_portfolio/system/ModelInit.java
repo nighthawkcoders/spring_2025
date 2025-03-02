@@ -37,6 +37,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubric;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubricJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo.StudentService;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
@@ -67,6 +69,7 @@ public class ModelInit {
     @Autowired SynergyGradeJpaRepository gradeJpaRepository;
     @Autowired StudentQueueJPARepository studentQueueJPA;
     @Autowired StudentService studentService;
+    @Autowired AdventureRubricJpaRepository rubricJpaRepository;
 
     @Bean
     @Transactional
@@ -112,13 +115,29 @@ public class ModelInit {
                 }
             }
 
-            AdventureQuestion[] questionArray = AdventureQuestion.init();
-            for (AdventureQuestion question : questionArray) {
-                AdventureQuestion questionFound = questionJpaRepository.findByTitle(question.getTitle());
+            String[][] questionArray = AdventureQuestion.init();
+            for (String[] questionInfo : questionArray) {
+                String title = questionInfo[0];
+                String content = questionInfo[1];
+                String category = questionInfo[2];
+                Integer points = Integer.parseInt(questionInfo[3]);
+                
+            
+                AdventureQuestion questionFound = questionJpaRepository.findByContent(content);
                 if (questionFound == null) {
-                    questionJpaRepository.save(new AdventureQuestion(question.getTitle(), question.getContent(), question.getPoints()));
+                    if (questionInfo[4] != "null") {
+                        AdventureRubric rubric = new AdventureRubric();
+                        rubric = rubricJpaRepository.findByRuid(questionInfo[4]);
+                        // rubricJpaRepository.save(rubric);
+                        questionJpaRepository.save(new AdventureQuestion(title, content, category, points, rubric));
+                    } else {
+                        questionJpaRepository.save(new AdventureQuestion(title, content, category, points));
+                    }
+                    
                 }
             }
+
+
             
             List<Comment> Comments = Comment.init();
             for (Comment Comment : Comments) {

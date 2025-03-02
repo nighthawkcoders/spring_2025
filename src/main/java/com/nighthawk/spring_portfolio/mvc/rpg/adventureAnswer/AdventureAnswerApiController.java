@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureChoice.AdventureChoice;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureChoice.AdventureChoiceJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 
@@ -51,13 +53,15 @@ public class AdventureAnswerApiController {
     private PersonJpaRepository personJpaRepository;
     @Autowired
     private AdventureQuestionJpaRepository questionJpaRepository;
-
+    @Autowired
+    private AdventureChoiceJpaRepository choiceJpaRepository;
     // define dto class to encapsulate answer data for api requests
     @Getter 
     public static class AnswerDto {
         private String content; // store the answer content
         private Long questionId; // associate with a question
         private Long personId; // associate with a person
+        private Long choiceId;
         private Long chatScore; // store chat score for the answer
     }
 
@@ -142,7 +146,7 @@ public class AdventureAnswerApiController {
         // fetch the question and person associated with the answer
         Optional<AdventureQuestion> questionOpt = questionJpaRepository.findById(answerDto.getQuestionId());
         Optional<Person> personOpt = personJpaRepository.findById(answerDto.getPersonId());
-        
+        Optional<AdventureChoice> choiceOpt = choiceJpaRepository.findById(answerDto.getChoiceId());
         // log the api key for debugging
         System.out.println("API Key: " + apiKey);
 
@@ -154,6 +158,7 @@ public class AdventureAnswerApiController {
         // extract question and person objects
         AdventureQuestion question = questionOpt.get();
         Person person = personOpt.get();
+        AdventureChoice choice = choiceOpt.get();
 
         // log the question for debugging
         System.out.println(question);
@@ -177,7 +182,7 @@ public class AdventureAnswerApiController {
         Long chatScore = getChatScore(answerDto.getContent(), rubric);
 
         // create a new answer object
-        AdventureAnswer answer = new AdventureAnswer(answerDto.getContent(), question, person, chatScore);
+        AdventureAnswer answer = new AdventureAnswer(answerDto.getContent(), question, person, choice, choice.getIs_correct(), chatScore);
         answerJpaRepository.save(answer); // save the answer to the database
 
         double questionPoints = question.getPoints();
