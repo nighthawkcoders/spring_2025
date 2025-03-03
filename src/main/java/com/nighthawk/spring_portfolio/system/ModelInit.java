@@ -35,6 +35,8 @@ import com.nighthawk.spring_portfolio.mvc.person.PersonDetailsService;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRole;
 import com.nighthawk.spring_portfolio.mvc.person.PersonRoleJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureChoice.AdventureChoice;
+import com.nighthawk.spring_portfolio.mvc.rpg.adventureChoice.AdventureChoiceJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestion;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubric;
@@ -70,6 +72,7 @@ public class ModelInit {
     @Autowired StudentQueueJPARepository studentQueueJPA;
     @Autowired StudentService studentService;
     @Autowired AdventureRubricJpaRepository rubricJpaRepository;
+    @Autowired AdventureChoiceJpaRepository choiceJpaRepository;
 
     @Bean
     @Transactional
@@ -121,6 +124,7 @@ public class ModelInit {
                     rubricJpaRepository.save(rubric);
                 }
             }    
+
             
             String[][] questionArray = AdventureQuestion.init();
             for (String[] questionInfo : questionArray) {
@@ -142,6 +146,17 @@ public class ModelInit {
                     
                 }
             }
+            String[][] choiceArray = AdventureChoice.init();
+            for (String[] choiceInfo : choiceArray) {
+                AdventureQuestion question = questionJpaRepository.findById(Integer.parseInt(choiceInfo[0]));
+                String choice = choiceInfo[1];
+                Boolean is_correct = Boolean.parseBoolean(choiceInfo[2]);
+                
+                AdventureChoice choiceFound = choiceJpaRepository.findByQuestionAndChoice(question, choice);
+                if (choiceFound == null) {
+                    choiceJpaRepository.save(new AdventureChoice(question, choice, is_correct));
+                }
+            }        
 
 
 
