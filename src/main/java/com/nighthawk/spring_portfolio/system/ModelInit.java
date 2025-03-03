@@ -177,6 +177,7 @@ public class ModelInit {
                 if(existTeachers.isEmpty())
                teacherJPARepository.save(teacher); // JPA save
             }
+            
             // Issue database initialization
             Issue[] issueArray = Issue.init();
             for (Issue issue : issueArray) {

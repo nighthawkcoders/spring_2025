@@ -86,6 +86,7 @@ public class HallPassController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
+    
     @GetMapping("/getTeacherById")
     public ResponseEntity<Object> getTeacherById(@RequestParam("id") Long teacherId) {
         try {
