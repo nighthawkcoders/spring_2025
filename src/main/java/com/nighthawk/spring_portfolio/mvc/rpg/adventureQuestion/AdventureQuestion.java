@@ -80,7 +80,10 @@ public class AdventureQuestion {
             {"GitHub Command Quiz", "Which command is used to switch to a different branch?", "Octocat", "10000", "null"},
             {"GitHub Command Quiz", "Which command is used to merge branches?", "Octocat", "10000", "null"},
             {"GitHub Command Quiz", "Which command is used to view the commit history?", "Octocat", "10000", "null"},
-            
+
+            {"GitHub Command Quiz", "Describe the role of the ls command in a Linux system. Why is it an essential command for managing files and directories?", "Octocat", "10000", "Github ls command"},
+            {"GitHub Command Quiz", "Explain the differences between git pull and git fetch. In what scenarios would each command be used?", "Octocat", "10000", "Github git pull and git fetch"},            
+            {"GitHub Command Quiz", "What is the purpose of the mkdir command in Linux? Provide an example of its usage in a real-world scenario.", "Octocat", "10000", "Github mkdir"},            
         };
     }
 }

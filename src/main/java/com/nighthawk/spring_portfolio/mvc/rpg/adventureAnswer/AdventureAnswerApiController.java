@@ -164,19 +164,19 @@ public class AdventureAnswerApiController {
         System.out.println(question);
 
         // rubric for grading the answer
-        String rubric = "Correctness and Completeness (500 points): 500 - completely correct, "
-                        + "450 - minor issues or unhandled edge cases, 400 - several small errors, "
-                        + "350 - partial with multiple issues, below 300 - major issues/incomplete; "
-                        + "Efficiency and Optimization (200 points): 200 - optimal or near-optimal, "
-                        + "180 - minor optimization needed, 160 - functional but inefficient, "
-                        + "140 - improvements needed, below 140 - inefficient; Code Structure and Organization "
-                        + "(150 points): 150 - well-organized, 130 - mostly organized, 110 - readable but lacks structure, "
-                        + "90 - hard to follow, below 90 - unorganized; Readability and Documentation (100 points): "
-                        + "100 - clear, well-documented, 85 - readable but limited comments, 70 - somewhat readable, "
-                        + "50 - minimally readable, below 50 - poor readability; Error Handling and Edge Cases "
-                        + "(50 points): 50 - handles all cases, 40 - most cases covered, 30 - some cases covered, "
-                        + "20 - minimal handling, below 20 - little attention; Extra Credit (100 points): "
-                        + "impressive/innovative elements. Give me an integer score from 1-1000 AND ONLY RESPOND WITH A NUMBER AND NO TEXT.";
+        String rubric = "Correctness and Completeness (750 points): 750 - completely correct, "
+                        + "675 - minor issues or unhandled edge cases, 600 - several small errors, "
+                        + "525 - partial with multiple issues, below 450 - major issues/incomplete; "
+                        + "Efficiency and Optimization (3000 points): 3000 - optimal or near-optimal, "
+                        + "2700 - minor optimization needed, 2400 - functional but inefficient, "
+                        + "2100 - improvements needed, below 2100 - inefficient; Code Structure and Organization "
+                        + "(2250 points): 2250 - well-organized, 1950 - mostly organized, 1650 - readable but lacks structure, "
+                        + "1350 - hard to follow, below 1350 - unorganized; Readability and Documentation (1500 points): "
+                        + "1500 - clear, well-documented, 1275 - readable but limited comments, 1050 - somewhat readable, "
+                        + "750 - minimally readable, below 750 - poor readability; Error Handling and Edge Cases "
+                        + "(750 points): 750 - handles all cases, 600 - most cases covered, 450 - some cases covered, "
+                        + "300 - minimal handling, below 300 - little attention; Extra Credit (1000 points): "
+                        + "impressive/innovative elements. Give me an integer score from 1-15000";
 
         // calculate the chat score for the answer based on the rubric
         Long chatScore = getChatScore(answerDto.getContent(), rubric);

@@ -114,7 +114,14 @@ public class ModelInit {
                     announcementJPA.save(new Announcement(announcement.getAuthor(), announcement.getTitle(), announcement.getBody(), announcement.getTags())); // JPA save
                 }
             }
-
+            AdventureRubric[] rubricArray = AdventureRubric.init();
+            for(AdventureRubric rubric: rubricArray) {
+                AdventureRubric rubricFound = rubricJpaRepository.findByRuid(rubric.getRuid());
+                if(rubricFound == null) {
+                    rubricJpaRepository.save(rubric);
+                }
+            }    
+            
             String[][] questionArray = AdventureQuestion.init();
             for (String[] questionInfo : questionArray) {
                 String title = questionInfo[0];
@@ -126,8 +133,7 @@ public class ModelInit {
                 AdventureQuestion questionFound = questionJpaRepository.findByContent(content);
                 if (questionFound == null) {
                     if (questionInfo[4] != "null") {
-                        AdventureRubric rubric = new AdventureRubric();
-                        rubric = rubricJpaRepository.findByRuid(questionInfo[4]);
+                        AdventureRubric rubric = rubricJpaRepository.findByRuid(questionInfo[4]);
                         // rubricJpaRepository.save(rubric);
                         questionJpaRepository.save(new AdventureQuestion(title, content, category, points, rubric));
                     } else {
@@ -136,6 +142,7 @@ public class ModelInit {
                     
                 }
             }
+
 
 
             
