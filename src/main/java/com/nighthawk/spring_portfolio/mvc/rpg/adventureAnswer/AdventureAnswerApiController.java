@@ -1,7 +1,10 @@
 // define package and import necessary libraries
 package com.nighthawk.spring_portfolio.mvc.rpg.adventureAnswer;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,7 @@ import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestio
 
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
+import lombok.Setter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -64,7 +68,13 @@ public class AdventureAnswerApiController {
         private Long choiceId;
         private Long chatScore; // store chat score for the answer
     }
-
+    @Getter
+    @Setter
+    public class AdventureChoiceDto {
+        private Long id;
+        private String choice;
+        private Boolean is_correct;  
+    }
     // added endpoint to match python user to java user
     @GetMapping("/person/{uid}")
     public ResponseEntity<Person> getPersonByUid(@PathVariable String uid) {
@@ -99,15 +109,37 @@ public class AdventureAnswerApiController {
         return new ResponseEntity<>(questions, HttpStatus.OK);
     }
 
-    // endpoint to get a specific question by its id
-    @GetMapping("getQuestion/{questionid}") 
-    public ResponseEntity<AdventureQuestion> getQuestion(@PathVariable Integer questionid) {
-        // fetch the question by its id
-        AdventureQuestion question = questionJpaRepository.findById(questionid);
 
-        // return the question with an ok status
-        return new ResponseEntity<>(question, HttpStatus.OK);
+@GetMapping("getQuestion/{questionid}") 
+public ResponseEntity<Map<String, Object>> getQuestion(@PathVariable Integer questionid) {
+    // Fetch the question by its ID
+    AdventureQuestion question = questionJpaRepository.findById(questionid);
+
+    if (question == null) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Return 404 if question is not found
     }
+
+    // Fetch the choices related to the question
+    List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(questionid);
+
+    // Map the AdventureChoice objects to AdventureChoiceDTO
+    List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
+    for (AdventureChoice choice : choices) {
+        AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
+        choiceDTO.setId(choice.getId());
+        choiceDTO.setChoice(choice.getChoice());
+        choiceDTO.setIs_correct(choice.getIs_correct());
+        choiceDTOs.add(choiceDTO);
+    }
+
+    // Prepare the response
+    Map<String, Object> response = new HashMap<>();
+    response.put("question", question);
+    response.put("choices", choiceDTOs);
+
+    return new ResponseEntity<>(response, HttpStatus.OK); // Return the question and mapped choices with a 200 OK status
+}
+
 
     // endpoint to get the total chat score for a specific person
     @GetMapping("/getChatScore/{personid}")
