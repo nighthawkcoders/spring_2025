@@ -29,6 +29,7 @@ public class AdventureAnswer {
     private Long id;
 
     @Lob
+    @Column(unique = false, nullable = true)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -45,6 +46,7 @@ public class AdventureAnswer {
     @Column(unique = false, nullable = true)
     private Boolean is_correct; 
 
+    @Column(unique = false, nullable = true)
     private Long chatScore;
 
 

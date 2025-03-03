@@ -108,37 +108,72 @@ public class AdventureAnswerApiController {
         // return the list of questions with an ok status
         return new ResponseEntity<>(questions, HttpStatus.OK);
     }
-
-
-@GetMapping("getQuestion/{questionid}") 
-public ResponseEntity<Map<String, Object>> getQuestion(@PathVariable Integer questionid) {
-    // Fetch the question by its ID
-    AdventureQuestion question = questionJpaRepository.findById(questionid);
-
-    if (question == null) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Return 404 if question is not found
+    @Getter 
+    public static class MCQAnswerDto {
+        private Long questionId; // associate with a question
+        private Long personId; // associate with a person
+        private Long choiceId;
     }
 
-    // Fetch the choices related to the question
-    List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(questionid);
-
-    // Map the AdventureChoice objects to AdventureChoiceDTO
-    List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
-    for (AdventureChoice choice : choices) {
-        AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
-        choiceDTO.setId(choice.getId());
-        choiceDTO.setChoice(choice.getChoice());
-        choiceDTO.setIs_correct(choice.getIs_correct());
-        choiceDTOs.add(choiceDTO);
+    @PostMapping("/submitMCQAnswer")
+    public ResponseEntity<AdventureAnswer> postAnswer(@RequestBody MCQAnswerDto mcqAnswerDto) {
+        // fetch the question, person, and choice associated with the answer
+        Optional<AdventureQuestion> questionOpt = questionJpaRepository.findById(mcqAnswerDto.getQuestionId());
+        Optional<Person> personOpt = personJpaRepository.findById(mcqAnswerDto.getPersonId());
+        Optional<AdventureChoice> choiceOpt = choiceJpaRepository.findById(mcqAnswerDto.getChoiceId());
+    
+        if (!questionOpt.isPresent() || !personOpt.isPresent() || !choiceOpt.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        
+        Person person = personOpt.get();
+        AdventureQuestion question = questionOpt.get();
+        AdventureChoice choice = choiceOpt.get();
+    
+        // Determine if the answer is correct
+        boolean isAnswerCorrect = choice.getIs_correct();
+    
+        // Create and save the answer
+        AdventureAnswer answer = new AdventureAnswer(null, question, person, choice, isAnswerCorrect, null);
+        answerJpaRepository.save(answer);
+    
+        // Update the person’s balance only if the answer is correct
+        if (isAnswerCorrect) {
+            double questionPoints = question.getPoints();
+            double updatedBalance = person.getBalanceDouble() + questionPoints;
+            person.setBalanceString(updatedBalance);
+        }
+    
+        return new ResponseEntity<>(answer, HttpStatus.OK);
     }
+    
 
-    // Prepare the response
-    Map<String, Object> response = new HashMap<>();
-    response.put("question", question);
-    response.put("choices", choiceDTOs);
+    @GetMapping("getQuestion/{questionid}") 
+    public ResponseEntity<Map<String, Object>> getQuestion(@PathVariable Integer questionid) {
+        // Fetch the question by its ID
+        AdventureQuestion question = questionJpaRepository.findById(questionid);
 
-    return new ResponseEntity<>(response, HttpStatus.OK); // Return the question and mapped choices with a 200 OK status
-}
+        if (question == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
+        }
+
+        List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(questionid);
+
+        List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
+        for (AdventureChoice choice : choices) {
+            AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
+            choiceDTO.setId(choice.getId());
+            choiceDTO.setChoice(choice.getChoice());
+            choiceDTO.setIs_correct(choice.getIs_correct());
+            choiceDTOs.add(choiceDTO);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("question", question);
+        response.put("choices", choiceDTOs);
+
+        return new ResponseEntity<>(response, HttpStatus.OK); 
+    }
 
 
     // endpoint to get the total chat score for a specific person
