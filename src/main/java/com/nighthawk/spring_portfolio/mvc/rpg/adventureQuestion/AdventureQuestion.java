@@ -81,9 +81,28 @@ public class AdventureQuestion {
             {"GitHub Command Quiz", "Which command is used to merge branches?", "Octocat", "10000", "null"},
             {"GitHub Command Quiz", "Which command is used to view the commit history?", "Octocat", "10000", "null"},
 
-            {"GitHub Command Quiz", "Describe the role of the ls command in a Linux system. Why is it an essential command for managing files and directories?", "Octocat", "10000", "Github ls command"},
-            {"GitHub Command Quiz", "Explain the differences between git pull and git fetch. In what scenarios would each command be used?", "Octocat", "10000", "Github git pull and git fetch"},            
-            {"GitHub Command Quiz", "What is the purpose of the mkdir command in Linux? Provide an example of its usage in a real-world scenario.", "Octocat", "10000", "Github mkdir"},            
+            {"Linux Command Quiz", "Which command is used to list files in a directory?", "Tux", "10000", "null"},            
+            {"Linux Command Quiz", "Which command is used to change directories?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to create a new directory?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to remove a file?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to copy files?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to move files?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to view a file?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to search for text in a file?", "Tux", "10000", "null"}, 
+            {"Linux Command Quiz", "Which command is used to view the contents of a file?", "Tux", "10000", "null"}, 
+
+            {"Linux Command Quiz", "Describe the role of the ls command in a Linux system. Why is it an essential command for managing files and directories?", "Tux", "10000", "Linux ls command"},      
+            
+            {"Jupyter Notebook Command Quiz", "Which shortcut is used to run a cell in Jupyter Notebook?", "Robot", "10000", "null"},            
+            {"Jupyter Notebook Command Quiz", "Which shortcut adds a new cell above the current cell?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut adds a new cell below the current cell?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut changes a cell to Markdown format?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut changes a cell to Code format?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut deletes the current cell?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut saves the current notebook?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut restarts the kernel?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut interrupts the kernel?", "Robot", "10000", "null"}, 
+            {"Jupyter Notebook Command Quiz", "Which shortcut toggles line numbers in a cell?", "Robot", "10000", "null"}, 
         };
     }
 }

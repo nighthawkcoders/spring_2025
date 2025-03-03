@@ -47,7 +47,7 @@ public class AdventureRubric {
         
 
 
-                rubrics.add(createRubric("Github ls command", 
+                rubrics.add(createRubric("Linux ls command", 
                 "Accuracy of Explanation (500 points): 500 - fully accurate description of the 'ls' command's functionality, options, "
                 + "and its importance in file management, 450 - mostly accurate but missing a few details, 400 - mostly correct but some details missing, "
                 + "350 - significant misunderstanding or missing core aspects, below 350 - incorrect or incomplete explanation; "

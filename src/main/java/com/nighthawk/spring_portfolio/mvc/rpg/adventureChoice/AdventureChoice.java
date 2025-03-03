@@ -36,4 +36,5 @@ public class AdventureChoice {
         this.choice_text = choice_text;
         this.is_correct = is_correct;
     }    
+
 }
