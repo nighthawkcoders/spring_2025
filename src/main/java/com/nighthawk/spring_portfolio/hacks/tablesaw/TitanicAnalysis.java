@@ -3,7 +3,6 @@ package com.nighthawk.spring_portfolio.hacks.tablesaw;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.NumericColumn;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.io.InputStream;
 
@@ -19,7 +18,7 @@ public class TitanicAnalysis {
         // Add "alone" column based on "SibSp (Siblings/Spouses)" and "Parch (Parents/Children)"
         NumericColumn<?> sibSpColumn = titanic.numberColumn("SibSp");
         NumericColumn<?> parchColumn = titanic.numberColumn("Parch");
-        BooleanColumn aloneColumn = BooleanColumn.create("alone", titanic.rowCount());
+        BooleanColumn aloneColumn = BooleanColumn.create("Alone", titanic.rowCount());
         // Add a new column for each row, indicating whether the passenger is alone
         for (int i = 0; i < titanic.rowCount(); i++) {
             // If both SibSp and Parch are 0, then the passenger is alone otherwise not
@@ -32,51 +31,31 @@ public class TitanicAnalysis {
         // Display structure and first rows
         System.out.println(titanic.structure());
         System.out.println(titanic.first(5));
-
-        // Median values
-        System.out.println("\nMedian values:");
-        // Tablesaw does not have a built-in median method, so we calculate it manually
-        double[] fares = titanic.numberColumn("Fare").asDoubleArray();
-        DescriptiveStatistics stats = new DescriptiveStatistics(fares);
-        System.out.println("Median Fare: " + stats.getPercentile(50));
-
-        // Mean values for survivors and non-survivors
+        
+        // Filter the data into two tables: perished and survived
         Table perished = titanic.where(titanic.numberColumn("Survived").isEqualTo(0));
         Table survived = titanic.where(titanic.numberColumn("Survived").isEqualTo(1));
 
-        System.out.println("\nPerished Mean/Average:");
-        double[] perishedFares = perished.numberColumn("Fare").asDoubleArray();
-        DescriptiveStatistics perishedStats = new DescriptiveStatistics(perishedFares);
-        System.out.println("Mean Fare: " + perishedStats.getMean());
-
-        System.out.println("\nSurvived Mean/Average:");
-        double[] survivedFares = survived.numberColumn("Fare").asDoubleArray();
-        DescriptiveStatistics survivedStats = new DescriptiveStatistics(survivedFares);
-        System.out.println("Mean Fare: " + survivedStats.getMean());
-
-        // Max and Min values for survivors
-        System.out.println("\nMaximums for survivors:");
-        System.out.println("Max Fare: " + survivedStats.getMax());
-
-        System.out.println("\nMinimums for survivors:");
-        System.out.println("Min Fare: " + survivedStats.getMin());
-
         // Conclusions:
-        // 1. Gender analysis: Check survival rates based on sex column
-        Table maleSurvivors = survived.where(survived.numberColumn("Sex").isEqualTo(1));
-        Table femaleSurvivors = survived.where(survived.numberColumn("Sex").isEqualTo(0));
-
+        // 1. Gender analysis: Check for survival based on "Sex" column
         System.out.println("\nSurvival rate by gender:");
-        System.out.println("Males survived: " + maleSurvivors.rowCount());
-        System.out.println("Females survived: " + femaleSurvivors.rowCount());
+        System.out.println("Males survived: " + perished.where(survived.stringColumn("Sex").isEqualTo("male")).rowCount());
+        System.out.println("Males perished: " + perished.where(perished.stringColumn("Sex").isEqualTo("male")).rowCount());
+        System.out.println("Females survived: " + perished.where(survived.stringColumn("Sex").isEqualTo("female")).rowCount());
+        System.out.println("Females perished: " + perished.where(perished.stringColumn("Sex").isEqualTo("female")).rowCount());
 
-        // 2. Fare analysis: Higher fares tend to correlate with survival
-        System.out.println("\nMean Fare for Survivors: " + survivedStats.getMean());
-        System.out.println("Mean Fare for Non-Survivors: " + perishedStats.getMean());
+        // 2. Fare analysis: Check survival based on "Fare" mean and median
+        System.out.println("\nSurvival rate based on Fare Analysis:");
+        System.out.println("Mean Fare for Survivors: " + survived.numberColumn("Fare").mean());
+        System.out.println("Median Fare for Survivors: " + survived.numberColumn("Fare").median());
+        System.out.println("Mean Fare for Non-Survivors: " + perished.numberColumn("Fare").mean());
+        System.out.println("Median Fare for Non-Survivors: " + perished.numberColumn("Fare").median()); 
 
-        // 3. Being alone analysis: Check survival based on "alone" column
+        // 3. Being alone analysis: Check survival based on "Alone" column
         System.out.println("\nSurvival Rate Based on 'Alone' Status:");
-        System.out.println("Survived Alone: " + survived.where(survived.booleanColumn("alone").isTrue()).rowCount());
-        System.out.println("Survived with Family: " + survived.where(survived.booleanColumn("alone").isFalse()).rowCount());
+        System.out.println("Survived Alone: " + survived.where(survived.booleanColumn("Alone").isTrue()).rowCount());
+        System.out.println("Perished Alone: " + perished.where(perished.booleanColumn("Alone").isTrue()).rowCount());
+        System.out.println("Survived with Family: " + survived.where(survived.booleanColumn("Alone").isFalse()).rowCount());
+        System.out.println("Perished with Family: " + perished.where(perished.booleanColumn("Alone").isFalse()).rowCount());
     }
 }
