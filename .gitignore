@@ -41,3 +41,6 @@ build/
 ### Database ###
 *.db
 volumes/backups/
+
+### Plots ###
+testoutput/
