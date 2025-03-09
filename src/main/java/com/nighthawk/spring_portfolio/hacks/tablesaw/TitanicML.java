@@ -36,6 +36,17 @@ public class TitanicML {
         titanic.doubleColumn("Age").setMissingTo(titanic.numberColumn("Age").median());
         titanic.doubleColumn("Fare").setMissingTo(titanic.numberColumn("Fare").median());
 
+        // Convert "Survived" column to nominal
+        StringColumn survived = titanic.intColumn("Survived").asStringColumn();
+        survived = survived.replaceAll("0", "No").replaceAll("1", "Yes");
+        titanic.replaceColumn("Survived", survived);
+
+        // Normalize numeric columns
+        normalizeColumn(titanic, "Age");
+        normalizeColumn(titanic, "Fare");
+        normalizeColumn(titanic, "SibSp");
+        normalizeColumn(titanic, "Parch");
+
         // Step 2: Convert Tablesaw Table to Weka Instances
         Instances data = convertTableToWeka(titanic);
 
@@ -58,7 +69,31 @@ public class TitanicML {
         evaluateModel(logistic, data, "Logistic Regression");
     }
 
-    // Convert Tablesaw Table to Weka Instances (Fixed Casting Issue)
+   // Normalize a numeric column to be between 0 and 1
+   private static void normalizeColumn(Table table, String columnName) {
+        Column<?> column = table.column(columnName);
+        double min = 0;
+        double max = 0;
+        if (column instanceof DoubleColumn) {
+            DoubleColumn doubleColumn = (DoubleColumn) column;
+            min = doubleColumn.min();
+            max = doubleColumn.max();
+            for (int i = 0; i < doubleColumn.size(); i++) {
+                double normalizedValue = (doubleColumn.getDouble(i) - min) / (max - min);
+                doubleColumn.set(i, normalizedValue);
+            }
+        } else if (column instanceof IntColumn) {
+            IntColumn intColumn = (IntColumn) column;
+            min = intColumn.min();
+            max = intColumn.max();
+            for (int i = 0; i < intColumn.size(); i++) {
+                double normalizedValue = (intColumn.getInt(i) - min) / (max - min);
+                intColumn.set(i, (int) normalizedValue);
+            }
+        }
+    }
+    
+    // Convert Tablesaw Table to Weka Instances
     private static Instances convertTableToWeka(Table table) {
         List<Attribute> attributes = new ArrayList<>();
 
@@ -86,6 +121,8 @@ public class TitanicML {
                     values[i] = row.getInt(i);
                 } else if (col.type() == ColumnType.DOUBLE) {
                     values[i] = row.getDouble(i);
+                } else if (col.type() == ColumnType.STRING) {
+                    values[i] = attributes.get(i).indexOfValue(row.getString(i));
                 }
             }
             data.add(new DenseInstance(1.0, values));
