@@ -76,18 +76,18 @@ public class ImportsController {
         synchronized (lock) {
             if (file.isEmpty()) {
                 model.addAttribute("message", "No file uploaded.");
-                return "error";
+                return "db_management/db_error";
             }
 
             try {
                 String result = importFromMultipartFile(file);
                 manageBackups();
                 model.addAttribute("message", result);
-                return "success";
+                return "db_management/db_success";
             } catch (Exception e) {
                 e.printStackTrace();
                 model.addAttribute("message", "Failed to process the uploaded file: " + e.getMessage());
-                return "error";
+                return "db_management/db_error";
             }
         }
     }
@@ -555,10 +555,10 @@ public class ImportsController {
         try {
             List<BackupFileInfo> backups = getAllBackupFiles();
             model.addAttribute("backups", backups);
-            return "backups";
+            return "db_management/backups";
         } catch (Exception e) {
             model.addAttribute("message", "Error fetching backups: " + e.getMessage());
-            return "error";  // Return the error view instead of the error message
+            return "db_management/db_error";
         }
     }
 
@@ -569,16 +569,16 @@ public class ImportsController {
                 File backupFile = new File(BACKUP_DIR + filename);
                 if (!backupFile.exists()) {
                     model.addAttribute("message", "Backup file not found.");
-                    return "error"; // Return the error view
+                    return "db_management/db_error";
                 }
                 
                 String result = importFromFile(backupFile);
                 model.addAttribute("message", result);
-                return "success"; // Return success.html template
+                return "db_management/db_success";
             } catch (Exception e) {
                 e.printStackTrace();
                 model.addAttribute("message", "Failed to revert to backup: " + e.getMessage());
-                return "error"; // Return the error view
+                return "db_management/db_error";
             }
         }
     }
@@ -589,7 +589,7 @@ public class ImportsController {
             File backupFile = new File(BACKUP_DIR + filename);
             if (!backupFile.exists()) {
                 model.addAttribute("message", "Backup file not found.");
-                return "error";
+                return "db_management/db_error";
             }
             
             String rawJson = new String(Files.readAllBytes(backupFile.toPath()));
@@ -600,11 +600,11 @@ public class ImportsController {
             model.addAttribute("creationDate", new java.util.Date(backupFile.lastModified()));
             model.addAttribute("fileSize", backupFile.length() / 1024); // Size in KB
             
-            return "backup-details";
+            return "db_management/backup-details";
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("message", "Failed to read backup: " + e.getMessage());
-            return "error";
+            return "db_management/db_error";
         }
     }
 
