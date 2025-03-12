@@ -96,10 +96,35 @@ public class ImportsController {
         try {
             InputStream inputStream = file.getInputStream();
             String rawJson = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
+    
+            // Parse the JSON data first
             Map<String, List<Map<String, Object>>> data = objectMapper.readValue(rawJson, Map.class);
-
+            
+            // FIRST PASS: Create all tables that don't exist yet
+            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH)) {
+                connection.setAutoCommit(false); // Start transaction
+                
+                // Get existing tables
+                Set<String> existingTables = getAllTables(connection);
+                
+                // Create all tables first before attempting to insert any data
+                for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
+                    String tableName = sanitizeTableName(entry.getKey());
+                    List<Map<String, Object>> tableData = entry.getValue();
+                    
+                    if (!tableName.endsWith("_seq") && !tableData.isEmpty() && !existingTables.contains(tableName)) {
+                        System.out.println("Pre-creating table: " + tableName);
+                        Set<String> columns = tableData.get(0).keySet();
+                        createTable(connection, tableName, columns);
+                    }
+                }
+                
+                connection.commit();
+            }
+            
+            // SECOND PASS: Process all the data normally
             sanitizeAndProcessData(data, true);
+            
             return "Data imported successfully from uploaded file: " + file.getOriginalFilename();
         } catch (Exception e) {
             e.printStackTrace();
@@ -264,13 +289,25 @@ public class ImportsController {
             for (Map.Entry<String, List<Map<String, Object>>> entry : data.entrySet()) {
                 String tableName = sanitizeTableName(entry.getKey());
                 List<Map<String, Object>> tableData = entry.getValue();
+                
                 if (!tableName.endsWith("_seq")) { // Skip sequence tables
-                    ensureTableExists(connection, tableName, tableData, removeExcessData);
-                    if (removeExcessData) {
-                        // Delete all existing data and replace with the JSON data
-                        clearTableData(connection, tableName);
+                    // First make sure the table exists with all necessary columns
+                    try {
+                        ensureTableExists(connection, tableName, tableData, removeExcessData);
+                        
+                        if (removeExcessData) {
+                            // Delete all existing data and replace with the JSON data
+                            clearTableData(connection, tableName);
+                        }
+                        
+                        // Only attempt to insert data if we have any
+                        if (!tableData.isEmpty()) {
+                            insertTableData(connection, tableName, tableData);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Error processing table " + tableName + ": " + e.getMessage());
+                        throw e; // Rethrow to roll back the transaction
                     }
-                    insertTableData(connection, tableName, tableData);
                 }
             }
             
@@ -393,22 +430,56 @@ public class ImportsController {
 
     private void insertTableData(Connection connection, String tableName, List<Map<String, Object>> tableData) throws SQLException {
         if (tableData.isEmpty()) {
+            System.out.println("No data to insert for table: " + tableName);
             return;
         }
-
+    
         Set<String> columns = tableData.get(0).keySet();
+        
+        // Verify table exists before attempting insert
+        if (!tableExists(connection, tableName)) {
+            System.out.println("Table " + tableName + " doesn't exist. Creating it now...");
+            createTable(connection, tableName, columns);
+        }
+        
+        // Verify all columns exist
+        Set<String> existingColumns = getExistingColumns(connection, tableName);
+        for (String column : columns) {
+            if (!existingColumns.contains(column)) {
+                System.out.println("Adding missing column: " + column + " to table: " + tableName);
+                addColumn(connection, tableName, column);
+            }
+        }
+        
+        // Now build the insert query based on the actual columns in the database
         String sql = buildInsertQuery(tableName, columns);
-
+    
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            int batchSize = 0;
             for (Map<String, Object> row : tableData) {
                 int index = 1;
                 for (String column : columns) {
                     preparedStatement.setObject(index++, row.get(column));
                 }
                 preparedStatement.addBatch();
+                batchSize++;
+                
+                // Execute in batches of 100 to avoid memory issues
+                if (batchSize >= 100) {
+                    preparedStatement.executeBatch();
+                    batchSize = 0;
+                }
             }
-
-            preparedStatement.executeBatch();
+    
+            // Execute any remaining items in the batch
+            if (batchSize > 0) {
+                preparedStatement.executeBatch();
+            }
+            
+            System.out.println("Successfully inserted " + tableData.size() + " rows into " + tableName);
+        } catch (SQLException e) {
+            System.err.println("Error inserting data into " + tableName + ": " + e.getMessage());
+            throw e;
         }
     }
 
@@ -435,14 +506,33 @@ public class ImportsController {
     }
 
     private void ensureTableExists(Connection connection, String tableName, List<Map<String, Object>> tableData, boolean removeExcessColumns) throws SQLException {
+        // If the data is empty, create a basic table structure instead of skipping
         if (tableData.isEmpty()) {
+            System.out.println("No data provided for table: " + tableName + ". Creating with basic structure.");
+            if (!tableExists(connection, tableName)) {
+                // Create a basic table if it doesn't exist
+                String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                             "name TEXT, " +
+                             "description TEXT, " +
+                             "created_date TEXT" +
+                             ")";
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute(sql);
+                    System.out.println("Created basic table structure for: " + tableName);
+                }
+            }
             return;
         }
-
+    
         Set<String> columnsInJson = tableData.get(0).keySet();
         
-        if (!tableExists(connection, tableName)) {
+        // Check if the table exists
+        boolean tableExists = tableExists(connection, tableName);
+        
+        if (!tableExists) {
             // Create a new table with exactly the columns in the JSON
+            System.out.println("Creating new table: " + tableName + " with columns: " + columnsInJson);
             createTable(connection, tableName, columnsInJson);
         } else if (removeExcessColumns) {
             // Get existing columns in the database
@@ -454,12 +544,14 @@ public class ImportsController {
             
             // If we have columns to remove, recreate the table
             if (!columnsToRemove.isEmpty()) {
+                System.out.println("Recreating table: " + tableName + " to remove columns: " + columnsToRemove);
                 // Need to recreate the table to remove columns
                 recreateTableWithNewSchema(connection, tableName, columnsInJson);
             } else {
                 // Just add any missing columns
                 for (String column : columnsInJson) {
                     if (!existingColumns.contains(column)) {
+                        System.out.println("Adding column: " + column + " to table: " + tableName);
                         addColumn(connection, tableName, column);
                     }
                 }
@@ -469,6 +561,7 @@ public class ImportsController {
             Set<String> existingColumns = getExistingColumns(connection, tableName);
             for (String column : columnsInJson) {
                 if (!existingColumns.contains(column)) {
+                    System.out.println("Adding column: " + column + " to table: " + tableName);
                     addColumn(connection, tableName, column);
                 }
             }
@@ -497,19 +590,53 @@ public class ImportsController {
     }
 
     private void createTable(Connection connection, String tableName, Set<String> columns) throws SQLException {
-        StringBuilder sqlBuilder = new StringBuilder("CREATE TABLE " + tableName + " (");
+        StringBuilder sqlBuilder = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
+        
+        boolean hasIdColumn = columns.stream().anyMatch(col -> col.equalsIgnoreCase("id"));
+        
         for (String column : columns) {
-            if (column.equalsIgnoreCase("id")) {
+            if (column.equalsIgnoreCase("id") && hasIdColumn) {
                 sqlBuilder.append(column).append(" INTEGER PRIMARY KEY AUTOINCREMENT,");
+            } else if (column.toLowerCase().endsWith("_id") || column.toLowerCase().equals("id")) {
+                // Foreign keys or other ID fields are usually integers
+                sqlBuilder.append(column).append(" INTEGER,");
+            } else if (column.toLowerCase().contains("date") || column.toLowerCase().contains("time")) {
+                // Date/time fields
+                sqlBuilder.append(column).append(" TEXT,");
+            } else if (column.toLowerCase().contains("is_") || column.toLowerCase().startsWith("has_") || 
+                      column.toLowerCase().equals("active") || column.toLowerCase().equals("enabled")) {
+                // Boolean fields
+                sqlBuilder.append(column).append(" BOOLEAN,");
+            } else if (column.toLowerCase().contains("count") || column.toLowerCase().contains("number") || 
+                      column.toLowerCase().contains("amount") || column.toLowerCase().contains("quantity")) {
+                // Numeric fields
+                sqlBuilder.append(column).append(" INTEGER,");
+            } else if (column.toLowerCase().contains("price") || column.toLowerCase().contains("cost") || 
+                      column.toLowerCase().contains("rate")) {
+                // Decimal fields
+                sqlBuilder.append(column).append(" REAL,");
             } else {
+                // Default to TEXT for everything else
                 sqlBuilder.append(column).append(" TEXT,");
             }
         }
-        sqlBuilder.deleteCharAt(sqlBuilder.length() - 1);
+        
+        // Remove the trailing comma
+        if (columns.size() > 0) {
+            sqlBuilder.deleteCharAt(sqlBuilder.length() - 1);
+        }
+        
         sqlBuilder.append(")");
-
+        
+        String sql = sqlBuilder.toString();
+        System.out.println("Creating table with SQL: " + sql);
+        
         try (Statement statement = connection.createStatement()) {
-            statement.execute(sqlBuilder.toString());
+            statement.execute(sql);
+            System.out.println("Successfully created table: " + tableName);
+        } catch (SQLException e) {
+            System.err.println("Error creating table " + tableName + ": " + e.getMessage());
+            throw e;
         }
     }
 
