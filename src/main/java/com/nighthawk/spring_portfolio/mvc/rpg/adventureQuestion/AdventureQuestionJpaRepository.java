@@ -8,6 +8,7 @@ public interface AdventureQuestionJpaRepository extends JpaRepository<AdventureQ
     AdventureQuestion findByTitle(String title); 
     AdventureQuestion findByContent(String content); 
     AdventureQuestion findById(Integer questionid);
+    List<AdventureQuestion> findByCategory(String category);
     List<AdventureQuestion> findAllByOrderByTitleAsc();
 }
 

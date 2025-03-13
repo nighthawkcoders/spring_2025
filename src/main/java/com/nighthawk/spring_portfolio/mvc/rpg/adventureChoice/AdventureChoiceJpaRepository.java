@@ -9,4 +9,5 @@ public interface AdventureChoiceJpaRepository extends JpaRepository<AdventureCho
     AdventureChoice findByChoice(String choice);
     AdventureChoice findByQuestionAndChoice(AdventureQuestion question, String choice);
     List<AdventureChoice> findByQuestionId(Integer questionid);
+    List<AdventureChoice> findByQuestionId(long  questionid);
 }

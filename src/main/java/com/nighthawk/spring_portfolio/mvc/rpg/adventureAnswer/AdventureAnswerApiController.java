@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -148,32 +149,45 @@ public class AdventureAnswerApiController {
     }
     
 
-    @GetMapping("getQuestion/{questionid}") 
-    public ResponseEntity<Map<String, Object>> getQuestion(@PathVariable Integer questionid) {
-        // Fetch the question by its ID
-        AdventureQuestion question = questionJpaRepository.findById(questionid);
-
-        if (question == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
+    @GetMapping("getQuestion")
+    public ResponseEntity<Map<String, Object>> getQuestion(@RequestParam String category) {
+        // Fetch all questions for the provided category
+        List<AdventureQuestion> questions = questionJpaRepository.findByCategory(category);
+        
+        if (questions.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-        List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(questionid);
-
-        List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
-        for (AdventureChoice choice : choices) {
-            AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
-            choiceDTO.setId(choice.getId());
-            choiceDTO.setChoice(choice.getChoice());
-            choiceDTO.setIs_correct(choice.getIs_correct());
-            choiceDTOs.add(choiceDTO);
+        
+        // Build a list to hold each question and its corresponding choices
+        List<Map<String, Object>> questionsWithChoices = new ArrayList<>();
+        
+        for (AdventureQuestion question : questions) {
+            // Fetch answer choices for the current question
+            List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(question.getId());
+            List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
+            
+            for (AdventureChoice choice : choices) {
+                AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
+                choiceDTO.setId(choice.getId());
+                choiceDTO.setChoice(choice.getChoice());
+                choiceDTO.setIs_correct(choice.getIs_correct());
+                choiceDTOs.add(choiceDTO);
+            }
+            
+            // Create a map for the current question and add its choices
+            Map<String, Object> questionEntry = new HashMap<>();
+            questionEntry.put("question", question);
+            questionEntry.put("choices", choiceDTOs);
+            questionsWithChoices.add(questionEntry);
         }
-
+        
+        // Wrap the list in a response map
         Map<String, Object> response = new HashMap<>();
-        response.put("question", question);
-        response.put("choices", choiceDTOs);
-
-        return new ResponseEntity<>(response, HttpStatus.OK); 
+        response.put("questions", questionsWithChoices);
+        
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
 
     // endpoint to get the total chat score for a specific person
