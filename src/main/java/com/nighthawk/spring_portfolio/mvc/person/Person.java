@@ -244,6 +244,8 @@ public class Person implements Comparable<Person> {
         this.balance = balance;
         this.roles.add(role);
         this.submissions = new ArrayList<>();
+
+        this.timeEntries = new Tinkle(this, "");
     }
 
     public boolean hasRoleWithName(String roleName) {
