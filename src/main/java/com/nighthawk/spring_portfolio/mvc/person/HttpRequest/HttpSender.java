@@ -100,4 +100,28 @@ public class HttpSender{
             return true;
         }
     }
+
+
+    ///// an example of how this works:
+    public static void main(String[] args) {
+        //Arguments: location => url of the place
+        String location = "https://gutendex.com/books/51155/"; //this is a dictionary
+        //method => type of request (GET, POST, ect.)
+        String method = "GET";
+        //any request headers, you can put a body and content type header here
+        HashMap<String,String> requestHeaders = new HashMap<String,String>(0);
+
+        //sends an http to the given location, and returns the result as a map
+        //map contains 2 keys: responseCode and Content
+        //"reponse" code is a string representation of the reponse code (200, 404, ect)
+        //"content" returns any kind of content it finds (usually the reponse content, but also grabs error messages)
+        Map<String,String> response = HttpSender.sendRequest(location,method,requestHeaders);
+
+        //output information message
+        System.out.println("POST request to: "+location + " {");
+        response.forEach((header,value)->{
+            System.out.println("\""+header+"\":\""+value+"\",");
+        });
+        System.out.println("}");
+    }
 };
