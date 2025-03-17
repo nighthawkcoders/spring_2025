@@ -16,7 +16,6 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
     )
     List<StudentInfo> findTeam(
         @Param("course") String course, 
-        @Param("trimester") int trimester, 
         @Param("period") int period,
         @Param("table") int table
     );
@@ -27,7 +26,6 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
     )
     List<StudentInfo> findPeriod(
         @Param("course") String course, 
-        @Param("trimester") int trimester, 
         @Param("period") int period
     );
 
@@ -37,10 +35,9 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
         value = "SELECT * FROM students WHERE username = :username AND course = :course AND trimester = :trimester AND period = :period",
         nativeQuery = true
     )
-    List<StudentInfo> findByUsernameCourseTrimesterPeriod(
+    List<StudentInfo> findByUsernameCoursePeriod(
         @Param("username") String username, 
         @Param("course") String course, 
-        @Param("trimester") int trimester, 
         @Param("period") int period
     );
 
