@@ -87,16 +87,6 @@ public class CryptoController {
         }
         return ResponseEntity.ok("{ \"cryptoId\": \"" + cryptoId + "\", \"price\": " + price + " }");
     }
-    @GetMapping("/holdings")
-    public ResponseEntity<?> getUserHoldings(@RequestParam String email) {
-        userStocksTable userStocks = userStocksRepo.findByEmail(email);
-
-        if (userStocks == null || userStocks.getCrypto() == null || userStocks.getCrypto().isEmpty()) {
-            return ResponseEntity.status(404).body("No crypto holdings found for email: " + email);
-        }
-
-        return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"holdings\": \"" + userStocks.getCrypto().replace("\n", "\\n") + "\" }");
-    }
 
     @PostMapping("/buy")
     public ResponseEntity<?> buyCrypto(@RequestBody BuyRequest buyRequest) {
@@ -349,4 +339,3 @@ public class CryptoController {
         public void setCryptoAmount(double cryptoAmount) { this.cryptoAmount = cryptoAmount; }
     }
 }
-
