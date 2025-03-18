@@ -134,12 +134,6 @@ class cookieSacrifice {
             if(name != "cookieSacrifice") {gameData.tableOfCostMultipliers[name] = 1 }
         })
 
-
-        console.log(gameData.cookies);
-
-        var body = {
-            uid: document.getElementById("uid").value,
-            bet: gameData.cookies + gameData.tableOfCostMultipliers["cookieSacrifice"]/100 * cookieSacrifice.price,
         var body = {
             uid: document.getElementById("uid").value,
             bet: gameData.cookies,
