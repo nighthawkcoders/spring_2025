@@ -34,7 +34,7 @@ public class GameStatApiController {
     private GameStatJpaRepository gameStatJpaRepository;
 
     @Data
-    public class GameStatDTO {
+    public static class GameStatDTO {
         private String personUid;  
         private String gameId;     
         private Map<String, Object> stats; 
@@ -42,7 +42,6 @@ public class GameStatApiController {
 
     @PostMapping("/createStats")
     public ResponseEntity<GameStat> createGameStat(@RequestBody GameStatDTO dto) {
-        // Convert string uid to Person entity
         Person person = personJpaRepository.findByUid(dto.getPersonUid());
         if (person == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -60,31 +59,24 @@ public class GameStatApiController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        // Create a new GameStat using the domain model's factory method
         GameStat gameStat = GameStat.createGameStats(person, game, dto.getStats());
 
-        // Save the newly created GameStat to the database
         gameStat = gameStatJpaRepository.save(gameStat);
 
-        // Return the created object with a 201 Created status
         return new ResponseEntity<>(gameStat, HttpStatus.CREATED);
     }
 
 
     @GetMapping("/getStats/{uid}")
     public ResponseEntity<Map<String, Object>> getStats(@PathVariable String uid) {
-        // Retrieve the GameStat object by the user UID
         GameStat gamestat = gameStatJpaRepository.findByUid_uid(uid);
         
-        // If no GameStat is found, return 404 Not Found
         if (gamestat == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
-        // Get the stats map from the GameStat object
         Map<String, Object> stats = gamestat.getStats();
         
-        // Return the stats map with a 200 OK status
         return new ResponseEntity<>(stats, HttpStatus.OK);
     }
 
@@ -95,20 +87,16 @@ public class GameStatApiController {
 
     @PostMapping("/updateStats/{uid}")
     public ResponseEntity<Map<String, Object>> updateStats(@RequestBody updateStatsDTO updateStatsDTO, @PathVariable String uid) {
-        // Retrieve the GameStat object by the user's uid (using a repository method that navigates the Person object)
         GameStat gamestat = gameStatJpaRepository.findByUid_uid(uid);
         
         if (gamestat == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
-        // Update the stats from the DTO
         gamestat.setStats(updateStatsDTO.getStats());
         
-        // Save the updated GameStat to the database
         gameStatJpaRepository.save(gamestat);
         
-        // Return the updated stats map
         return new ResponseEntity<>(gamestat.getStats(), HttpStatus.OK);
     }
 }

@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,7 +40,10 @@ public class Game {
 
     public static Game[] init() {
         ArrayList<Game> games = new ArrayList<>();
-        games.add(createGame("Adventure Game"));
+        games.add(createGame("Adventure"));
+        games.add(createGame("Casino"));
+        games.add(createGame("Stocks"));
+        games.add(createGame("Crypto"));
         return games.toArray(new Game[0]);
     }
 }

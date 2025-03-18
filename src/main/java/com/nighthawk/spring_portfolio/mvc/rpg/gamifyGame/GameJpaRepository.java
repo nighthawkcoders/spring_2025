@@ -3,5 +3,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 
 public interface GameJpaRepository extends JpaRepository<Game, Long> {
-
+    Game findByName(String name);
 }

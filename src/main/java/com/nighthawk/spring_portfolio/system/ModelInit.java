@@ -42,6 +42,8 @@ import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestio
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureQuestion.AdventureQuestionJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubric;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubricJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.rpg.gamifyGame.Game;
+import com.nighthawk.spring_portfolio.mvc.rpg.gamifyGame.GameJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo.StudentService;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
@@ -74,6 +76,7 @@ public class ModelInit {
     @Autowired StudentService studentService;
     @Autowired AdventureRubricJpaRepository rubricJpaRepository;
     @Autowired AdventureChoiceJpaRepository choiceJpaRepository;
+    @Autowired GameJpaRepository gameJpaRepository;
 
     @Bean
     @Transactional
@@ -126,7 +129,14 @@ public class ModelInit {
                 }
             }    
 
-            
+            Game[] gameArray = Game.init();
+            for (Game game: gameArray) {
+                Game gameFound = gameJpaRepository.findByName(game.getName());
+                if (gameFound == null) {
+                    gameJpaRepository.save(game);
+                }
+            }
+
             String[][] questionArray = AdventureQuestion.init();
             for (String[] questionInfo : questionArray) {
                 String title = questionInfo[0];
