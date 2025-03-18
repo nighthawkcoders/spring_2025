@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Long> {
     Optional<StudentInfo> findByUsername(String username);
     @Query(
-        value = "SELECT * FROM students WHERE course = :course AND trimester = :trimester AND period = :period AND table_number = :table",
+        value = "SELECT * FROM students WHERE course = :course AND period = :period AND table_number = :table",
         nativeQuery = true
     )
     List<StudentInfo> findTeam(
@@ -21,7 +21,7 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
     );
 
     @Query(
-        value = "SELECT * FROM students WHERE course = :course AND trimester = :trimester AND period = :period",
+        value = "SELECT * FROM students WHERE course = :course AND period = :period",
         nativeQuery = true
     )
     List<StudentInfo> findPeriod(
@@ -32,7 +32,7 @@ public interface StudentInfoJPARepository extends JpaRepository<StudentInfo, Lon
 
 
     @Query(
-        value = "SELECT * FROM students WHERE username = :username AND course = :course AND trimester = :trimester AND period = :period",
+        value = "SELECT * FROM students WHERE username = :username AND course = :course AND period = :period",
         nativeQuery = true
     )
     List<StudentInfo> findByUsernameCoursePeriod(
