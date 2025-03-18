@@ -40,8 +40,6 @@ build/
 
 ### Database ###
 *.db
-*.db-shm
-*.db-wal
 volumes/backups/
 
 ### Plots ###
