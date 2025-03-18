@@ -118,7 +118,7 @@ public class HttpSender{
         Map<String,String> response = HttpSender.sendRequest(location,method,requestHeaders);
 
         //output information message
-        System.out.println("POST request to: "+location + " {");
+        System.out.println("GET request to: "+location + " {");
         response.forEach((header,value)->{
             System.out.println("\""+header+"\":\""+value+"\",");
         });
