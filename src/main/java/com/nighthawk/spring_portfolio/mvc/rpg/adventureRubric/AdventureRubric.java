@@ -45,8 +45,6 @@ public class AdventureRubric {
     public static AdventureRubric[] init() {
         ArrayList<AdventureRubric> rubrics = new ArrayList<>();
         
-
-
                 rubrics.add(createRubric("Linux ls command", 
                 "Accuracy of Explanation (500 points): 500 - fully accurate description of the 'ls' command's functionality, options, "
                 + "and its importance in file management, 450 - mostly accurate but missing a few details, 400 - mostly correct but some details missing, "
@@ -60,9 +58,6 @@ public class AdventureRubric {
                 + "Relevance to the Question (100 points): 100 - fully relevant, 85 - mostly relevant with minor digressions, 70 - some off-topic content, "
                 + "50 - significant off-topic material, below 50 - irrelevant or inadequate. Give me an integer score from 1-1500"));
             
-
-
-
         return rubrics.toArray(new AdventureRubric[0]);
     }
 }
