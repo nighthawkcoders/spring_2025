@@ -31,6 +31,7 @@
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink0">
                                 <li><a class="dropdown-item" th:href="@{/greet}">Spring Greeting</a></li>
                                 <li><a class="dropdown-item" th:href="@{/birds}">Birds Background</a></li>
+                                <li><a class="dropdown-item" th:href="@{/profileThymeleaf}">Profile Thymeleaf</a></li>
                                 <li><a class="dropdown-item" th:href="@{/dne}">404 Error</a></li>
                             </ul>
                         </li>
@@ -147,6 +148,12 @@
 
             <!-- Navigation bar JavaScript support -->
             <script>
+                if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+                    javaURI = "http://localhost:8085";
+                } else {
+                    javaURI = "https://spring2025.nighthawkcodingsociety.com";
+                }
+
                 const search = document.getElementById('search');
                 const google = 'https://www.google.com/search?q=site%3A+';
                 const site = 'https://nighthawkcodingsociety.com';
@@ -165,7 +172,7 @@
                 }
             
                 function fetchApprovalRequests() {
-                    fetch('http://127.0.0.1:8085/api/approval/pendingRequests')
+                    fetch(javaURI + '/api/approval/pendingRequests')
                         .then(response => response.json())
                         .then(data => {
                             console.log("Pending approval requests:", data);
@@ -242,7 +249,7 @@
 
                 }
                 function fetchStatus() {
-                    fetch('http://localhost:8085/api/queue/getActive')
+                    fetch(javaURI + '/api/queue/getActive')
                         .then(function (response) {
                             return response.json();
                         })
@@ -257,7 +264,7 @@
 
                 window.addEventListener('load', function () {
                     // Your document is loaded.
-                    var fetchInterval = 5000; // 5 seconds.
+                    var fetchInterval = 60000; // 60 seconds.
 
                     // Invoke the request every 5 seconds.
                     setInterval(fetchStatus, fetchInterval);
