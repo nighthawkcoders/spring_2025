@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller  // HTTP requests are handled as a controller, using the @Controller annotation
 public class profileThymeleafViewController {
-        // @GetMapping handles GET request for /greet, maps it to greeting() method
     @GetMapping("/profileThymeleaf")
     // @RequestParam handles variables binding to frontend, defaults, etc
     public String profileThymelef(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model) {
