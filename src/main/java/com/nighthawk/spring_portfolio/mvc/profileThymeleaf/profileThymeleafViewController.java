@@ -16,6 +16,6 @@ public class profileThymeleafViewController {
 
         // load HTML VIEW (profileThymeleaf.html)
         return "profileThymeleaf"; 
-
+ 
     }
 }
