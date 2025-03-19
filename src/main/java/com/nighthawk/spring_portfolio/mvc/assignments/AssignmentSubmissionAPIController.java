@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -233,5 +235,39 @@ public class AssignmentSubmissionAPIController {
             .map(AssignmentSubmissionReturnDto::new)
             .toList();
         return new ResponseEntity<>(submissions, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/assigned-graders")
+    public ResponseEntity<?> assignGradersToSubmission(@PathVariable Long id, @RequestBody List<Long> personIds) {
+        Optional<AssignmentSubmission> submissionOptional = submissionRepo.findById(id);
+        if (!submissionOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Submission not found");
+        }
+
+        AssignmentSubmission submission = submissionOptional.get();
+        List<Person> persons = personRepo.findAllById(personIds);
+
+        submission.setAssignedGraders(persons);
+
+        submissionRepo.save(submission);
+        return ResponseEntity.ok("Persons assigned successfully");
+    }
+
+    @GetMapping("/{id}/assigned-graders")
+    public ResponseEntity<?> getAssignedGraders(@PathVariable Long id) {
+        Optional<AssignmentSubmission> submissionOptional = submissionRepo.findById(id);
+        if (!submissionOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Submission not found");
+        }
+
+        AssignmentSubmission submission = submissionOptional.get();
+        List<Person> assignedGraders = submission.getAssignedGraders();
+        
+        // Return just the IDs of assigned persons
+        List<Long> assignedGraderIds = assignedGraders.stream()
+            .map(Person::getId)
+            .collect(Collectors.toList());
+            
+        return ResponseEntity.ok(assignedGraderIds);
     }
 }

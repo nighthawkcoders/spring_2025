@@ -47,6 +47,14 @@ public class AssignmentSubmission {
     )
     private List<Person> students = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+        name = "assignment_submission_graders",
+        joinColumns = @JoinColumn(name = "submission_id"),
+        inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    private List<Person> assignedGraders;
+
     private String content;
     private Double grade;
     private String feedback;
