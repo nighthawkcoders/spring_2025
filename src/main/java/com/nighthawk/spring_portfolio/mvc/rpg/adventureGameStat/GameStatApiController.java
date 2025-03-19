@@ -36,7 +36,7 @@ public class GameStatApiController {
     @Data
     public static class GameStatsDTO {
         private String uid;  
-        private String gid;     
+        private String gname;     
         private Map<String, Object> stats; 
     }
 
@@ -46,26 +46,19 @@ public class GameStatApiController {
         if (person == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-
-        Long gameId;
-        try {
-            gameId = Long.parseLong(dto.getGid());
-        } catch (NumberFormatException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        Game game = gameJpaRepository.findById(gameId).orElse(null);
+        
+        Game game = gameJpaRepository.findByName(dto.getGname());
         if (game == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            game = gameJpaRepository.save(new Game(dto.getGname(), person));
         }
-
+        
         GameStat gameStat = GameStat.createGameStats(person, game, dto.getStats());
         Map<String, Object> stats = gameStat.getStats();
-
-        gameStat = gameStatJpaRepository.save(gameStat);
-
+    
+        gameStatJpaRepository.save(gameStat);
         return new ResponseEntity<>(stats, HttpStatus.CREATED);
     }
+    
 
 
     @GetMapping("/getStats/{uid}")
