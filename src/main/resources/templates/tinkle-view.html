@@ -1,81 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.thymeleaf.org" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layouts/base}">
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/base}" lang="en">
 <head>
     <title>Tinkle View</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Global Styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7fc;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 40px;
-        }
-        .navbar {
-            width: 100%;
-            background-color: #333;
-            padding: 15px 20px;
-            color: white;
-            text-align: center;
-            font-size: 20px;
-        }
-        table {
-            width: 50%;
-            margin-bottom: 30px;
-            border-collapse: collapse;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 8px 12px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-            font-size: 14px;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        td {
-            font-size: 13px;
-            color: #333; /* Darker font color for better readability */
-        }
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .sort-arrow {
-            font-size: 12px;
-            color: #4CAF50;
-            margin-left: 5px;
-            cursor: pointer;
-        }
-        .chart-container {
-            width: 60%;
-            max-width: 900px;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .chart-container canvas {
-            width: 100% !important;
-            height: 400px !important;
-        }
+        /* Container */
         .container {
-            width: 80%;
+            width: 80%; /* Keeps content width reasonable */
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
@@ -83,22 +15,50 @@
             border-radius: 12px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .btn {
-            padding: 8px 15px;
+
+        /* Table Alignment */
+        table {
+            width: 100%; 
+            margin-left: 0;
+            margin-bottom: 40px; /* Increased from 30px to 40px for more space */
+            border-collapse: collapse;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+
+        /* Table Headings & Cells */
+        th, td {
+            padding: 12px;
+            text-align: left; /* Left-align text */
+            border: 1px solid #ddd;
+        }
+
+        /* Table Header Styling */
+        th {
             background-color: #4CAF50;
             color: white;
-            border: none;
-            border-radius: 5px;
             font-size: 14px;
-            cursor: pointer;
         }
-        .btn:hover {
-            background-color: #45a049;
+
+        /* Hover Effect */
+        tr:hover {
+            background-color: #575353;
         }
-        /* Highlight excessive duration pairs only */
+
+        /* Highlight excessive duration pairs */
         .highlight-long {
-            background-color: #ffcccb !important; /* Light red */
+            background-color: #ec150e !important; /* Light red */
             font-weight: bold;
+        }
+
+        /* Sort Arrows */
+        .sort-arrow {
+            font-size: 12px;
+            color: #4CAF50;
+            margin-left: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -107,12 +67,12 @@
 
     <div class="container" layout:fragment="body">
         <h2>User Entries</h2>
-        <table>
+        <table id="userEntriesTable" class="display">
             <thead>
                 <tr>
-                    <th class="sortable-header">Person Name <span class="sort-arrow">↓</span></th>
-                    <th class="sortable-header">Time In <span class="sort-arrow">↓</span></th>
-                    <th class="sortable-header">Duration (HH:MM:SS) <span class="sort-arrow">↓</span></th>
+                    <th>Person Name</th>
+                    <th>Time In</th>
+                    <th>Duration (HH:MM:SS)</th>
                 </tr>
             </thead>
             <tbody>
@@ -123,13 +83,13 @@
                 </tr>
             </tbody>
         </table>
-
+    
         <h2>Average Weekly Duration per User</h2>
-        <table>
+        <table id="weeklyDurationTable" class="display">
             <thead>
                 <tr>
-                    <th class="sortable-header">Person Name <span class="sort-arrow">↓</span></th>
-                    <th class="sortable-header">Average Weekly Duration (Minutes) <span class="sort-arrow">↓</span></th>
+                    <th>Person Name</th>
+                    <th>Average Weekly Duration (Minutes)</th>
                 </tr>
             </thead>
             <tbody>
@@ -145,9 +105,14 @@
             <canvas id="weeklyDurationChart"></canvas>
         </div>
 
-        <!-- Include jQuery -->
+        <!-- DataTables CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+        <!-- jQuery -->
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <!-- DataTables JS -->
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 
+        <!-- Include jQuery -->
         <script th:inline="javascript">
             $(document).ready(function () {
                 // Prepare bar chart data.
@@ -200,8 +165,8 @@
                         } else {
                             return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
                         }
-                    });
-
+                });
+        
                     // Append sorted rows back to the table body
                     $.each(rows, function (index, row) {
                         tbody.append(row);
@@ -218,34 +183,35 @@
                         $(this).html(index === sortedColumnIndex ? (isAscending ? '↑' : '↓') : '↓');
                     });
                 }
-
+        
                 // Highlight excessive duration pairs
                 const thresholdMinutes = 15;
                 $('.time-in-cell').each(function () {
                     const cellText = $(this).text().trim();
                     if (!cellText) return;
-
+        
                     const pairs = cellText.split(',');
                     const newHTML = pairs.map(pair => {
                         let trimmed = pair.trim();
                         let times = trimmed.split("--");
-
+        
                         if (times.length === 2) {
                             const start = new Date(times[0]);
                             const end = new Date(times[1]);
                             const diffMinutes = (end - start) / 60000;
-
+        
                             if (diffMinutes > thresholdMinutes) {
-                                return `<span class="highlight-long">${trimmed}</span>`;
+                                return <span class="highlight-long">${trimmed}</span>;
                             }
                         }
                         return trimmed;
                     }).join(", ");
-
+        
                     $(this).html(newHTML);
                 });
             });
         </script>
+        
 
     </div>
 </body>
