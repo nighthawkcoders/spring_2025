@@ -4,11 +4,15 @@ package com.nighthawk.spring_portfolio.mvc.rpg.gamifyGame;
 
 import java.util.ArrayList;
 
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,25 +29,33 @@ public class Game {
 
     @Column(unique = false, nullable = true)
     private String name;
-    
-    public Game(String name) {
+
+    // user uid
+    @OneToOne
+    @JoinColumn(name = "person_uid", nullable = false)
+    private Person uid;
+
+    public Game(String name, Person uid) {
         this.name = name;
-  
+        this.uid = uid;
     }
 
-    public static Game createGame(String name) {
+    public static Game createGame(String name, Person uid) {
         Game game = new Game();
         game.setName(name);
-
+        game.setUid(uid);
         return game;
     }
 
-    public static Game[] init() {
-        ArrayList<Game> games = new ArrayList<>();
-        games.add(createGame("Adventure"));
-        games.add(createGame("Casino"));
-        games.add(createGame("Stocks"));
-        games.add(createGame("Crypto"));
-        return games.toArray(new Game[0]);
+    public static String[][] init() {
+        return new String[][] {
+  
+            {"Adventure", "toby"},
+            {"CSA Coders", "niko"},
+            {"Dinosaur", "hop"},
+            
+            
+
+        };
     }
 }

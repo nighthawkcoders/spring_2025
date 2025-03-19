@@ -129,13 +129,16 @@ public class ModelInit {
                 }
             }    
 
-            Game[] gameArray = Game.init();
-            for (Game game: gameArray) {
-                Game gameFound = gameJpaRepository.findByName(game.getName());
+            String[][] gameArray = Game.init();
+            for (String[] gameInfo : gameArray) {
+                String name = gameInfo[0];
+                Person person = personJpaRepository.findByUid(gameInfo[1]);
+                
+                Game gameFound = gameJpaRepository.findByName(name);
                 if (gameFound == null) {
-                    gameJpaRepository.save(game);
+                    gameJpaRepository.save(new Game(name, person));
                 }
-            }
+            }   
 
             String[][] questionArray = AdventureQuestion.init();
             for (String[] questionInfo : questionArray) {

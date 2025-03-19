@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.PutMapping;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.gamifyGame.Game;
@@ -34,15 +34,15 @@ public class GameStatApiController {
     private GameStatJpaRepository gameStatJpaRepository;
 
     @Data
-    public static class GameStatDTO {
-        private String personUid;  
-        private String gameId;     
+    public static class GameStatsDTO {
+        private String uid;  
+        private String gid;     
         private Map<String, Object> stats; 
     }
 
     @PostMapping("/createStats")
-    public ResponseEntity<GameStat> createGameStat(@RequestBody GameStatDTO dto) {
-        Person person = personJpaRepository.findByUid(dto.getPersonUid());
+    public ResponseEntity<Map<String, Object>> createGameStat(@RequestBody GameStatsDTO dto) {
+        Person person = personJpaRepository.findByUid(dto.getUid());
         if (person == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -50,7 +50,7 @@ public class GameStatApiController {
 
         Long gameId;
         try {
-            gameId = Long.parseLong(dto.getGameId());
+            gameId = Long.parseLong(dto.getGid());
         } catch (NumberFormatException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -60,10 +60,11 @@ public class GameStatApiController {
         }
 
         GameStat gameStat = GameStat.createGameStats(person, game, dto.getStats());
+        Map<String, Object> stats = gameStat.getStats();
 
         gameStat = gameStatJpaRepository.save(gameStat);
 
-        return new ResponseEntity<>(gameStat, HttpStatus.CREATED);
+        return new ResponseEntity<>(stats, HttpStatus.CREATED);
     }
 
 
@@ -80,20 +81,15 @@ public class GameStatApiController {
         return new ResponseEntity<>(stats, HttpStatus.OK);
     }
 
-    @Data
-    public static class updateStatsDTO {
-        private Map<String, Object> stats;
-    }
-
-    @PostMapping("/updateStats/{uid}")
-    public ResponseEntity<Map<String, Object>> updateStats(@RequestBody updateStatsDTO updateStatsDTO, @PathVariable String uid) {
-        GameStat gamestat = gameStatJpaRepository.findByUid_uid(uid);
+    @PutMapping("/updateStats")
+    public ResponseEntity<Map<String, Object>> updateStats(@RequestBody GameStatsDTO dto) {
+        GameStat gamestat = gameStatJpaRepository.findByUid_uid(dto.getUid());
         
         if (gamestat == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
-        gamestat.setStats(updateStatsDTO.getStats());
+        gamestat.setStats(dto.getStats());
         
         gameStatJpaRepository.save(gamestat);
         
