@@ -110,9 +110,9 @@
         <table>
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Person Name <span class="sort-arrow">↓</span></th>
-                    <th onclick="sortTable(1)">Time In <span class="sort-arrow">↓</span></th>
-                    <th onclick="sortTable(2)">Duration (HH:MM:SS) <span class="sort-arrow">↓</span></th>
+                    <th class="sortable-header">Person Name <span class="sort-arrow">↓</span></th>
+                    <th class="sortable-header">Time In <span class="sort-arrow">↓</span></th>
+                    <th class="sortable-header">Duration (HH:MM:SS) <span class="sort-arrow">↓</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -128,8 +128,8 @@
         <table>
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Person Name <span class="sort-arrow">↓</span></th>
-                    <th onclick="sortTable(1)">Average Weekly Duration (Minutes) <span class="sort-arrow">↓</span></th>
+                    <th class="sortable-header">Person Name <span class="sort-arrow">↓</span></th>
+                    <th class="sortable-header">Average Weekly Duration (Minutes) <span class="sort-arrow">↓</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -145,92 +145,108 @@
             <canvas id="weeklyDurationChart"></canvas>
         </div>
 
+        <!-- Include jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
         <script th:inline="javascript">
-            // Prepare bar chart data.
-            const labels = /*[[${chartLabels}]]*/ [];
-            const data = /*[[${chartData}]]*/ [];
-            const formattedData = data.map(seconds => (seconds / 60).toFixed(2));
+            $(document).ready(function () {
+                // Prepare bar chart data.
+                const labels = /*[[${chartLabels}]]*/ [];
+                const data = /*[[${chartData}]]*/ [];
+                const formattedData = data.map(seconds => (seconds / 60).toFixed(2));
 
-            const ctx = document.getElementById('weeklyDurationChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Average Weekly Duration (Minutes)',
-                        data: formattedData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Duration (Minutes)' }
-                        },
-                        x: { title: { display: true, text: 'Users' } }
+                const ctx = $('#weeklyDurationChart')[0].getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Average Weekly Duration (Minutes)',
+                            data: formattedData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Duration (Minutes)' }
+                            },
+                            x: { title: { display: true, text: 'Users' } }
+                        }
                     }
+                });
+
+                // Function to sort table by column
+                $('.sortable-header').click(function () {
+                    const columnIndex = $(this).index();
+                    const table = $(this).closest('table');
+                    const tbody = table.find('tbody');
+                    const rows = tbody.find('tr').toArray();
+
+                    // Get current sorting state
+                    const isAscending = $(this).data('sort-order') !== 'asc';
+
+                    // Sort rows
+                    rows.sort((rowA, rowB) => {
+                        const cellA = $(rowA).children().eq(columnIndex).text().trim();
+                        const cellB = $(rowB).children().eq(columnIndex).text().trim();
+
+                        if (!isNaN(cellA) && !isNaN(cellB)) {
+                            return isAscending ? cellA - cellB : cellB - cellA;
+                        } else {
+                            return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                        }
+                    });
+
+                    // Append sorted rows back to the table body
+                    $.each(rows, function (index, row) {
+                        tbody.append(row);
+                    });
+
+                    // Update sorting state
+                    $(this).data('sort-order', isAscending ? 'asc' : 'desc');
+                    updateSortArrows(columnIndex, isAscending);
+                });
+
+                // Function to update the sort arrows
+                function updateSortArrows(sortedColumnIndex, isAscending) {
+                    $('.sort-arrow').each(function (index) {
+                        $(this).html(index === sortedColumnIndex ? (isAscending ? '↑' : '↓') : '↓');
+                    });
                 }
-            });
 
-            // Function to sort the table when header is clicked.
-            function sortTable(columnIndex) {
-                const table = document.querySelector('table');
-                const rows = Array.from(table.tBodies[0].rows);
-                const isAscending = table.querySelectorAll("th")[columnIndex].getAttribute("data-sort-order") !== "asc";
-
-                rows.sort((rowA, rowB) => {
-                    const cellA = rowA.cells[columnIndex].innerText.trim();
-                    const cellB = rowB.cells[columnIndex].innerText.trim();
-                    if (!isNaN(cellA) && !isNaN(cellB)) {
-                        return isAscending ? cellA - cellB : cellB - cellA;
-                    } else {
-                        return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-                    }
-                });
-
-                const tbody = table.tBodies[0];
-                rows.forEach(row => tbody.appendChild(row));
-                table.querySelectorAll("th")[columnIndex].setAttribute("data-sort-order", isAscending ? "asc" : "desc");
-                updateSortArrows(columnIndex, isAscending);
-            }
-
-            function updateSortArrows(sortedColumnIndex, isAscending) {
-                document.querySelectorAll('.sort-arrow').forEach((arrow, index) => {
-                    arrow.innerHTML = index === sortedColumnIndex ? (isAscending ? "↑" : "↓") : "↓";
-                });
-            }
-
-            // Process each "Time In" cell to highlight specific excessive duration pairs.
-            document.addEventListener("DOMContentLoaded", () => {
-                const thresholdMinutes = 15; // define the threshold in minutes
-                document.querySelectorAll('.time-in-cell').forEach(cell => {
-                    const cellText = cell.innerText.trim();
+                // Highlight excessive duration pairs
+                const thresholdMinutes = 15;
+                $('.time-in-cell').each(function () {
+                    const cellText = $(this).text().trim();
                     if (!cellText) return;
-                    
-                    const pairs = cellText.split(",");
+
+                    const pairs = cellText.split(',');
                     const newHTML = pairs.map(pair => {
                         let trimmed = pair.trim();
-                        // Each pair: "YYYY-MM-DD HH:mm:ss--YYYY-MM-DD HH:mm:ss"
                         let times = trimmed.split("--");
+
                         if (times.length === 2) {
-                            // Parse times as Date objects.
                             const start = new Date(times[0]);
                             const end = new Date(times[1]);
                             const diffMinutes = (end - start) / 60000;
+
                             if (diffMinutes > thresholdMinutes) {
                                 return `<span class="highlight-long">${trimmed}</span>`;
                             }
                         }
                         return trimmed;
                     }).join(", ");
-                    cell.innerHTML = newHTML;
+
+                    $(this).html(newHTML);
                 });
             });
         </script>
+
     </div>
 </body>
 </html>
