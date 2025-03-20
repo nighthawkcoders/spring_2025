@@ -155,6 +155,29 @@ public class CryptoController {
         return ResponseEntity.ok("Successfully purchased " + cryptoAmount + " of " + selectedCrypto.getSymbol() + " for $" + usdAmount);
     }
     
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCrypto(@RequestParam String cryptoId) {
+        // Fetch live cryptocurrency data
+        Crypto[] liveData = cryptoService.getCryptoData();
+        if (liveData == null || liveData.length == 0) {
+            return ResponseEntity.status(500).body("Failed to fetch live cryptocurrency data.");
+        }
+        // Search for the requested cryptocurrency by symbol or name
+        Crypto selectedCrypto = null;
+        for (Crypto crypto : liveData) {
+            if (crypto.getSymbol().equalsIgnoreCase(cryptoId) || crypto.getName().equalsIgnoreCase(cryptoId)) {
+                selectedCrypto = crypto;
+                break;
+            }
+        }
+        // Return error if crypto is not found
+        if (selectedCrypto == null) {
+            return ResponseEntity.status(404).body("Cryptocurrency not found: " + cryptoId);
+        }
+        // Return the cryptocurrency details
+        return ResponseEntity.ok(selectedCrypto);
+    }
+
 
     @GetMapping("/holdings")
     public ResponseEntity<?> getUserHoldings(@RequestParam String email) {
