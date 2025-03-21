@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.junit.experimental.theories.internal.Assignments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -219,6 +221,7 @@ public class AssignmentsApiController {
      * @param assignmentId The ID of the assignment.
      * @return All submissions for the assignment.
      */
+    @Transactional
     @GetMapping("/{assignmentId}/submissions")
     public ResponseEntity<?> getSubmissions(@PathVariable Long assignmentId, @AuthenticationPrincipal UserDetails userDetails) {
         String uid = userDetails.getUsername();
@@ -229,16 +232,19 @@ public class AssignmentsApiController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with uid: " + uid);
         }
 
-        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        Stream<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId).stream();
 
         if (!(user.hasRoleWithName("ROLE_TEACHER") || user.hasRoleWithName("ROLE_ADMIN"))) {
             // if they aren't a teacher or admin, only let them see submissions they are assigned to grade
-            submissions = submissions.stream()
-                .filter(submission -> submission.getAssignedGraders().contains(user))
-                .collect(Collectors.toList());
+            submissions = submissions
+                .filter(submission -> submission.getAssignedGraders().contains(user));
         }
 
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+        List<AssignmentSubmissionReturnDto> returnValue = submissions
+            .map(AssignmentSubmissionReturnDto::new)
+            .toList();
+
+        return new ResponseEntity<>(returnValue, HttpStatus.OK);
     }
 
     /**
