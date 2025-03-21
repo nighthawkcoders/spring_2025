@@ -33,7 +33,7 @@ public class AssignmentSubmission {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
     @JsonBackReference
     @OnDelete(action = OnDeleteAction.CASCADE)
