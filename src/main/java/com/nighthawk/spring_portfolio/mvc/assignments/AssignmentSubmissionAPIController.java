@@ -7,9 +7,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
@@ -34,6 +39,8 @@ import lombok.Setter;
 @RestController
 @RequestMapping("/api/submissions")
 public class AssignmentSubmissionAPIController {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private AssignmentSubmissionJPA submissionRepo;
@@ -223,7 +230,15 @@ public class AssignmentSubmissionAPIController {
      */
     @Transactional
     @GetMapping("/assignment/{assignmentId}")
-    public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId) {
+    public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        String uid = userDetails.getUsername();
+        Person user = personRepo.findByUid(uid);
+        if (user == null) {
+            logger.error("User not found with email: {}", uid);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with uid: " + uid);
+        }
+
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         if (assignment == null) {
             return new ResponseEntity<>(
@@ -231,10 +246,23 @@ public class AssignmentSubmissionAPIController {
                 HttpStatus.NOT_FOUND
             );
         }
-        List<AssignmentSubmissionReturnDto> submissions = submissionRepo.findByAssignmentId(assignmentId).stream()
-            .map(AssignmentSubmissionReturnDto::new)
-            .toList();
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
+        List<AssignmentSubmissionReturnDto> submissionsReturn;
+
+        if (!(user.hasRoleWithName("ROLE_TEACHER") || user.hasRoleWithName("ROLE_ADMIN"))) {
+            // if they aren't a teacher or admin, only let them see submissions they are assigned to grade
+            submissionsReturn = submissions.stream()
+                .filter(submission -> submission.getAssignedGraders().contains(user))
+                .map(AssignmentSubmissionReturnDto::new)
+                .collect(Collectors.toList());
+        } else {
+            submissionsReturn = submissions.stream()
+                .map(AssignmentSubmissionReturnDto::new)
+                .collect(Collectors.toList());
+        }
+    
+        return new ResponseEntity<>(submissionsReturn, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/assigned-graders")
