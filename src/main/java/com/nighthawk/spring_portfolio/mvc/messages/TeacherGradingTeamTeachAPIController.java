@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Provides endpoints for CRUD operations on Teacher Grade submissions.
  */
 @RestController
-@RequestMapping("/api/teachergradingteam")
+@RequestMapping("/api/teachergradingteamteach")
 public class TeacherGradingTeamTeachAPIController {
 
     @Autowired
@@ -28,7 +28,7 @@ public class TeacherGradingTeamTeachAPIController {
      * @param teamGrade the AssignmentSubmission object to be created
      * @return a ResponseEntity containing the created submission and HTTP status CREATED
      */
-    @PostMapping("/Submit")
+    @PostMapping("/submit")
     public ResponseEntity<TeacherGradingTeamTeach> createAssignment(@RequestBody TeacherGradingTeamTeach teamGrade) {
         teachgergGradingTeamTeachRepo.save(teamGrade);
         return new ResponseEntity<>(teamGrade, HttpStatus.CREATED);
