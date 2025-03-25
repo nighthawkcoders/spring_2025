@@ -149,6 +149,10 @@ public class PersonViewController {
         if (person.getSid() != null && !person.getSid().equals(personToUpdate.getSid())) {
             personToUpdate.setSid(person.getSid());
         }
+        if (person.getBalance() != null && !person.getBalance().equals(personToUpdate.getBalance())) {
+            personToUpdate.setBalance(person.getBalance());
+        }
+                
 
         // Save the updated person and ensure the roles are correctly maintained
         repository.save(personToUpdate, samePassword);
