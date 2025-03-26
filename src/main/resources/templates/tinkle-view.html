@@ -105,8 +105,15 @@
 <body>
     <div class="navbar">Tinkle View Navbar</div>
 
+
     <div class="container" layout:fragment="body">
         <h2>User Entries</h2>
+
+        
+        <div>
+            <button class="btn" onclick="sortByAverageDuration()">Sort by Average Weekly Duration</button>
+        </div>
+        
         <table>
             <thead>
                 <tr>
@@ -230,6 +237,29 @@
                     cell.innerHTML = newHTML;
                 });
             });
+            function sortByAverageDuration() {
+                const table = document.querySelectorAll('table')[0]; // Select the first table (User Entries)
+                const rows = Array.from(table.tBodies[0].rows);
+            
+                function durationToSeconds(duration) {
+                    const parts = duration.split(":").map(Number);
+                    if (parts.length === 3) {
+                        return parts[0] * 3600 + parts[1] * 60 + parts[2]; // Convert HH:MM:SS to seconds
+                    }
+                    return 0;
+                }
+            
+                rows.sort((rowA, rowB) => {
+                    const durationA = durationToSeconds(rowA.cells[2].innerText.trim());
+                    const durationB = durationToSeconds(rowB.cells[2].innerText.trim());
+                    return durationB - durationA; // Sort in descending order
+                });
+            
+                const tbody = table.tBodies[0];
+                rows.forEach(row => tbody.appendChild(row));
+            }
+            
+            
         </script>
     </div>
 </body>
