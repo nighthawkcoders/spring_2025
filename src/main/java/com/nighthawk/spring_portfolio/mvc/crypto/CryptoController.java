@@ -1,5 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.crypto;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
@@ -191,10 +192,18 @@ public class CryptoController {
     
         return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"holdings\": \"" + userStocks.getCrypto().replace("\n", "\\n") + "\" }");
     }
-    
+   
 
-    
+    @GetMapping("/holdings")
+    public ResponseEntity<?> getUserHoldings(@RequestParam String email) {
+        userStocksTable userStocks = userStocksRepo.findByEmail(email);
 
+        if (userStocks == null || userStocks.getCrypto() == null || userStocks.getCrypto().isEmpty()) {
+            return ResponseEntity.status(404).body("No crypto holdings found for email: " + email);
+        }
+
+        return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"holdings\": \"" + userStocks.getCrypto().replace("\n", "\\n") + "\" }");
+    }
     @PostMapping("/sell")
     public ResponseEntity<?> sellCrypto(@RequestBody SellRequest sellRequest) {
         String email = sellRequest.getEmail();
