@@ -4,25 +4,129 @@
 
 <head>
   <title>Teacher toolkit for Team Teach</title>
+  <style>
+    .container {
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+    .btn {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .btn-delete, .btn-grade, .toggle-active {
+        background-color: #007bff;
+    }
+    .btn-view-submissions {
+        background-color: #17a2b8;
+    }
+    .toggle-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .toggle-btn {
+        padding: 10px 20px;
+        margin: 0 10px;
+        background-color: #f2f2f2;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color:rgb(12, 10, 10);
+    }
+    tr:nth-child(even) {
+        background-color:rgb(30, 25, 25);
+    }
+    .student-row {
+        cursor: pointer;
+    }
+    .student-row:hover {
+        background-color: #f1f1f1;
+    }
+    #submissionsModal, #addAssignmentModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 800px;
+    }
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close-btn:hover {
+        color: black;
+    }
+    #assignmentView, #studentView {
+
+    }
+    #commentarea {
+        padding:20px;
+        text-align: center;
+    }
+</style>
 </head>
 
 <body>
   <!-- <body> -->
-  <div layout:fragment="body" th:remove="tag">
-      <!-- Page specific body additions -->
-      <div class="contact" style="height: 35vh;">
-          <div class="row justify-content-left" style="margin: 2%;">
-              <form th:action="@{/greet}" method="GET" id="greetForm">
-                  <div>
-                      <label for="greetField">Type a greeting name?</label>
-                      <input name="name" id="greetField">
-                      <button>Greetings!</button>
-                      <p id="greetMessage" th:text="'Greetings, ' + ${name} + '!'"></p>
-                  </div>
-              </form>
-          </div>
-      </div>
-  </div>
+    <th:block layout:fragment="body" th:remove="tag">
+    <div class="container">
+            <!-- Assignment View -->
+            <div id="assignmentView">
+                <h1>Teacher Grading Team Teach</h1>
+                <table id="gradingTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                    <tbody id="gradingList">
+                    </tbody>
+                </table>
+                <div id="commentarea">
+                    <textarea name="name" id="comment" rows="4" cols="100">Add Comment</textarea>
+                </div>
+                <button class="btn" onclick="submitComment()">submit Comment</button>
+            </div>
+    </div>
+</th:block>
 </body>
 
 </html>
