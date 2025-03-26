@@ -128,5 +128,32 @@
     </div>
 </th:block>
 </body>
+<th:block layout:fragment="script" th:remove="tag">
+<script>
+     // Default to Assignment View 
+     document.addEventListener('DOMContentLoaded', () => {
+        fetchAssignments();
+    });
 
+    function fetchAssignments() {
+        fetch('/api/teachergradingteamteach/debug')
+            .then(response => response.json())
+            .then(grades => {
+                const tableBody = document.getElementById('gradingList');
+                tableBody.innerHTML = ''; 
+
+                grades.forEach(grade => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${grade.team}</td>
+                        <td>${grade.grade}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+    }
+
+
+</script>
+</th:block>
 </html>

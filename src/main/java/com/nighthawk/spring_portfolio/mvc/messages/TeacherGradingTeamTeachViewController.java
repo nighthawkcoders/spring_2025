@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/mvc/teamteach")
-public class TeacherGradingTeamTeachController {
+public class TeacherGradingTeamTeachViewController {
+
 
     @GetMapping("/teachergrading")
     public String assignmentTracker(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         return "teamteach/teacher-grading-teamteach";
     }
+
+
 }

@@ -1,6 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.messages;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,16 @@ public class TeacherGradingTeamTeachAPIController {
         return new ResponseEntity<>(teamgrade, HttpStatus.OK);
     }
 
+    
+        /**
+     * A GET endpoint used for debugging which returns information about every grade
+     * @return Information about all the assignments.
+     */
+    @GetMapping("/debug")
+    public ResponseEntity<?> debugTeacherGrades() {
+        List<TeacherGradingTeamTeach> TeacherGradingTeamTeachs = teachgergGradingTeamTeachRepo.findAll();
+        return new ResponseEntity<>(TeacherGradingTeamTeachs, HttpStatus.OK);
+    }
     
 
 
