@@ -21,7 +21,14 @@ public class CalendarEventService {
 
     // Save a new event
     public CalendarEvent saveEvent(CalendarEvent event) {
-        return calendarEventRepository.save(event);
+        CalendarEvent savedEvent = calendarEventRepository.save(event);
+        slackService.sendMessage("New Event Added:\n" +
+                "Title: " + savedEvent.getTitle() + "\n" +
+                "Description: " + savedEvent.getDescription() + "\n" +
+                "Date: " + savedEvent.getDate() + "\n" +
+                "Type: " + savedEvent.getType() + "\n" +
+                "Period: " + savedEvent.getPeriod());
+        return savedEvent;
     }
 
     // Get events by a specific date
@@ -33,21 +40,26 @@ public class CalendarEventService {
     public boolean updateEventById(int id, String newTitle, String description, LocalDate date) {
         CalendarEvent event = getEventById(id);
         if (event != null) {
-            try {
-                // Attempt to send the Slack notification
-                String oldEventDetails = "Old Event: " + event.getTitle() + " on " + event.getDate();
-                String newEventDetails = "New Event: " + newTitle + " on " + date;
-                slackService.sendMessage("Event Updated: " + oldEventDetails + " -> " + newEventDetails);
-            } catch (Exception e) {
-                // Log the Slack error and continue with the update
-                System.err.println("Slack notification failed: " + e.getMessage());
-            }
+            String oldDetails = "Old Event Details:\n" +
+                    "Title: " + event.getTitle() + "\n" +
+                    "Description: " + event.getDescription() + "\n" +
+                    "Date: " + event.getDate() + "\n" +
+                    "Type: " + event.getType() + "\n" +
+                    "Period: " + event.getPeriod();
 
-            // Perform the event update
             event.setTitle(newTitle);
             event.setDescription(description);
             event.setDate(date);
             calendarEventRepository.save(event);
+
+            String newDetails = "Updated Event Details:\n" +
+                    "Title: " + event.getTitle() + "\n" +
+                    "Description: " + event.getDescription() + "\n" +
+                    "Date: " + event.getDate() + "\n" +
+                    "Type: " + event.getType() + "\n" +
+                    "Period: " + event.getPeriod();
+
+            slackService.sendMessage("Event Updated:\n" + oldDetails + "\n\n" + newDetails);
             return true;
         }
         return false;
@@ -58,6 +70,12 @@ public class CalendarEventService {
         CalendarEvent event = getEventById(id);
         if (event != null) {
             calendarEventRepository.delete(event);
+            slackService.sendMessage("Event Deleted:\n" +
+                    "Title: " + event.getTitle() + "\n" +
+                    "Description: " + event.getDescription() + "\n" +
+                    "Date: " + event.getDate() + "\n" +
+                    "Type: " + event.getType() + "\n" +
+                    "Period: " + event.getPeriod());
             return true;
         }
         return false;
@@ -97,7 +115,7 @@ public class CalendarEventService {
 
     // Get event by id
     public CalendarEvent getEventById(int id) {
-        return calendarEventRepository.findById(id);
+        return calendarEventRepository.findById((long) id).orElse(null);
     }
 
     // Parse Slack message and create events
