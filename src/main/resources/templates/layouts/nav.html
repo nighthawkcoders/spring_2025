@@ -31,8 +31,9 @@
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink0">
                                 <li><a class="dropdown-item" th:href="@{/greet}">Spring Greeting</a></li>
                                 <li><a class="dropdown-item" th:href="@{/birds}">Birds Background</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/person/cookie-clicker}">Cookie Clicker</a></li>
+                                <li><a class="dropdown-item" th:href="@{/profileThymeleaf}" Fibonacci</a></li>
                                 <li><a class="dropdown-item" th:href="@{/palindrome}">Palindrome</a></li>
-                                <li><a class="dropdown-item" th:href="@{/profileThymeleaf}">Profile Thymeleaf</a></li>
                                 <li><a class="dropdown-item" th:href="@{/dne}">404 Error</a></li>
                             </ul>
                         </li>
@@ -49,8 +50,8 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
                                 <li><a class="dropdown-item" th:href="@{/mvc/person/read}">SQL Person</a></li>
-                                <li><a class="dropdown-item" th:href="@{/mvc/person/person-quiz}">Database Person Quiz</a></li>
-                                <li><a class="dropdown-item" th:href="@{/mvc/person/cookie-clicker}">Database Cookie Clicker</a></li>
+                                <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/api/imports/backups}">Database Backups</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/person/person-quiz}">Database Person Quiz</a></li>                  
                             </ul>
                         </li>
                     </ul>
