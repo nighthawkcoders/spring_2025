@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset.Email;
-import com.nighthawk.spring_portfolio.mvc.person.PersonPasswordReset.ResetCode;
+import com.nighthawk.spring_portfolio.mvc.person.Email.Email;
+import com.nighthawk.spring_portfolio.mvc.person.Email.ResetCode;
+import com.nighthawk.spring_portfolio.mvc.person.Email.VerificationCode;
+import com.nighthawk.spring_portfolio.mvc.person.HttpRequest.HttpSender;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -22,9 +24,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.core.GrantedAuthority;
 import jakarta.validation.Valid;
+
 import java.util.Arrays;
 import java.util.Collections;
-
 
 import lombok.Getter;
 
@@ -358,6 +360,37 @@ public class PersonViewController {
         List<Person> list = Collections.singletonList(person);  // Create a single element list
         model.addAttribute("list", list);  // Add the list to the model for the view 
         return "person/cookie-clicker";  // Return the template for the update form
+    }
+    
+///////////////////////////////////////////////////////////////////////////////////////////
+/// "Verification" Post and Get mappings
+/// 
+
+    @Getter
+    public static class PersonVerificationBody {
+        private String uid;
+    }
+
+    @PostMapping("/verficiation")
+    public ResponseEntity<Object> verficiation(@RequestBody PersonVerificationBody personVerificationBody) {
+        if(personVerificationBody.getUid() == null){
+            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+        }
+
+        if(personVerificationBody.getUid().contains("@")){
+            //assuming uid is an email
+            String code = VerificationCode.GenerateVerificationCode(personVerificationBody.getUid());
+            Email.sendVerificationEmail(personVerificationBody.getUid(),code);
+            new ResponseEntity<Object>(HttpStatus.OK);
+        }
+        else{
+            if(HttpSender.verifyGithub(personVerificationBody.getUid())==true){
+                new ResponseEntity<Object>(HttpStatus.OK);
+            };
+            new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
     }
 
 }
