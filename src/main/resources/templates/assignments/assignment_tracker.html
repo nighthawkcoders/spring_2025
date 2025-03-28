@@ -149,7 +149,7 @@
                     <span class="close-btn" onclick="closeRandomizeGradersModal()">&times;</span>
                     <h2>Randomize Graders</h2>
                     <p>Are you sure you want to randomly assign graders for this assignment?</p>
-                    <button class="btn" onclick="closeRandomizeGradersModal()">Confirm</button>
+                    <button class="btn" onclick="confirmRandomizeGraders()">Confirm</button>
                     <button class="btn" onclick="closeRandomizeGradersModal()">Cancel</button>
                 </div>
             </div>
@@ -561,10 +561,31 @@ function showRandomizeGradersModal(assignmentId) {
         modal.style.display = 'block';
     }
 
-    function closeRandomizeGradersModal() {
-        document.getElementById('randomizeGradersModal').style.display = 'none';
-    }
+function closeRandomizeGradersModal() {
+    document.getElementById('randomizeGradersModal').style.display = 'none';
+}
+function confirmRandomizeGraders() {
+    const modal = document.getElementById('randomizeGradersModal');
+    const assignmentId = modal.dataset.assignmentId;
 
+    fetch(`/api/assignments/randomizeGraders/${assignmentId}`, {
+        method: 'POST'
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Graders randomized successfully!');
+            closeRandomizeGradersModal();
+        } else {
+            return response.text().then(errorMsg => {
+                throw new Error(errorMsg);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error randomizing graders:', error);
+        alert('Failed to randomize graders: ' + error.message);
+    });
+}
 </script>
 </th:block>
 </html>

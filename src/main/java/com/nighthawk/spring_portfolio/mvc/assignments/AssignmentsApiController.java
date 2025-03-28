@@ -1,6 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.experimental.theories.internal.Assignments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -425,18 +425,64 @@ public class AssignmentsApiController {
         return ResponseEntity.ok(formattedAssignments);
     }
 
-    @PostMapping("/randomizegraders/{id}")
-    public ResponseEntity<?> randomizePeerGraders( @PathVariable Long id) {
+    @PostMapping("/randomizeGraders/{id}")
+    public ResponseEntity<?> randomizePeerGraders(@PathVariable Long id) {
+        System.out.println("Bruh are you here please thanks");
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
         if (!assignmentOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
         }
+        System.out.println("Zero");
 
-        Assignment assignment = assignmentOptional.get();
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(id);
+    
+        if (submissions.isEmpty()) {
+            return ResponseEntity.badRequest().body("No submissions found for this assignment");
+        }
+        System.out.println("One");
 
-        assignmentRepo.save(assignment);
+        
+        // Keep latest submission
+        Map<Person, AssignmentSubmission> latestSubmissions = submissions.stream()
+        .collect(Collectors.toMap(
+            submission -> submission.getStudents().get(0), // Get the first student
+            submission -> submission,
+            (existing, replacement) -> replacement // In case of duplicate keys, keep the replacement (later submission)
+        ));
+    
+        List<AssignmentSubmission> uniqueSubmissions = new ArrayList<>(latestSubmissions.values());
+        System.out.println("Two");
 
-        System.out.println("hi");
-        return ResponseEntity.ok("Randomized graders!");
+    
+        Collections.shuffle(uniqueSubmissions);
+    
+        for (int i = 0; i < uniqueSubmissions.size(); i++) {
+            AssignmentSubmission currentSubmission = uniqueSubmissions.get(i);
+            
+            // grader whos not the asme persoon
+            List<AssignmentSubmission> possibleGraders = uniqueSubmissions.stream()
+                .filter(submission -> !submission.getStudents().get(0).equals(currentSubmission.getStudents().get(0))) // just check if the FIRST student is different, will make this better later
+                .collect(Collectors.toList());
+    
+            if (possibleGraders.isEmpty()) {
+                continue; 
+            }
+    
+            // Randomly select
+            AssignmentSubmission graderSubmission = possibleGraders.get(
+                (int)(Math.random() * possibleGraders.size())
+            );
+    
+            // Assign graders to the current submission
+            currentSubmission.setAssignedGraders(
+                graderSubmission.getStudents()
+            );
+        }
+        System.out.println("Three");
+
+    
+        submissionRepo.saveAll(uniqueSubmissions);
+    
+        return ResponseEntity.ok("Graders randomized successfully!");
     }
 }

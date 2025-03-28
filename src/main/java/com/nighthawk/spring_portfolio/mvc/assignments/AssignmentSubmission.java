@@ -2,13 +2,12 @@ package com.nighthawk.spring_portfolio.mvc.assignments;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.repository.cdi.Eager;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.Entity;
@@ -45,6 +44,7 @@ public class AssignmentSubmission {
         joinColumns = @JoinColumn(name = "submission_id"),
         inverseJoinColumns = @JoinColumn(name = "student_id")
     )
+    @Eager
     private List<Person> students = new ArrayList<>();
 
     @ManyToMany
@@ -53,6 +53,7 @@ public class AssignmentSubmission {
         joinColumns = @JoinColumn(name = "submission_id"),
         inverseJoinColumns = @JoinColumn(name = "person_id")
     )
+    @Eager
     private List<Person> assignedGraders;
 
     private String content;
