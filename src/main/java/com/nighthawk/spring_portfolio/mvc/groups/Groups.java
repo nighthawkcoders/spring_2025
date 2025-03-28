@@ -22,8 +22,6 @@ public class Groups {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "table_number")
-    private int table;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -33,9 +31,8 @@ public class Groups {
 
     }
 
-    public Groups(List<Person> groupMembers, int table) {
+    public Groups(List<Person> groupMembers) {
         this.groupMembers = groupMembers;
-        this.table = table;
     }
 
     public Long getId() {
@@ -54,13 +51,6 @@ public class Groups {
         this.groupMembers = groupMembers;
     }
 
-    public int getTable() {
-        return table;
-    }
-
-    public void setTable(int table) {
-        this.table = table;
-    }
 
     // Method to add a person to the group
     public void addPerson(Person person) {
