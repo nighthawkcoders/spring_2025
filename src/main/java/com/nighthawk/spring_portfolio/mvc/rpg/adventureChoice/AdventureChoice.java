@@ -188,8 +188,25 @@ public class AdventureChoice {
             {"30", "L", "true"},
             {"30", "N", "false"},
             {"30", "T", "false"},
-            {"30", "G", "false"}
+            {"30", "G", "false"},
+
+            {"31", "capital goods.", "false"},
+            {"31", "scarcity.", "false"},
+            {"31", "opportunity cost.", "true"},
+            {"31", "noneconomic wants.", "false"},
+
+            {"32", "manipulate financial data to indicate profitability.", "false"},
+            {"32", "ensure that it is following government regulations.", "true"},
+            {"32", "develop efficient production processes.", "false"},
+            {"32", "evaluate its vendors' performance.", "false"},
+
+            {"33", "Ease of transitions", "false"},
+            {"33", "Decreased cost", "true"},
+            {"33", "Increased efficiency  ", "false"},
+            {"33", "Risk of increased fraud", "false"},
+
         };
+
     }
     
 }

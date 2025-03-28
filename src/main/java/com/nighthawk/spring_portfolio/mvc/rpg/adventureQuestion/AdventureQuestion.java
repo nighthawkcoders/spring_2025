@@ -103,6 +103,10 @@ public class AdventureQuestion {
             {"Jupyter Notebook Command Quiz", "Which shortcut interrupts the kernel?", "Robot", "10000", "null"}, 
             {"Jupyter Notebook Command Quiz", "Which shortcut toggles line numbers in a cell?", "Robot", "10000", "null"}, 
 
+            {"Finance Quiz", "Trade-offs should be based on", "Finance", "10000", "null"}, 
+            {"Finance Quiz", "A business might conduct a compliance audit to", "Finance", "10000", "null"}, 
+            {"Finance Quiz", "What is an advantage of using technology in compliance?", "Finance", "10000", "null"}, 
+
             {"Linux Command Quiz", "Describe the role of the ls command in a Linux system. Why is it an essential command for managing files and directories?", "Tux", "10000", "Linux ls command"},      
         };
     }
