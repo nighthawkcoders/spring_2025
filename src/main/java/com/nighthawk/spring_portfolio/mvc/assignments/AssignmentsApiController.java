@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -394,5 +393,20 @@ public class AssignmentsApiController {
         }
 
         return ResponseEntity.ok(formattedAssignments);
+    }
+
+    @PostMapping("/randomizegraders/{id}")
+    public ResponseEntity<?> randomizePeerGraders( @PathVariable Long id) {
+        Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
+        if (!assignmentOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
+        }
+
+        Assignment assignment = assignmentOptional.get();
+
+        assignmentRepo.save(assignment);
+
+        System.out.println("hi");
+        return ResponseEntity.ok("Randomized graders!");
     }
 }
