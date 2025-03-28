@@ -22,6 +22,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PreRemove;
@@ -45,6 +46,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import com.nighthawk.spring_portfolio.mvc.groups.Groups;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
@@ -97,6 +99,10 @@ public class Person implements Comparable<Person> {
     @ManyToMany(mappedBy="students", cascade=CascadeType.MERGE)
     @JsonIgnore
     private List<AssignmentSubmission> submissions;
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Groups group;
     
     @ManyToMany(fetch = EAGER)
     @JoinTable(
