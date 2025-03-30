@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -20,10 +18,6 @@ public class Topic {
     private String topicName;
     private String date;
 
-    @ManyToMany
-    @JoinTable(
-      name = "topic_students", 
-      joinColumns = @JoinColumn(name = "topic_id"), 
-      inverseJoinColumns = @JoinColumn(name = "student_id"))
-    private List<Student> students;
+    @Column(columnDefinition = "TEXT") // Stores names as a comma-separated list
+    private String students = "";
 }
