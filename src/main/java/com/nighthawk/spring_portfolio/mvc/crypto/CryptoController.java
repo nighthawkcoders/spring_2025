@@ -2,6 +2,8 @@ package com.nighthawk.spring_portfolio.mvc.crypto;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,22 +180,7 @@ public class CryptoController {
         return ResponseEntity.ok(selectedCrypto);
     }
 
-    @GetMapping("/holdings")
-    public ResponseEntity<?> getUserHoldings(@RequestParam String email) {
-        Person person = personRepository.findByEmail(email);
-        if (person == null) {
-            return ResponseEntity.status(404).body("User not found: " + email);
-        }
-    
-        userStocksTable userStocks = person.getUser_stocks();
-        if (userStocks == null || userStocks.getCrypto() == null || userStocks.getCrypto().isEmpty()) {
-            return ResponseEntity.status(404).body("No crypto holdings found for email: " + email);
-        }
-    
-        return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"holdings\": \"" + userStocks.getCrypto().replace("\n", "\\n") + "\" }");
-    }
    
-
     @GetMapping("/holdings")
     public ResponseEntity<?> getUserHoldings(@RequestParam String email) {
         userStocksTable userStocks = userStocksRepo.findByEmail(email);
@@ -204,6 +191,27 @@ public class CryptoController {
 
         return ResponseEntity.ok("{ \"email\": \"" + email + "\", \"holdings\": \"" + userStocks.getCrypto().replace("\n", "\\n") + "\" }");
     }
+    @GetMapping("/compare")
+    public ResponseEntity<?> compareCryptos(@RequestParam String cryptoId1, @RequestParam String cryptoId2, @RequestParam int days) {
+        List<Double> crypto1Trend = cryptoService.getCryptoHistoricalData(cryptoId1, days);
+        List<Double> crypto2Trend = cryptoService.getCryptoHistoricalData(cryptoId2, days);
+        if (crypto1Trend == null || crypto1Trend.size() < 2 || crypto2Trend == null || crypto2Trend.size() < 2) {
+            return ResponseEntity.status(500).body("Failed to fetch sufficient historical data for comparison.");
+        }
+        double crypto1StartPrice = crypto1Trend.get(0);
+        double crypto1EndPrice = crypto1Trend.get(crypto1Trend.size() - 1);
+        double crypto2StartPrice = crypto2Trend.get(0);
+        double crypto2EndPrice = crypto2Trend.get(crypto2Trend.size() - 1);
+        double crypto1Change = ((crypto1EndPrice - crypto1StartPrice) / crypto1StartPrice) * 100;
+        double crypto2Change = ((crypto2EndPrice - crypto2StartPrice) / crypto2StartPrice) * 100;
+        Map<String, Object> comparisonResult = new HashMap<>();
+        comparisonResult.put("cryptoId1", cryptoId1);
+        comparisonResult.put("cryptoId1ChangePercent", crypto1Change);
+        comparisonResult.put("cryptoId2", cryptoId2);
+        comparisonResult.put("cryptoId2ChangePercent", crypto2Change);
+        return ResponseEntity.ok(comparisonResult);
+    }
+
     @PostMapping("/sell")
     public ResponseEntity<?> sellCrypto(@RequestBody SellRequest sellRequest) {
         String email = sellRequest.getEmail();
