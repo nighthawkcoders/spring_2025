@@ -132,6 +132,13 @@
             <!-- Assignment View -->
             <div id="assignmentView">
                 <h1>Teacher Grading Team Teach</h1>
+                <form onChange="selectTopic(event)">
+                    <label for="cars">Choose a topic:</label>
+                    <select id="topics">
+                    </select><br><br>
+                    <input type="submit">
+                  </form>
+
                 <table id="gradingTable">
                         <thead>
                             <tr>
@@ -210,10 +217,55 @@
 </body>
 <th:block layout:fragment="script" th:remove="tag">
 <script>
+    var data;
      // Default to Assignment View 
      document.addEventListener('DOMContentLoaded', () => {
         fetchAssignments();
+        fectchtopics();
     });
+
+    function getItemById(list, id) {
+        return list.find(item => item.id == id);
+      }
+
+
+    function fectchtopics(){
+        fetch('/api/topics/all')
+        .then(response => response.json())
+        .then(grades => {
+            data = grades;
+            const selecttopics = document.getElementById('topics');
+
+            grades.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic.id
+                option.text = topic.topicName
+                selecttopics.appendChild(option);
+            });
+        });
+    }
+
+    function selectTopic(event){
+        var selectElement = event.target;
+        var value = selectElement.value;
+        alert(value);
+        var topic = getItemById(data, value);
+
+        //Clear table
+        const tableBody = document.getElementById('gradingList');
+        tableBody.innerHTML = ''; 
+        var students = topic.students
+        const studentsArray = students.split(",");
+        for(let i = 0; i < studentsArray.length; i++){
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${studentsArray[i]}</td>
+                <td><input type=text" id="${studentsArray[i]}"></td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+    }
 
     function fetchAssignments() {
         fetch('/api/teachergradingteamteach/debug')
