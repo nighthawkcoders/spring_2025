@@ -157,9 +157,9 @@
 
     <div class="timer" id="displayTimer">01:00</div>
 
-    <button onclick="startTimer()" class"btn">Start</button>
-    <button onclick="pauseTimer()">Pause</button>
-    <button onclick="resetTimer()">Reset</button>
+    <button class"btn" onclick="startTimer()">Start</button>
+    <button class"btn" onclick="pauseTimer()">Pause</button>
+    <button class"btn" onclick="resetTimer()">Reset</button>
 
     <script>
         let countdown;
@@ -231,6 +231,49 @@
                     tableBody.appendChild(row);
                 });
             });
+            
+            // submit comment feature
+            function submitComment() {
+                const commentText = document.getElementById('comment').value.trim(); // Get comment text
+                
+                if (!commentText) {
+                    alert("Comment cannot be empty!");
+                    return;
+                }
+            
+                const postURL = "/api/teachergradingteamteach/Comment"; // Endpoint
+                const data = {
+                    comments: [commentText]  // Ensure it matches the expected format
+                };
+            
+                // Fetch API options
+                const fetchOptions = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                };
+            
+                fetch(postURL, fetchOptions)
+                    .then(response => {
+                        if (response.status === 201) {
+                            return response.json();
+                        } else {
+                            throw new Error("Failed to submit comment: " + response.status);
+                        }
+                    })
+                    .then(data => {
+                        console.log("Comment submitted successfully:", data);
+                        alert("Comment submitted successfully!");
+                        document.getElementById('comment').value = ""; // Clear input
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        alert("Error submitting comment. See console for details.");
+                    });
+            }
+            
     }
 </script>
 </th:block>

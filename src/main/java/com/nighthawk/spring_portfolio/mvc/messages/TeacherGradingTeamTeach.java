@@ -81,4 +81,9 @@ public class TeacherGradingTeamTeach {
             System.out.println(teacherGrade);  // print object
         }
     }
+    public static TeacherGradingTeamTeach createComment(String comnt) {
+        TeacherGradingTeamTeach comment = new TeacherGradingTeamTeach();
+        comment.setComment(comnt);
+        return comment;
+    }
 }
