@@ -136,7 +136,6 @@
                     <label for="cars">Choose a topic:</label>
                     <select id="topics">
                     </select><br><br>
-                    <input type="submit">
                   </form>
 
                 <table id="gradingTable">
@@ -218,10 +217,11 @@
 <th:block layout:fragment="script" th:remove="tag">
 <script>
     var data;
+    var selectedTopic;
      // Default to Assignment View 
      document.addEventListener('DOMContentLoaded', () => {
-        fetchAssignments();
         fectchtopics();
+        fetchAssignments();
     });
 
     function getItemById(list, id) {
@@ -248,7 +248,7 @@
     function selectTopic(event){
         var selectElement = event.target;
         var value = selectElement.value;
-        alert(value);
+        selectedTopic = value; 
         var topic = getItemById(data, value);
 
         //Clear table
@@ -257,10 +257,12 @@
         var students = topic.students
         const studentsArray = students.split(",");
         for(let i = 0; i < studentsArray.length; i++){
+            var studentName = studentsArray[i];
             const row = document.createElement('tr');
+            row.id = studentName;
             row.innerHTML = `
-                <td>${studentsArray[i]}</td>
-                <td><input type=text" id="${studentsArray[i]}"></td>
+                <td id="name-studentName">${studentName}</td>
+                <td><input type=text" id="input-${studentName}"></td>
             `;
             tableBody.appendChild(row);
         }
@@ -277,55 +279,71 @@
                 grades.forEach(grade => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${grade.team}</td>
+                        <td>${grade.student}</td>
                         <td>${grade.grade}</td>
                     `;
                     tableBody.appendChild(row);
                 });
             });
+        }
             
-            // submit comment feature
-            function submitComment() {
-                const commentText = document.getElementById('comment').value.trim(); // Get comment text
-                
-                if (!commentText) {
-                    alert("Comment cannot be empty!");
-                    return;
+    // submit comment feature
+    function submitComment() {
+        const commentText = document.getElementById('comment').value.trim(); // Get comment text
+        
+        if (!commentText) {
+            alert("Comment cannot be empty!");
+            return;
+        }
+        const table = document.getElementById('gradingTable');
+
+        for (let i = 0; i < table.rows.length; i++) {
+          if(i == 0){
+            continue;
+          }
+          const row = table.rows[i];
+          var student = row.id;
+          const input = document.getElementById("input-"+student);
+          var grade = input.value;
+          saveGradeforStudent(student, grade, commentText)
+        }
+    }
+
+    function saveGradeforStudent(student, grade,commentText) {     
+        const postURL = "/api/teachergradingteamteach/submit"; // Endpoint
+        const data = {
+            comment: commentText,  // Ensure it matches the expected format
+            topic_id: selectedTopic,
+            grade: grade,
+            student: student
+        };
+    
+        // Fetch API options
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+    
+        fetch(postURL, fetchOptions)
+            .then(response => {
+                if (response.status === 201) {
+                    return response.json();
+                } else {
+                    throw new Error("Failed to submit comment: " + response.status);
                 }
-            
-                const postURL = "/api/teachergradingteamteach/Comment"; // Endpoint
-                const data = {
-                    comments: [commentText]  // Ensure it matches the expected format
-                };
-            
-                // Fetch API options
-                const fetchOptions = {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                };
-            
-                fetch(postURL, fetchOptions)
-                    .then(response => {
-                        if (response.status === 201) {
-                            return response.json();
-                        } else {
-                            throw new Error("Failed to submit comment: " + response.status);
-                        }
-                    })
-                    .then(data => {
-                        console.log("Comment submitted successfully:", data);
-                        alert("Comment submitted successfully!");
-                        document.getElementById('comment').value = ""; // Clear input
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        alert("Error submitting comment. See console for details.");
-                    });
-            }
-            
+            })
+            .then(data => {
+                console.log("Comment submitted successfully:", data);
+                alert("Comment submitted successfully!");
+                document.getElementById('comment').value = ""; // Clear input
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Error submitting comment. See console for details.");
+            });
     }
 </script>
 </th:block>
