@@ -16,6 +16,8 @@ import java.util.Date;
 // Add these imports
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
+import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 @Service
 @EnableScheduling
@@ -29,6 +31,9 @@ public class MiningService {
     @Autowired
     private UserStocksRepository userStocksRepo;
 
+    @Autowired
+    private PersonJpaRepository personRepository;
+
     // Fine-tune constants
     public static final double HASH_TO_BTC_RATE = 0.0001; // Current rate
     public static final double DIFFICULTY_FACTOR = 1.0;
@@ -41,49 +46,40 @@ public class MiningService {
     @Transactional
     public void processMining() {
         System.out.println("\n=== Mining Process Started ===");
-        System.out.println("Time: " + new Date());
         
         List<MiningUser> activeMiners = miningUserRepository.findAll().stream()
             .filter(user -> user.isMining() && !user.getActiveGPUs().isEmpty())
             .collect(Collectors.toList());
 
-        System.out.println("Found " + activeMiners.size() + " active miners");
-
         activeMiners.forEach(miner -> {
             double hashrate = miner.getCurrentHashrate();
-            System.out.println("Processing miner: " + miner.getPerson().getEmail());
-            System.out.println("Current hashrate: " + hashrate);
-
-            if (hashrate <= 0) {
-                System.out.println("Skipping miner due to zero hashrate");
-                return;
+            
+            if (hashrate > 0) {
+                // Calculate mining reward
+                double btcMined = hashrate * HASH_TO_BTC_RATE / 60.0;
+                
+                // Convert BTC to USD
+                double usdMined = btcMined * BTC_PRICE;
+                
+                // Update BTC balance
+                miner.setPendingBalance(miner.getPendingBalance() + btcMined);
+                
+                // Update Person's USD balance
+                Person person = miner.getPerson();
+                double currentBalance = person.getBalanceDouble();
+                person.setBalanceString(currentBalance + usdMined);
+                personRepository.save(person);
+                
+                // Update mining stats
+                miner.setTotalBtcEarned(miner.getTotalBtcEarned() + btcMined);
+                miner.setShares(miner.getShares() + 1);
+                miner.setTotalSharesMined(miner.getTotalSharesMined() + 1);
+                
+                System.out.println(String.format("Miner %s earned %.8f BTC (%.2f USD)", 
+                    miner.getPerson().getEmail(), btcMined, usdMined));
             }
-
-            // Calculate mining reward with more detailed logging
-            double btcMined = hashrate * HASH_TO_BTC_RATE / 60.0;
-            System.out.println("BTC to be mined this minute: " + String.format("%.8f", btcMined));
             
-            // Get current balances for logging
-            double oldPending = miner.getPendingBalance();
-            double newPending = oldPending + btcMined;
-            
-            // Update balances and stats
-            miner.setPendingBalance(newPending);
-            miner.setTotalBtcEarned(miner.getTotalBtcEarned() + btcMined);
-            miner.setShares(miner.getShares() + 1);
-            miner.setTotalSharesMined(miner.getTotalSharesMined() + 1);
-            
-            System.out.println("Old pending balance: " + String.format("%.8f", oldPending));
-            System.out.println("New pending balance: " + String.format("%.8f", newPending));
-            
-            // Save changes
-            try {
-                miningUserRepository.save(miner);
-                System.out.println("Successfully saved mining updates");
-            } catch (Exception e) {
-                System.out.println("Error saving mining updates: " + e.getMessage());
-                e.printStackTrace();
-            }
+            miningUserRepository.save(miner);
         });
     }
 
