@@ -87,11 +87,6 @@ public class MiningUser {
             gpuQuantities = new HashMap<>();
         }
 
-        // For starter GPU (ID 1), only allow one
-        if (gpu.getId() == 1 && ownsGPUById(1L)) {
-            throw new RuntimeException("You already own the starter GPU");
-        }
-
         // Update quantity
         gpuQuantities.merge(gpu.getId(), 1, Integer::sum);
 
