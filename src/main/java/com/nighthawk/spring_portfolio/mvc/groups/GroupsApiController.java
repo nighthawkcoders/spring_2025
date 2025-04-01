@@ -33,10 +33,10 @@ public class GroupsApiController {
     @Autowired
     private PersonJpaRepository personRepository;
 
-    // DTO for creating a new group
+    // DTO for creating a new group using UIDs
     @Getter
     public static class GroupDto {
-        private List<Long> personIds;
+        private List<String> personUids;
     }
 
     /**
@@ -60,7 +60,7 @@ public class GroupsApiController {
     }
 
     /**
-     * Create a new group with multiple people
+     * Create a new group with multiple people using UIDs
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createGroup(@RequestBody GroupDto groupDto) {
@@ -72,11 +72,10 @@ public class GroupsApiController {
             // Save the group first to generate an ID
             Groups savedGroup = groupsRepository.save(group);
             
-            // Find and add each person to the group
-            for (Long personId : groupDto.getPersonIds()) {
-                Optional<Person> optionalPerson = personRepository.findById(personId);
-                if (optionalPerson.isPresent()) {
-                    Person person = optionalPerson.get();
+            // Find and add each person to the group by UID
+            for (String personUid : groupDto.getPersonUids()) {
+                Person person = personRepository.findByUid(personUid);
+                if (person != null) {
                     savedGroup.addPerson(person);
                     personRepository.save(person); // Save person with updated group reference
                 }
@@ -90,18 +89,17 @@ public class GroupsApiController {
     }
 
     /**
-     * Add people to an existing group
+     * Add people to an existing group using UIDs
      */
     @PutMapping("/{id}/addPeople")
-    public ResponseEntity<Object> addPeopleToGroup(@PathVariable Long id, @RequestBody List<Long> personIds) {
+    public ResponseEntity<Object> addPeopleToGroup(@PathVariable Long id, @RequestBody List<String> personUids) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
             Groups group = optionalGroup.get();
             
-            for (Long personId : personIds) {
-                Optional<Person> optionalPerson = personRepository.findById(personId);
-                if (optionalPerson.isPresent()) {
-                    Person person = optionalPerson.get();
+            for (String personUid : personUids) {
+                Person person = personRepository.findByUid(personUid);
+                if (person != null) {
                     group.addPerson(person);
                     personRepository.save(person);
                 }
@@ -113,18 +111,17 @@ public class GroupsApiController {
     }
 
     /**
-     * Remove people from a group
+     * Remove people from a group using UIDs
      */
     @PutMapping("/{id}/removePeople")
-    public ResponseEntity<Object> removePeopleFromGroup(@PathVariable Long id, @RequestBody List<Long> personIds) {
+    public ResponseEntity<Object> removePeopleFromGroup(@PathVariable Long id, @RequestBody List<String> personUids) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
             Groups group = optionalGroup.get();
             
-            for (Long personId : personIds) {
-                Optional<Person> optionalPerson = personRepository.findById(personId);
-                if (optionalPerson.isPresent()) {
-                    Person person = optionalPerson.get();
+            for (String personUid : personUids) {
+                Person person = personRepository.findByUid(personUid);
+                if (person != null) {
                     group.removePerson(person);
                     personRepository.save(person);
                 }
@@ -176,7 +173,20 @@ public class GroupsApiController {
     }
 
     /**
-     * Find groups containing a specific person
+     * Find groups containing a specific person by UID
+     */
+    @GetMapping("/person/uid/{personUid}")
+    public ResponseEntity<List<Groups>> getGroupsByPersonUid(@PathVariable String personUid) {
+        Person person = personRepository.findByUid(personUid);
+        if (person != null) {
+            List<Groups> groups = groupsRepository.findGroupsByPersonId(person.getId());
+            return new ResponseEntity<>(groups, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+    }
+    
+    /**
+     * Find groups containing a specific person by ID (maintaining backward compatibility)
      */
     @GetMapping("/person/{personId}")
     public ResponseEntity<List<Groups>> getGroupsByPersonId(@PathVariable Long personId) {
