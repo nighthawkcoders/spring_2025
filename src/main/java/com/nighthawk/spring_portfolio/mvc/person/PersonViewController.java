@@ -379,12 +379,12 @@ public class PersonViewController {
         private String code;
     }
 
-    @PostMapping("/verficiation")
+    @PostMapping("/verification")
     public ResponseEntity<Object> verficiation(@RequestBody PersonVerificationBody personVerificationBody) {
         if(personVerificationBody.getUid() == null){
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":0}"; //0 == failed
+            String body = "{\"state\":0}"; //0 == failed
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.BAD_REQUEST);
         }
 
@@ -395,31 +395,31 @@ public class PersonViewController {
 
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":2}"; //2 == email
+            String body = "{\"state\":2}"; //2 == email
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.OK);
         }
         else{
             if(HttpSender.verifyGithub(personVerificationBody.getUid())==true){
                 HttpHeaders responseHeaders = new HttpHeaders();
                 responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-                String body = "{\"status\":1}"; //1 == success
+                String body = "{\"state\":1}"; //1 == success
                 return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.OK);
             };
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":0}"; //0 == failed
+            String body = "{\"state\":0}"; //0 == failed
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.NOT_FOUND);
         }
     }
 
-    @PostMapping("/verficiation/code")
+    @PostMapping("/verification/code")
     public ResponseEntity<Object> verficiationWithCode(@RequestBody PersonVerificationBody personVerificationBody) {
 
         //person not found
         if (personVerificationBody.getUid() == null){
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":0}"; //0 == failed
+            String body = "{\"state\":0}"; //0 == failed
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.BAD_REQUEST);
         }
 
@@ -427,29 +427,29 @@ public class PersonViewController {
         if(personVerificationBody.getCode() == null){
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":0}"; //0 == failed
+            String body = "{\"state\":0}"; //0 == failed
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.BAD_REQUEST);
         }
 
         if(VerificationCode.getCodeForUid(personVerificationBody.getUid()) == null){
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":0}"; //0 == failed
+            String body = "{\"state\":0}"; //0 == failed
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.NO_CONTENT);
         }
 
         //if there is a code submitted for the given uid, and it matches the code that is expected, then reset the users password
-        if(ResetCode.getCodeForUid(personVerificationBody.getUid()).equals(personVerificationBody.getCode())){
-            ResetCode.removeCodeByUid(personVerificationBody.getUid());
+        if(VerificationCode.getCodeForUid(personVerificationBody.getUid()).equals(personVerificationBody.getCode())){
+            VerificationCode.removeCodeByUid(personVerificationBody.getUid());
 
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            String body = "{\"status\":1}"; //1 == success
+            String body = "{\"state\":1}"; //1 == success
             return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.OK);
         }
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        String body = "{\"status\":0}"; //0 == failed
+        String body = "{\"state\":0}"; //0 == failed
         return new ResponseEntity<Object>(body,responseHeaders,HttpStatus.BAD_REQUEST);
     }
 
