@@ -117,7 +117,7 @@ public class AdventureAnswerApiController {
     }
 
     @PostMapping("/submitMCQAnswer")
-    public ResponseEntity<AdventureAnswer> postAnswer(@RequestBody MCQAnswerDto mcqAnswerDto) {
+    public ResponseEntity<Boolean> postAnswer(@RequestBody MCQAnswerDto mcqAnswerDto) {
         // fetch the question, person, and choice associated with the answer
         Optional<AdventureQuestion> questionOpt = questionJpaRepository.findById(mcqAnswerDto.getQuestionId());
         Optional<Person> personOpt = personJpaRepository.findById(mcqAnswerDto.getPersonId());
@@ -145,7 +145,7 @@ public class AdventureAnswerApiController {
             person.setBalanceString(updatedBalance);
         }
     
-        return new ResponseEntity<>(answer, HttpStatus.OK);
+        return ResponseEntity.ok(true);
     }
     
 
