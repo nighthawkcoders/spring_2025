@@ -1,5 +1,23 @@
 package com.nighthawk.spring_portfolio.mvc.cryptoMining;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.userStocks.UserStocksRepository;
@@ -12,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors;
+import java.text.SimpleDateFormat;
 
 @RestController
 @RequestMapping("/api/mining")
@@ -29,8 +48,18 @@ public class MiningController {
     @Autowired
     private MiningService miningService;
 
-    @Autowired
-    private UserStocksRepository userStocksRepo;
+    private GPU getRandomBudgetGPU() {
+        List<GPU> budgetGPUs = gpuRepository.findAll().stream()
+            .filter(gpu -> gpu.getCategory().equals("Budget GPUs ($10000-20000)"))
+            .collect(Collectors.toList());
+        
+        if (budgetGPUs.isEmpty()) {
+            throw new RuntimeException("No budget GPUs found");
+        }
+        
+        int randomIndex = (int) (Math.random() * budgetGPUs.size());
+        return budgetGPUs.get(randomIndex);
+    }
 
     private MiningUser getOrCreateMiningUser() {
         try {
@@ -76,15 +105,11 @@ public class MiningController {
                     System.out.println("Creating new mining user for: " + person.getEmail());
                     MiningUser newUser = new MiningUser(person);
                     
-                    // Add starter GPU if exists
-                    gpuRepository.findById(1L).ifPresentOrElse(
-                        gpu -> {
-                            newUser.addGPU(gpu);
-                            System.out.println("Added starter GPU: " + gpu.getName());
-                        },
-                        () -> System.out.println("WARNING: No starter GPU found with ID 1")
-                    );
-
+                    // Give new user a random budget GPU
+                    GPU randomBudgetGPU = getRandomBudgetGPU();
+                    newUser.addGPU(randomBudgetGPU);
+                    System.out.println("Added random budget GPU: " + randomBudgetGPU.getName());
+                    
                     MiningUser savedUser = miningUserRepository.save(newUser);
                     System.out.println("Successfully created new mining user with ID: " + savedUser.getId());
                     return savedUser;
@@ -192,39 +217,12 @@ public class MiningController {
             int quantity = (request != null && request.containsKey("quantity")) ? request.get("quantity") : 1;
             System.out.println("Quantity to purchase: " + quantity);
             
-            // For starter GPU (ID 1), only allow quantity of 1
-            if (gpu.getId() == 1) {
-                if (user.ownsGPUById(1L)) {
-                    System.out.println("Error: User already owns starter GPU");
-                    return ResponseEntity.badRequest()
-                        .body(Map.of(
-                            "success", false,
-                            "message", "You already own the starter GPU"
-                        ));
-                }
-                quantity = 1;
-            }
-
             // Get user's crypto balance
-            userStocksTable userStocks = userStocksRepo.findByEmail(user.getPerson().getEmail());
-            if (userStocks == null) {
-                System.out.println("Error: User balance not found");
-                return ResponseEntity.badRequest()
-                    .body(Map.of(
-                        "success", false,
-                        "message", "User balance not found"
-                    ));
-            }
-
-            // Calculate total cost
-            double totalCost = gpu.getPrice() * quantity;
-            System.out.println("Total cost: $" + totalCost);
-
-            // Check if user has enough balance
-            double currentBalance = Double.parseDouble(userStocks.getBalance());
+            Person person = user.getPerson();
+            double currentBalance = person.getBalanceDouble();
             System.out.println("Current balance: $" + currentBalance);
             
-            if (currentBalance < totalCost) {
+            if (currentBalance < gpu.getPrice() * quantity) {
                 System.out.println("Error: Insufficient balance");
                 return ResponseEntity.badRequest()
                     .body(Map.of(
@@ -234,9 +232,9 @@ public class MiningController {
             }
 
             // Deduct total GPU price from balance
-            double newBalance = currentBalance - totalCost;
-            userStocks.setBalance(String.format("%.2f", newBalance));
-            userStocksRepo.save(userStocks);
+            double newBalance = currentBalance - gpu.getPrice() * quantity;
+            person.setBalanceString(newBalance);
+            personRepository.save(person);
             System.out.println("New balance after purchase: $" + newBalance);
             
             // Add GPUs to user's inventory
@@ -461,12 +459,8 @@ public class MiningController {
             MiningUser user = getOrCreateMiningUser();
             
             // Get user's crypto balance
-            userStocksTable userStocks = userStocksRepo.findByEmail(user.getPerson().getEmail());
-            if (userStocks == null) {
-                return ResponseEntity.status(404).body("User balance not found");
-            }
-
-            double userBalance = Double.parseDouble(userStocks.getBalance());
+            Person person = user.getPerson();
+            double currentBalance = person.getBalanceDouble();
             
             Map<String, Object> status = new HashMap<>();
             double pendingBTC = user.getPendingBalance();
@@ -483,7 +477,7 @@ public class MiningController {
             status.put("confirmedBalance", String.format("%.8f", confirmedBTC));
             status.put("confirmedBalanceUSD", String.format("%.2f", confirmedUSD));
             status.put("totalBalanceUSD", String.format("%.2f", totalUSD));
-            status.put("userBalance", String.format("%.2f", userBalance));
+            status.put("userBalance", String.format("%.2f", currentBalance));
             status.put("isMining", user.isMining());
             status.put("activeGPUs", user.getActiveGPUs().size());
             status.put("currentHashrate", String.format("%.2f", user.getCurrentHashrate()));
@@ -584,6 +578,174 @@ public class MiningController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/gpu/sell/{gpuId}")
+    public ResponseEntity<?> sellGPU(@PathVariable Long gpuId, @RequestBody(required = false) Map<String, Integer> request) {
+        try {
+            MiningUser user = getOrCreateMiningUser();
+            GPU gpu = gpuRepository.findById(gpuId)
+                .orElseThrow(() -> new RuntimeException("GPU not found"));
+
+            // Get quantity to sell, default to 1
+            int quantityToSell = (request != null && request.containsKey("quantity")) 
+                ? request.get("quantity") 
+                : 1;
+
+            // Check if user owns enough GPUs
+            int ownedQuantity = user.getGpuQuantity(gpuId);
+            if (ownedQuantity < quantityToSell) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, 
+                               "message", "You don't own enough GPUs"));
+            }
+
+            // Calculate sell price (80% of original price)
+            double sellPrice = gpu.getPrice() * 0.8 * quantityToSell;
+
+            // Update user's balance using Person with source
+            Person person = user.getPerson();
+            double currentBalance = person.getBalanceDouble();
+            double newBalance = currentBalance + sellPrice;
+            person.setBalanceString(newBalance);
+            personRepository.save(person);
+
+            // Remove GPUs from user's inventory
+            user.removeGPUs(gpu, quantityToSell);
+
+            // Save changes
+            miningUserRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", String.format("Successfully sold %dx %s for $%.2f", 
+                                       quantityToSell, gpu.getName(), sellPrice),
+                "newBalance", String.format("%.2f", newBalance)
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/gpu/sell/batch")
+    public ResponseEntity<?> sellGPUsBatch(@RequestBody Map<String, List<Map<String, Object>>> request) {
+        try {
+            MiningUser user = getOrCreateMiningUser();
+            List<Map<String, Object>> gpus = request.get("gpus");
+            
+            if (gpus == null || gpus.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, 
+                               "message", "No GPUs selected"));
+            }
+
+            double totalSellPrice = 0.0;
+            List<String> soldGPUs = new ArrayList<>();
+
+            // Process each GPU sale
+            for (Map<String, Object> gpuInfo : gpus) {
+                Long gpuId = Long.parseLong(gpuInfo.get("id").toString());
+                int quantity = Integer.parseInt(gpuInfo.get("quantity").toString());
+
+                GPU gpu = gpuRepository.findById(gpuId)
+                    .orElseThrow(() -> new RuntimeException("GPU not found: " + gpuId));
+
+                if (user.getGpuQuantity(gpuId) < quantity) {
+                    continue; // Skip if not enough quantity
+                }
+
+                double sellPrice = gpu.getPrice() * 0.8 * quantity;
+                totalSellPrice += sellPrice;
+                user.removeGPUs(gpu, quantity);
+                soldGPUs.add(String.format("%dx %s", quantity, gpu.getName()));
+            }
+
+            // Update user's balance using Person with source
+            Person person = user.getPerson();
+            double currentBalance = person.getBalanceDouble();
+            double newBalance = currentBalance + totalSellPrice;
+            person.setBalanceString(newBalance);
+            personRepository.save(person);
+
+            // Save changes
+            miningUserRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", String.format("Successfully sold %s for $%.2f", 
+                                       String.join(", ", soldGPUs), totalSellPrice),
+                "newBalance", String.format("%.2f", newBalance)
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/test-new-user-gpu")
+    public ResponseEntity<?> testNewUserGPU() {
+        try {
+            System.out.println("\n=== Testing New User GPU Assignment ===");
+            
+            // Get all budget GPUs first to verify they exist
+            List<GPU> allBudgetGPUs = gpuRepository.findAll().stream()
+                .filter(gpu -> gpu.getCategory().equals("Budget GPUs ($10000-20000)"))
+                .collect(Collectors.toList());
+            
+            System.out.println("Found " + allBudgetGPUs.size() + " budget GPUs");
+            if (allBudgetGPUs.isEmpty()) {
+                throw new RuntimeException("No budget GPUs found in the database. Make sure DataInitializer has run.");
+            }
+
+            // Print all found budget GPUs
+            System.out.println("\nAvailable Budget GPUs:");
+            allBudgetGPUs.forEach(gpu -> {
+                System.out.println(String.format("- %s (ID: %d, Price: $%.2f)", 
+                    gpu.getName(), gpu.getId(), gpu.getPrice()));
+            });
+
+            // Get random GPU
+            GPU randomBudgetGPU = allBudgetGPUs.get((int) (Math.random() * allBudgetGPUs.size()));
+            System.out.println("\nRandomly selected GPU: " + randomBudgetGPU.getName());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Test completed successfully");
+            response.put("totalBudgetGPUs", allBudgetGPUs.size());
+            response.put("selectedGPU", Map.of(
+                "id", randomBudgetGPU.getId(),
+                "name", randomBudgetGPU.getName(),
+                "hashRate", randomBudgetGPU.getHashRate(),
+                "price", randomBudgetGPU.getPrice(),
+                "category", randomBudgetGPU.getCategory()
+            ));
+            response.put("allBudgetGPUs", allBudgetGPUs.stream()
+                .map(gpu -> Map.of(
+                    "id", gpu.getId(),
+                    "name", gpu.getName(),
+                    "hashRate", gpu.getHashRate(),
+                    "price", gpu.getPrice(),
+                    "category", gpu.getCategory()
+                ))
+                .collect(Collectors.toList())
+            );
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("\n=== Error in testNewUserGPU ===");
+            System.out.println("Error type: " + e.getClass().getName());
+            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", e.getMessage(),
+                    "errorType", e.getClass().getSimpleName(),
+                    "details", "Check server logs for more information"
+                ));
         }
     }
 }
