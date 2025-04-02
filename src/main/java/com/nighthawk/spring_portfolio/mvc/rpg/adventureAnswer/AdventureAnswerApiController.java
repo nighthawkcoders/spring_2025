@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +41,6 @@ import okhttp3.Response;
 @RestController
 @RequestMapping("/rpg_answer")
 // enable cross-origin requests for the specified frontend
-@CrossOrigin(origins = "http://127.0.0.1:5501") 
 public class AdventureAnswerApiController {
 
     // load environment variables for api configuration
@@ -88,27 +86,27 @@ public class AdventureAnswerApiController {
     }
 
     // endpoint to get the number of questions answered by a specific person
-    @GetMapping("/getQuestionsAnswered/{personid}")
-    public ResponseEntity<Integer> getQuestionsAnswered(@PathVariable Integer personid) {
+    @GetMapping("/getQuestionAccuracy/{personid}")
+    public ResponseEntity<Double> getQuestionAccuracy(@PathVariable Integer personid) {
         // fetch all answers by the given person id
         List<AdventureAnswer> useranswers = answerJpaRepository.findByPersonId(personid);
-
+        if (useranswers.isEmpty()) {
+            return new ResponseEntity<>(0.0, HttpStatus.OK);
+        }
         // count the total answers
-        Integer questionsAnswered = useranswers.size();
-
+        double questionsAnswered = useranswers.size();
+        double questionsRight = 0;
+        
+        for (AdventureAnswer answer: useranswers) {
+            if (answer.getIsCorrect()) {
+                questionsRight++;
+            }
+        }
+        double questionAccuracy = questionsRight / questionsAnswered;
         // return the count with an ok status
-        return new ResponseEntity<>(questionsAnswered, HttpStatus.OK);
+        return new ResponseEntity<>(questionAccuracy, HttpStatus.OK);
     }
 
-    // endpoint to get a list of all questions
-    @GetMapping("getQuestions")
-    public ResponseEntity<List<AdventureQuestion>> getQuestions() {
-        // fetch all questions ordered alphabetically by title
-        List<AdventureQuestion> questions = questionJpaRepository.findAllByOrderByTitleAsc();
-
-        // return the list of questions with an ok status
-        return new ResponseEntity<>(questions, HttpStatus.OK);
-    }
     @Getter 
     public static class MCQAnswerDto {
         private Long questionId; // associate with a question
