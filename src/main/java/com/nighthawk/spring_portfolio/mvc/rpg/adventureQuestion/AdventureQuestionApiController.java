@@ -55,19 +55,21 @@ public class AdventureQuestionApiController {
     @GetMapping("transitionToParadise/{personid}")
     public ResponseEntity<Boolean> transitionToParadise(@PathVariable Long personid) {
         List<AdventureQuestion> meteorQuestions = questionJpaRepository.findByCategory("Meteor");
-        
     
         if (!meteorQuestions.isEmpty()) {
-            for (AdventureQuestion meteorQuestion: meteorQuestions) {
-                AdventureAnswer answer = answerJpaRepository.findByQuestionIdAndPersonId(meteorQuestion.getId(), personid);
-                if (answer == null) {
-                    return ResponseEntity.ok(false); 
+            for (AdventureQuestion meteorQuestion : meteorQuestions) {
+                List<AdventureAnswer> answers = answerJpaRepository.findByQuestionIdAndPersonId(meteorQuestion.getId(), personid);
+    
+                boolean isCorrect = answers.stream().anyMatch(ans -> Boolean.TRUE.equals(ans.getIsCorrect()));
+                if (!isCorrect) {
+                    return ResponseEntity.ok(false);
                 }
             }
-            // return ResponseEntity.ok(true); 
+            return ResponseEntity.ok(true);
         }
-        
+    
         return ResponseEntity.ok(false);
     }
+    
     
 }

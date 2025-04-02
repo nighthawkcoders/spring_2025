@@ -148,22 +148,19 @@ public class AdventureAnswerApiController {
     
 
     @GetMapping("getQuestion")
-    public ResponseEntity<Map<String, Object>> getQuestion(@RequestParam String category) {
-        // Fetch all questions for the provided category
+    public ResponseEntity<Map<String, Object>> getQuestion(@RequestParam String category, @RequestParam Long personid) {
         List<AdventureQuestion> questions = questionJpaRepository.findByCategory(category);
-        
-        if (questions.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        
-        // Build a list to hold each question and its corresponding choices
         List<Map<String, Object>> questionsWithChoices = new ArrayList<>();
-        
+    
         for (AdventureQuestion question : questions) {
-            // Fetch answer choices for the current question
+            List<AdventureAnswer> answers = answerJpaRepository.findByQuestionIdAndPersonId(question.getId(), personid);
+            
+            boolean wasCorrect = answers.stream().anyMatch(ans -> Boolean.TRUE.equals(ans.getIsCorrect()));
+            if (wasCorrect) continue;
+    
             List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(question.getId());
             List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
-            
+    
             for (AdventureChoice choice : choices) {
                 AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
                 choiceDTO.setId(choice.getId());
@@ -171,22 +168,19 @@ public class AdventureAnswerApiController {
                 choiceDTO.setIs_correct(choice.getIs_correct());
                 choiceDTOs.add(choiceDTO);
             }
-            
-            // Create a map for the current question and add its choices
+    
             Map<String, Object> questionEntry = new HashMap<>();
             questionEntry.put("question", question);
             questionEntry.put("choices", choiceDTOs);
             questionsWithChoices.add(questionEntry);
         }
-        
-        // Wrap the list in a response map
+    
         Map<String, Object> response = new HashMap<>();
         response.put("questions", questionsWithChoices);
-        
+    
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-
+    
 
     // endpoint to get the total chat score for a specific person
     @GetMapping("/getChatScore/{personid}")
