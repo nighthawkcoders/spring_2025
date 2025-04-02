@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,13 +21,12 @@ public class Groups {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Modified the cascade type to include PERSIST and MERGE to ensure changes are saved
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     @JsonIgnore
     private List<Person> groupMembers = new ArrayList<>();
 
     public Groups() {
-
     }
 
     public Groups(List<Person> groupMembers) {
@@ -51,8 +49,7 @@ public class Groups {
         this.groupMembers = groupMembers;
     }
 
-
-    // Method to add a person to the group
+    // Modified method to add a person to the group
     public void addPerson(Person person) {
         if (!this.groupMembers.contains(person)) {
             this.groupMembers.add(person);
@@ -60,7 +57,7 @@ public class Groups {
         }
     }
 
-    // Method to remove a person from the group
+    // Modified method to remove a person from the group
     public void removePerson(Person person) {
         if (this.groupMembers.contains(person)) {
             this.groupMembers.remove(person);

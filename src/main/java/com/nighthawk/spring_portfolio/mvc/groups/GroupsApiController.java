@@ -33,7 +33,7 @@ public class GroupsApiController {
     @Autowired
     private PersonJpaRepository personRepository;
 
-    // DTO for creating a new group using UIDs
+    // DTO for creating a new group
     @Getter
     public static class GroupDto {
         private List<String> personUids;
@@ -51,37 +51,36 @@ public class GroupsApiController {
      * Get a group by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Groups> getGroupById(@PathVariable Long id) {
+    public ResponseEntity<List<Person>> getGroupById(@PathVariable Long id) {
         Optional<Groups> group = groupsRepository.findById(id);
         if (group.isPresent()) {
-            return new ResponseEntity<>(group.get(), HttpStatus.OK);
+            return new ResponseEntity<>(group.get().getGroupMembers(), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     /**
-     * Create a new group with multiple people using UIDs
+     * Create a new group with multiple people
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createGroup(@RequestBody GroupDto groupDto) {
         try {
             // Create a new group
             Groups group = new Groups();
-            group.setGroupMembers(new ArrayList<>());
             
             // Save the group first to generate an ID
             Groups savedGroup = groupsRepository.save(group);
             
-            // Find and add each person to the group by UID
-            for (String personUid : groupDto.getPersonUids()) {
-                Person person = personRepository.findByUid(personUid);
+            // Find and add each person to the group
+            for (String personId : groupDto.getPersonUids()) {
+                Person person = personRepository.findByUid(personId);
                 if (person != null) {
                     savedGroup.addPerson(person);
-                    personRepository.save(person); // Save person with updated group reference
                 }
             }
             
             // Save the group again with all members
+            // This will cascade and save the Person objects as well
             return new ResponseEntity<>(groupsRepository.save(savedGroup), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("Error creating group: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -89,66 +88,82 @@ public class GroupsApiController {
     }
 
     /**
-     * Add people to an existing group using UIDs
+     * Add people to an existing group
      */
     @PutMapping("/{id}/addPeople")
-    public ResponseEntity<Object> addPeopleToGroup(@PathVariable Long id, @RequestBody List<String> personUids) {
+    public ResponseEntity<Object> addPeopleToGroup(@PathVariable Long id, @RequestBody List<Long> personIds) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
             Groups group = optionalGroup.get();
             
-            for (String personUid : personUids) {
-                Person person = personRepository.findByUid(personUid);
-                if (person != null) {
-                    group.addPerson(person);
-                    personRepository.save(person);
+            boolean changesDetected = false;
+            for (Long personId : personIds) {
+                Optional<Person> optionalPerson = personRepository.findById(personId);
+                if (optionalPerson.isPresent()) {
+                    Person person = optionalPerson.get();
+                    if (!group.getGroupMembers().contains(person)) {
+                        group.addPerson(person);
+                        changesDetected = true;
+                    }
                 }
             }
             
-            return new ResponseEntity<>(groupsRepository.save(group), HttpStatus.OK);
+            // Only save if changes were made
+            if (changesDetected) {
+                return new ResponseEntity<>(groupsRepository.save(group), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(group, HttpStatus.OK);
+            }
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     /**
-     * Remove people from a group using UIDs
+     * Remove people from a group
      */
     @PutMapping("/{id}/removePeople")
-    public ResponseEntity<Object> removePeopleFromGroup(@PathVariable Long id, @RequestBody List<String> personUids) {
+    public ResponseEntity<Object> removePeopleFromGroup(@PathVariable Long id, @RequestBody List<Long> personIds) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
             Groups group = optionalGroup.get();
             
-            for (String personUid : personUids) {
-                Person person = personRepository.findByUid(personUid);
-                if (person != null) {
-                    group.removePerson(person);
-                    personRepository.save(person);
+            boolean changesDetected = false;
+            for (Long personId : personIds) {
+                Optional<Person> optionalPerson = personRepository.findById(personId);
+                if (optionalPerson.isPresent()) {
+                    Person person = optionalPerson.get();
+                    if (group.getGroupMembers().contains(person)) {
+                        group.removePerson(person);
+                        changesDetected = true;
+                    }
                 }
             }
             
-            return new ResponseEntity<>(groupsRepository.save(group), HttpStatus.OK);
+            // Only save if changes were made
+            if (changesDetected) {
+                // Save the group which will cascade the changes
+                Groups savedGroup = groupsRepository.save(group);
+                
+                // Now save any persons that were removed from the group
+                for (Long personId : personIds) {
+                    Optional<Person> optionalPerson = personRepository.findById(personId);
+                    if (optionalPerson.isPresent()) {
+                        Person person = optionalPerson.get();
+                        if (person.getGroup() == null) {
+                            personRepository.save(person);
+                        }
+                    }
+                }
+                
+                return new ResponseEntity<>(savedGroup, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(group, HttpStatus.OK);
+            }
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Update group table number
-     */
-    @PutMapping("/{id}/table")
-    public ResponseEntity<Object> updateGroupTable(@PathVariable Long id, @RequestBody Map<String, Integer> requestBody) {
-        Integer table = requestBody.get("table");
-        if (table == null) {
-            return new ResponseEntity<>("Table number is required", HttpStatus.BAD_REQUEST);
-        }
-        
-        Optional<Groups> optionalGroup = groupsRepository.findById(id);
-        if (optionalGroup.isPresent()) {
-            Groups group = optionalGroup.get();
-            return new ResponseEntity<>(groupsRepository.save(group), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+
 
     /**
      * Delete a group (but not its members)
@@ -163,9 +178,17 @@ public class GroupsApiController {
             List<Person> members = new ArrayList<>(group.getGroupMembers());
             for (Person person : members) {
                 group.removePerson(person);
+            }
+            
+            // Save group first to update all relationship changes
+            groupsRepository.save(group);
+            
+            // Now save each person with their updated null group reference
+            for (Person person : members) {
                 personRepository.save(person);
             }
             
+            // Finally delete the group
             groupsRepository.deleteById(id);
             return new ResponseEntity<>("Group deleted successfully", HttpStatus.OK);
         }
@@ -173,20 +196,7 @@ public class GroupsApiController {
     }
 
     /**
-     * Find groups containing a specific person by UID
-     */
-    @GetMapping("/person/uid/{personUid}")
-    public ResponseEntity<List<Groups>> getGroupsByPersonUid(@PathVariable String personUid) {
-        Person person = personRepository.findByUid(personUid);
-        if (person != null) {
-            List<Groups> groups = groupsRepository.findGroupsByPersonId(person.getId());
-            return new ResponseEntity<>(groups, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
-    }
-    
-    /**
-     * Find groups containing a specific person by ID (maintaining backward compatibility)
+     * Find groups containing a specific person
      */
     @GetMapping("/person/{personId}")
     public ResponseEntity<List<Groups>> getGroupsByPersonId(@PathVariable Long personId) {
