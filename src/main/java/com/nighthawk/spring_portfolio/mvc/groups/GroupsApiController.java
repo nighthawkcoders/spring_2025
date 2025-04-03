@@ -1,6 +1,7 @@
 package com.nighthawk.spring_portfolio.mvc.groups;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,21 +42,66 @@ public class GroupsApiController {
     }
 
     /**
-     * Get all groups
+     * Extract basic info from a Person object to avoid circular references
+     */
+    private Map<String, Object> getPersonBasicInfo(Person person) {
+        Map<String, Object> personInfo = new HashMap<>();
+        personInfo.put("id", person.getId());
+        personInfo.put("uid", person.getUid());
+        personInfo.put("name", person.getName());
+        personInfo.put("email", person.getEmail());
+        // Add other Person properties as needed, but exclude the group reference
+        return personInfo;
+    }
+
+    /**
+     * Get all groups with their members
      */
     @GetMapping
-    public ResponseEntity<List<Groups>> getAllGroups() {
-        return new ResponseEntity<>(groupsRepository.findAll(), HttpStatus.OK);
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Map<String, Object>>> getAllGroups() {
+        List<Groups> groups = groupsRepository.findAll();
+        List<Map<String, Object>> groupsWithMembers = new ArrayList<>();
+        
+        for (Groups group : groups) {
+            Map<String, Object> groupMap = new HashMap<>();
+            groupMap.put("id", group.getId());
+            
+            // Extract basic info from each person to avoid serialization issues
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : group.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
+            }
+            
+            groupMap.put("members", membersList);
+            groupsWithMembers.add(groupMap);
+        }
+        
+        return new ResponseEntity<>(groupsWithMembers, HttpStatus.OK);
     }
 
     /**
      * Get a group by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<List<Person>> getGroupById(@PathVariable Long id) {
-        Optional<Groups> group = groupsRepository.findById(id);
-        if (group.isPresent()) {
-            return new ResponseEntity<>(group.get().getGroupMembers(), HttpStatus.OK);
+    @Transactional(readOnly = true)
+    public ResponseEntity<Map<String, Object>> getGroupById(@PathVariable Long id) {
+        Optional<Groups> optionalGroup = groupsRepository.findById(id);
+        if (optionalGroup.isPresent()) {
+            Groups group = optionalGroup.get();
+            
+            Map<String, Object> groupMap = new HashMap<>();
+            groupMap.put("id", group.getId());
+            
+            // Extract basic info from each person to avoid serialization issues
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : group.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
+            }
+            
+            groupMap.put("members", membersList);
+            
+            return new ResponseEntity<>(groupMap, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -63,6 +110,7 @@ public class GroupsApiController {
      * Create a new group with multiple people
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public ResponseEntity<Object> createGroup(@RequestBody GroupDto groupDto) {
         try {
             // Create a new group
@@ -81,7 +129,20 @@ public class GroupsApiController {
             
             // Save the group again with all members
             // This will cascade and save the Person objects as well
-            return new ResponseEntity<>(groupsRepository.save(savedGroup), HttpStatus.CREATED);
+            Groups finalGroup = groupsRepository.save(savedGroup);
+            
+            // Return the group with its members
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", finalGroup.getId());
+            
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : finalGroup.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
+            }
+            
+            response.put("members", membersList);
+            
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("Error creating group: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -91,6 +152,7 @@ public class GroupsApiController {
      * Add people to an existing group
      */
     @PutMapping("/{id}/addPeople")
+    @Transactional
     public ResponseEntity<Object> addPeopleToGroup(@PathVariable Long id, @RequestBody List<Long> personIds) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
@@ -109,11 +171,20 @@ public class GroupsApiController {
             }
             
             // Only save if changes were made
-            if (changesDetected) {
-                return new ResponseEntity<>(groupsRepository.save(group), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(group, HttpStatus.OK);
+            Groups updatedGroup = changesDetected ? groupsRepository.save(group) : group;
+            
+            // Return the group with its members
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedGroup.getId());
+            
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : updatedGroup.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
             }
+            
+            response.put("members", membersList);
+            
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -122,6 +193,7 @@ public class GroupsApiController {
      * Remove people from a group
      */
     @PutMapping("/{id}/removePeople")
+    @Transactional
     public ResponseEntity<Object> removePeopleFromGroup(@PathVariable Long id, @RequestBody List<Long> personIds) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
@@ -155,20 +227,39 @@ public class GroupsApiController {
                     }
                 }
                 
-                return new ResponseEntity<>(savedGroup, HttpStatus.OK);
+                Map<String, Object> response = new HashMap<>();
+                response.put("id", savedGroup.getId());
+                
+                List<Map<String, Object>> membersList = new ArrayList<>();
+                for (Person person : savedGroup.getGroupMembers()) {
+                    membersList.add(getPersonBasicInfo(person));
+                }
+                
+                response.put("members", membersList);
+                
+                return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(group, HttpStatus.OK);
+                Map<String, Object> response = new HashMap<>();
+                response.put("id", group.getId());
+                
+                List<Map<String, Object>> membersList = new ArrayList<>();
+                for (Person person : group.getGroupMembers()) {
+                    membersList.add(getPersonBasicInfo(person));
+                }
+                
+                response.put("members", membersList);
+                
+                return new ResponseEntity<>(response, HttpStatus.OK);
             }
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-
-
     /**
      * Delete a group (but not its members)
      */
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Object> deleteGroup(@PathVariable Long id) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
         if (optionalGroup.isPresent()) {
@@ -199,8 +290,25 @@ public class GroupsApiController {
      * Find groups containing a specific person
      */
     @GetMapping("/person/{personId}")
-    public ResponseEntity<List<Groups>> getGroupsByPersonId(@PathVariable Long personId) {
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Map<String, Object>>> getGroupsByPersonId(@PathVariable Long personId) {
         List<Groups> groups = groupsRepository.findGroupsByPersonId(personId);
-        return new ResponseEntity<>(groups, HttpStatus.OK);
+        List<Map<String, Object>> groupsWithMembers = new ArrayList<>();
+        
+        for (Groups group : groups) {
+            Map<String, Object> groupMap = new HashMap<>();
+            groupMap.put("id", group.getId());
+            
+            // Extract basic info from each person to avoid serialization issues
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : group.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
+            }
+            
+            groupMap.put("members", membersList);
+            groupsWithMembers.add(groupMap);
+        }
+        
+        return new ResponseEntity<>(groupsWithMembers, HttpStatus.OK);
     }
 }
