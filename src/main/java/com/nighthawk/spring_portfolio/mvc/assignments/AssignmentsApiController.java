@@ -426,6 +426,7 @@ public class AssignmentsApiController {
     }
 
     @PostMapping("/randomizeGraders/{id}")
+    @Transactional
     public ResponseEntity<?> randomizePeerGraders(@PathVariable Long id) {
         System.out.println("Bruh are you here please thanks");
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
@@ -443,11 +444,11 @@ public class AssignmentsApiController {
 
         
         // Keep latest submission
-        Map<Person, AssignmentSubmission> latestSubmissions = submissions.stream()
+        Map<Long, AssignmentSubmission> latestSubmissions = submissions.stream()
         .collect(Collectors.toMap(
-            submission -> submission.getStudents().get(0), // Get the first student
+            submission -> submission.getStudents().get(0).getId(), // Get the first student's ID
             submission -> submission,
-            (existing, replacement) -> replacement // In case of duplicate keys, keep the replacement (later submission)
+            (existing, replacement) -> replacement
         ));
     
         List<AssignmentSubmission> uniqueSubmissions = new ArrayList<>(latestSubmissions.values());
@@ -474,14 +475,23 @@ public class AssignmentsApiController {
             );
     
             // Assign graders to the current submission
+            // Create a new list instead of sharing the existing one
             currentSubmission.setAssignedGraders(
-                graderSubmission.getStudents()
+                new ArrayList<>(graderSubmission.getStudents())
             );
         }
         System.out.println("Three");
 
     
         submissionRepo.saveAll(uniqueSubmissions);
+        // test debug
+        for (AssignmentSubmission sub : uniqueSubmissions) {
+            System.out.println("Submission by: " + sub.getStudents().get(0).getName() + 
+                            " is graded by: " + 
+                            sub.getAssignedGraders().stream()
+                                .map(Person::getName)
+                                .collect(Collectors.joining(", ")));
+        }
     
         return ResponseEntity.ok("Graders randomized successfully!");
     }
