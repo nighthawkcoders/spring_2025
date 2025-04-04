@@ -221,7 +221,7 @@
     * On submit comment get all the Assignmentsubmissions and iterate through 
     * and save AssignmentSubmission with grade and feedback.
     */
-    function submitComment() {
+    async function submitComment() {
         const commentText = document.getElementById('comment').value.trim(); // Get comment text
         
         if (!commentText) { //check if comment is empty
@@ -239,13 +239,14 @@
           const input = document.getElementById("input-"+student);
           var grade = input.value;
           saveGradeforStudent(student, grade, commentText)
+          await delay(1000); // 1 second delay between each step help with SQL Lock
         }
     }
 
     /**
     * Save the AssignmentSubmission with grade and feedback;
     */
-    function saveGradeforStudent(submission, grade,feedback) {     
+    async function saveGradeforStudent(submission, grade,feedback) {     
         const postURL = "/api/submissions/grade/"+submission // Endpoint
 
         const params = new URLSearchParams({
@@ -258,12 +259,13 @@
             body: params
         };
     
-        fetch(postURL, fetchOptions)
+        await fetch(postURL, fetchOptions)
             .then(response => {
                 if (response.status === 200) {
-                     alert(response);
+                     alert("success");
                     return response;
                 } else {
+                    alert("Response not 200");
                     throw new Error("Failed to submit comment: " + response.status);
                 }
             })
@@ -272,6 +274,12 @@
                 alert("Error submitting comment. See console for details.");
             });
     }
+    /**
+    * Add a delay due to SQL Lock in the backend.
+    */
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
 </script>
 </th:block>
 </html>
