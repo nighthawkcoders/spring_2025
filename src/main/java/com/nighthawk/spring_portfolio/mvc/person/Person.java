@@ -91,7 +91,6 @@ public class Person implements Comparable<Person> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-
     @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
     @JsonIgnore
     private List<SynergyGrade> grades;
@@ -100,17 +99,10 @@ public class Person implements Comparable<Person> {
     @JsonIgnore
     private List<AssignmentSubmission> submissions;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Groups group;
-    
-    @ManyToMany(fetch = EAGER)
-    @JoinTable(
-        name = "person_person_sections",  // unique name to avoid conflicts
-        joinColumns = @JoinColumn(name = "person_id"),
-        inverseJoinColumns = @JoinColumn(name = "section_id")
-    )
-    private Collection<PersonSections> sections = new ArrayList<>();
+
+    @NotEmpty
+    private String password;
+
 
 
     @Column(unique = true, nullable = false)
@@ -249,8 +241,12 @@ public class Person implements Comparable<Person> {
     private userStocksTable user_stocks;
 
 
-//////////////////////////////////////////////////////////////////////////////////
-/// Constructors
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Groups group;
+
+
 
 
     /** Custom constructor for Person when building a new Person object from an API call
