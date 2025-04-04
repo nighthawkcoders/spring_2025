@@ -110,7 +110,7 @@ public class ModelInit {
                 }
             }
 
-            studentService.initialization(personArray);
+            studentService.initialization();
 
 
             

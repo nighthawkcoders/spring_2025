@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +42,7 @@ import okhttp3.Response;
 @RestController
 @RequestMapping("/rpg_answer")
 // enable cross-origin requests for the specified frontend
+@CrossOrigin(origins = "http://127.0.0.1:5501") 
 public class AdventureAnswerApiController {
 
     // load environment variables for api configuration
@@ -86,27 +88,27 @@ public class AdventureAnswerApiController {
     }
 
     // endpoint to get the number of questions answered by a specific person
-    @GetMapping("/getQuestionAccuracy/{personid}")
-    public ResponseEntity<Double> getQuestionAccuracy(@PathVariable Integer personid) {
+    @GetMapping("/getQuestionsAnswered/{personid}")
+    public ResponseEntity<Integer> getQuestionsAnswered(@PathVariable Integer personid) {
         // fetch all answers by the given person id
         List<AdventureAnswer> useranswers = answerJpaRepository.findByPersonId(personid);
-        if (useranswers.isEmpty()) {
-            return new ResponseEntity<>(0.0, HttpStatus.OK);
-        }
+
         // count the total answers
-        double questionsAnswered = useranswers.size();
-        double questionsRight = 0;
-        
-        for (AdventureAnswer answer: useranswers) {
-            if (answer.getIsCorrect()) {
-                questionsRight++;
-            }
-        }
-        double questionAccuracy = questionsRight / questionsAnswered;
+        Integer questionsAnswered = useranswers.size();
+
         // return the count with an ok status
-        return new ResponseEntity<>(questionAccuracy, HttpStatus.OK);
+        return new ResponseEntity<>(questionsAnswered, HttpStatus.OK);
     }
 
+    // endpoint to get a list of all questions
+    @GetMapping("getQuestions")
+    public ResponseEntity<List<AdventureQuestion>> getQuestions() {
+        // fetch all questions ordered alphabetically by title
+        List<AdventureQuestion> questions = questionJpaRepository.findAllByOrderByTitleAsc();
+
+        // return the list of questions with an ok status
+        return new ResponseEntity<>(questions, HttpStatus.OK);
+    }
     @Getter 
     public static class MCQAnswerDto {
         private Long questionId; // associate with a question
@@ -115,7 +117,7 @@ public class AdventureAnswerApiController {
     }
 
     @PostMapping("/submitMCQAnswer")
-    public ResponseEntity<Boolean> postAnswer(@RequestBody MCQAnswerDto mcqAnswerDto) {
+    public ResponseEntity<AdventureAnswer> postAnswer(@RequestBody MCQAnswerDto mcqAnswerDto) {
         // fetch the question, person, and choice associated with the answer
         Optional<AdventureQuestion> questionOpt = questionJpaRepository.findById(mcqAnswerDto.getQuestionId());
         Optional<Person> personOpt = personJpaRepository.findById(mcqAnswerDto.getPersonId());
@@ -143,24 +145,27 @@ public class AdventureAnswerApiController {
             person.setBalanceString(updatedBalance);
         }
     
-        return ResponseEntity.ok(true);
+        return new ResponseEntity<>(answer, HttpStatus.OK);
     }
     
 
     @GetMapping("getQuestion")
-    public ResponseEntity<Map<String, Object>> getQuestion(@RequestParam String category, @RequestParam Long personid) {
+    public ResponseEntity<Map<String, Object>> getQuestion(@RequestParam String category) {
+        // Fetch all questions for the provided category
         List<AdventureQuestion> questions = questionJpaRepository.findByCategory(category);
+        
+        if (questions.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        
+        // Build a list to hold each question and its corresponding choices
         List<Map<String, Object>> questionsWithChoices = new ArrayList<>();
-    
+        
         for (AdventureQuestion question : questions) {
-            List<AdventureAnswer> answers = answerJpaRepository.findByQuestionIdAndPersonId(question.getId(), personid);
-            
-            boolean wasCorrect = answers.stream().anyMatch(ans -> Boolean.TRUE.equals(ans.getIsCorrect()));
-            if (wasCorrect) continue;
-    
+            // Fetch answer choices for the current question
             List<AdventureChoice> choices = choiceJpaRepository.findByQuestionId(question.getId());
             List<AdventureChoiceDto> choiceDTOs = new ArrayList<>();
-    
+            
             for (AdventureChoice choice : choices) {
                 AdventureChoiceDto choiceDTO = new AdventureChoiceDto();
                 choiceDTO.setId(choice.getId());
@@ -168,19 +173,22 @@ public class AdventureAnswerApiController {
                 choiceDTO.setIs_correct(choice.getIs_correct());
                 choiceDTOs.add(choiceDTO);
             }
-    
+            
+            // Create a map for the current question and add its choices
             Map<String, Object> questionEntry = new HashMap<>();
             questionEntry.put("question", question);
             questionEntry.put("choices", choiceDTOs);
             questionsWithChoices.add(questionEntry);
         }
-    
+        
+        // Wrap the list in a response map
         Map<String, Object> response = new HashMap<>();
         response.put("questions", questionsWithChoices);
-    
+        
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    
+
+
 
     // endpoint to get the total chat score for a specific person
     @GetMapping("/getChatScore/{personid}")

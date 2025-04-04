@@ -1,35 +1,45 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/base}" lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Factorial Calculator</title>
     <style>
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
             text-align: center;
+            padding: 20px;
         }
+
         h1 {
             color: #343a40;
-            font-size: 24px;
-            margin-bottom: 20px;
         }
+
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
         label {
-            font-size: 16px;
-            color: #495057;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
         }
+
         input[type="number"] {
             width: 80%;
             padding: 8px;
             margin: 10px 0;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 16px;
+            text-align: center;
         }
+
         button {
             background-color: #007bff;
             color: white;
@@ -37,23 +47,35 @@
             padding: 10px 15px;
             font-size: 16px;
             cursor: pointer;
-            border-radius: 4px;
-            transition: background 0.3s;
+            border-radius: 5px;
+            margin-top: 10px;
         }
+
         button:hover {
             background-color: #0056b3;
         }
-        .factorial-step, .full-calculation, .next-step {
-            font-size: 16px;
-            color: #212529;
+
+        .factorial-step {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .full-calculation {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .next-step {
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            display: inline-block;
             margin-top: 10px;
         }
-        .next-step {
-            cursor: pointer;
-            color: #007bff;
-            text-decoration: underline;
-            transition: color 0.3s;
-        }
+
         .next-step:hover {
             color: #0056b3;
         }
@@ -65,25 +87,23 @@
     </script>
 </head>
 <body>
-    <div layout:fragment="body">
-        <div class="container">
-            <h1>Factorial Calculator</h1>
-            <form action="/factorial-calculate" method="get">
-                <label for="num">Enter a number:</label>
-                <input type="number" id="num" name="num" th:value="${num}" min="0">
-                <button type="submit">Calculate</button>
-            </form>
+    <div class="container">
+        <h1>Factorial Calculator</h1>
+        <form action="/factorial-calculate" method="get">
+            <label for="num">Enter a number:</label>
+            <input type="number" id="num" name="num" th:value="${num}" min="0">
+            <button type="submit">Calculate</button>
+        </form>
 
-            <p class="factorial-step">
-                Step Breakdown: <span th:text="${factorialStep}"></span>
-            </p>
+        <p class="factorial-step">
+            Step Breakdown: <span th:text="${factorialStep}"></span>
+        </p>
 
-            <p class="full-calculation">
-                Full Calculation: <span th:text="${fullCalculation}"></span>
-            </p>
+        <p class="full-calculation">
+            Full Calculation: <span th:text="${fullCalculation}"></span>
+        </p>
 
-            <p th:if="${num > 1}" class="next-step" th:onclick="'updateFactorial(' + ${nextNum} + ')'" th:text="'Next: ' + ${nextNum} + '!'" ></p>
-        </div>
+        <p th:if="${num > 1}" class="next-step" th:onclick="'updateFactorial(' + ${nextNum} + ')'" th:text="'Next: ' + ${nextNum} + '!'"></p>
     </div>
 </body>
 </html>
