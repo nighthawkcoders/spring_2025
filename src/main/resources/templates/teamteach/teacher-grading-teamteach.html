@@ -132,7 +132,7 @@
             <!-- Assignment View -->
             <div id="assignmentView">
                 <h1>Assignment Teacher Grading Team Teach</h1>
-                <form onChange="selectTopic(event)">
+                <form onChange="selectTeamTeachAssignments(event)">
                     <label for="cars">Choose a topic:</label>
                     <select id="topics">
                     </select><br><br>
@@ -162,10 +162,13 @@
     var selectedTopic;
      // Default to Assignment View 
      document.addEventListener('DOMContentLoaded', () => {
-        fectchtopics();
+        fetchTeamTeachAssignments();
     });
 
-    function fectchtopics(){
+    /**
+    * On loading of the page fetch all assginments and filter by teamteach;
+    */
+    function fetchTeamTeachAssignments(){
         fetch('/api/assignments/')
         .then(response => response.json())
         .then(grades => {
@@ -183,7 +186,10 @@
         });
     }
 
-    function selectTopic(event){
+    /**
+    * Once Select Assginments get all the AssignmentSubmissions to get all the student names
+    */
+    function selectTeamTeachAssignments(event){
         var selectElement = event.target;
         var value = selectElement.value;
         selectedTopic = value; 
@@ -211,18 +217,21 @@
     }
 
             
-    // submit comment feature
+    /**
+    * On submit comment get all the Assignmentsubmissions and iterate through 
+    * and save AssignmentSubmission with grade and feedback.
+    */
     function submitComment() {
         const commentText = document.getElementById('comment').value.trim(); // Get comment text
         
-        if (!commentText) {
+        if (!commentText) { //check if comment is empty
             alert("Comment cannot be empty!");
             return;
         }
-        const table = document.getElementById('gradingTable');
+        const table = document.getElementById('gradingTable'); //grabe the table
 
         for (let i = 0; i < table.rows.length; i++) {
-          if(i == 0){
+          if(i == 0){ // skip the header from table
             continue;
           }
           const row = table.rows[i];
@@ -233,13 +242,15 @@
         }
     }
 
+    /**
+    * Save the AssignmentSubmission with grade and feedback;
+    */
     function saveGradeforStudent(submission, grade,feedback) {     
         const postURL = "/api/submissions/grade/"+submission // Endpoint
 
         const params = new URLSearchParams({
             grade, feedback
         });
-        //postURL =  postURL +'?'params;
 
         // Fetch API options
         const fetchOptions = {
