@@ -398,6 +398,7 @@ public class AssignmentsApiController {
     }
     
     @GetMapping("/assigned")
+    @Transactional
     public ResponseEntity<?> getAssignedAssignments(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -439,6 +440,10 @@ public class AssignmentsApiController {
     
         if (submissions.isEmpty()) {
             return ResponseEntity.badRequest().body("No submissions found for this assignment");
+        }
+        
+        if (submissions.size() == 1) {
+            return ResponseEntity.badRequest().body("Only one submission found for this assignment, can't really do peer grading");
         }
         System.out.println("One");
 
