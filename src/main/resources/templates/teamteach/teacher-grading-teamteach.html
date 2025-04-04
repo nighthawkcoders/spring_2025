@@ -165,11 +165,6 @@
         fectchtopics();
     });
 
-    function getItemById(list, id) {
-        return list.find(item => item.id == id);
-      }
-
-
     function fectchtopics(){
         fetch('/api/assignments/')
         .then(response => response.json())
@@ -238,36 +233,28 @@
         }
     }
 
-    function saveGradeforStudent(student, grade,commentText) {     
-        const postURL = "/api/teachergradingteamteach/submit" // Endpoint
-        const data = {
-            comment: commentText,  // Ensure it matches the expected format
-            topic_id: selectedTopic,
-            grade: grade,
-            student: student
-        };
-    
+    function saveGradeforStudent(submission, grade,feedback) {     
+        const postURL = "/api/submissions/grade/"+submission // Endpoint
+
+        const params = new URLSearchParams({
+            grade, feedback
+        });
+        //postURL =  postURL +'?'params;
+
         // Fetch API options
         const fetchOptions = {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+            body: params
         };
     
         fetch(postURL, fetchOptions)
             .then(response => {
-                if (response.status === 201) {
-                    return response.json();
+                if (response.status === 200) {
+                     alert(response);
+                    return response;
                 } else {
                     throw new Error("Failed to submit comment: " + response.status);
                 }
-            })
-            .then(data => {
-                console.log("Comment submitted successfully:", data);
-                alert("Comment submitted successfully!");
-                document.getElementById('comment').value = ""; // Clear input
             })
             .catch(error => {
                 console.error(error);
