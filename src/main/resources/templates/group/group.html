@@ -19,7 +19,8 @@
       <thead class="table-dark">
         <tr>
           <th>Group ID</th>
-          <th>Number of Members</th>
+          <th>Name</th>
+          <th>Period</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -48,6 +49,11 @@
           <div class="mb-3">
             <label for="groupNameInput" class="form-label">Group Name</label>
             <input type="text" class="form-control" id="groupNameInput" placeholder="Enter group name">
+          </div>
+
+          <div class="mb-3">
+            <label for="groupPeriodInput" class="form-label">Group Period</label>
+            <input type="text" class="form-control" id="groupPeriodInput" placeholder="Enter group period">
           </div>
   
           <!-- User selection list -->
@@ -84,12 +90,14 @@
 
             groups.forEach(group => {
                 const groupId = group.id;
-                const memberCount = group.members.length;
+                const name = group.name;
+                const period = group.period;
 
                 const groupRow = `
                     <tr class="group-row" data-groupid="${groupId}" data-members="${group.members.map(m => (m.name + m.email)).join(' ').toLowerCase()}">
                         <td>${groupId}</td>
-                        <td>${memberCount}</td>
+                        <td>${name}</td>
+                        <td>${period}</td>
                         <td>
                             <button class="btn btn-sm btn-primary toggle-members" data-bs-toggle="collapse" data-bs-target="#members-${groupId}">
                                 View Members
@@ -97,7 +105,7 @@
                         </td>
                     </tr>
                     <tr class="collapse" id="members-${groupId}">
-                        <td colspan="3">
+                        <td colspan="4">
                             <table class="table mb-0">
                                 <thead>
                                     <tr>
@@ -183,11 +191,11 @@
         }
 
         try {
-            // Step 1: Create group with personUids (API expects empty or with people?)
+            // Step 1: Create group with personUids
             const response = await fetch(javaURL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ personUids: [] })
+                body: JSON.stringify({ personUids: [], name: document.getElementById("groupNameInput").value, period: document.getElementById("groupPeriodInput").value })
             });
 
             if (!response.ok) throw new Error("Failed to create group");

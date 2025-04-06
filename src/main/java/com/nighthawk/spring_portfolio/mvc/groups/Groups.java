@@ -15,9 +15,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "groups")
+@Getter
+@Setter
 public class Groups {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,30 +36,18 @@ public class Groups {
     @JsonIgnore
     private List<Person> groupMembers = new ArrayList<>();
 
+    private String name; // New column for group name
+    private String period; // New column for group period
+
     public Groups() {
     }
 
-    public Groups(List<Person> groupMembers) {
+    public Groups(String name, String period, List<Person> groupMembers) {
+        this.name = name;
+        this.period = period;
         this.groupMembers = groupMembers;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public List<Person> getGroupMembers() {
-        return groupMembers;
-    }
-
-    public void setGroupMembers(List<Person> groupMembers) {
-        this.groupMembers = groupMembers;
-    }
-
-    // Modified method to add a person to the group
     public void addPerson(Person person) {
         if (!this.groupMembers.contains(person)) {
             this.groupMembers.add(person);
@@ -63,7 +55,6 @@ public class Groups {
         }
     }
 
-    // Modified method to remove a person from the group
     public void removePerson(Person person) {
         if (this.groupMembers.contains(person)) {
             this.groupMembers.remove(person);

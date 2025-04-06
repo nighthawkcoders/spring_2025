@@ -39,6 +39,8 @@ public class GroupsApiController {
     @Getter
     public static class GroupDto {
         private List<String> personUids;
+        private String name;
+        private String period;
     }
 
     /**
@@ -66,6 +68,8 @@ public class GroupsApiController {
         for (Groups group : groups) {
             Map<String, Object> groupMap = new HashMap<>();
             groupMap.put("id", group.getId());
+            groupMap.put("name", group.getName());
+            groupMap.put("period", group.getPeriod());
             
             // Extract basic info from each person to avoid serialization issues
             List<Map<String, Object>> membersList = new ArrayList<>();
@@ -113,13 +117,13 @@ public class GroupsApiController {
     @Transactional
     public ResponseEntity<Object> createGroup(@RequestBody GroupDto groupDto) {
         try {
-            // Create a new group
-            Groups group = new Groups();
-            
+            // Create a new group with the provided name and period
+            Groups group = new Groups(groupDto.getName(), groupDto.getPeriod(), new ArrayList<>());
+
             // Save the group first to generate an ID
             Groups savedGroup = groupsRepository.save(group);
             
-            // Find and add each person to the group
+            // Add members to the group
             for (String personId : groupDto.getPersonUids()) {
                 Person person = personRepository.findByUid(personId);
                 if (person != null) {
@@ -128,18 +132,18 @@ public class GroupsApiController {
             }
             
             // Save the group again with all members
-            // This will cascade and save the Person objects as well
             Groups finalGroup = groupsRepository.save(savedGroup);
             
-            // Return the group with its members
+            // Prepare response
             Map<String, Object> response = new HashMap<>();
             response.put("id", finalGroup.getId());
+            response.put("name", finalGroup.getName());
+            response.put("period", finalGroup.getPeriod());
             
             List<Map<String, Object>> membersList = new ArrayList<>();
             for (Person person : finalGroup.getGroupMembers()) {
                 membersList.add(getPersonBasicInfo(person));
             }
-            
             response.put("members", membersList);
             
             return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -282,6 +286,40 @@ public class GroupsApiController {
             // Finally delete the group
             groupsRepository.deleteById(id);
             return new ResponseEntity<>("Group deleted successfully", HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Update Group information
+     */
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Object> updateGroup(@PathVariable Long id, @RequestBody GroupDto groupDto) {
+        Optional<Groups> optionalGroup = groupsRepository.findById(id);
+        if (optionalGroup.isPresent()) {
+            Groups group = optionalGroup.get();
+            
+            // Update name and period
+            group.setName(groupDto.getName());
+            group.setPeriod(groupDto.getPeriod());
+            
+            // Save the updated group
+            Groups updatedGroup = groupsRepository.save(group);
+            
+            // Prepare response
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedGroup.getId());
+            response.put("name", updatedGroup.getName());
+            response.put("period", updatedGroup.getPeriod());
+            
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : updatedGroup.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
+            }
+            response.put("members", membersList);
+            
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
