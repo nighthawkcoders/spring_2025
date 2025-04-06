@@ -12,16 +12,16 @@
 <body>
     <th:block layout:fragment="body" th:remove="tag">
         <div id="ManagementMenu">
-            <div id="ManagementContent">
+            <div id="ManagementContent" class="p-2">
 
-                <h3>Initialize Live Reviews</h3>
+                <h3 class="modal-title">Initialize Live Reviews</h3>
                 <div class="dropdown-container">
-                    <label for="assignmentDropdown">Choose an Assignment:</label>
-                    <select id="assignmentDropdown"></select>
-                    <label for="durationInput">Presentation Length (Seconds):</label>
-                    <input type="number" id="durationInput" />
-                    <label for="presenterInput">Presenters</label>
-                    <select id="presenterInput">
+                    <label for="assignmentDropdown" class="form-label">Choose an Assignment:</label>
+                    <select id="assignmentDropdown" class="form-select"></select>
+                    <label for="durationInput" class="form-label">Presentation Length (Seconds):</label>
+                    <input type="number" id="durationInput" class="form-control"/>
+                    <label for="presenterInput" class="form-label">Presenters</label>
+                    <select id="presenterInput" class="form-select">
                         <option value="tester">Tester Set</option>
                         <option value="p1">Period 1 | By Person</option>
                         <option value="p3">Period 3 | By Person</option>
@@ -30,27 +30,27 @@
                         <option value="p1g">Period 1 | By Group</option>
                         <option value="p3g">Period 3 | By Group</option>
                     </select>
-                    <button id="initializeQueue">Begin Presentations</button>
-                    <button id="resetQueue">Reset Assignment Queue</button>
+                    <button id="initializeQueue" class="btn btn-primary">Begin Presentations</button>
+                    <button id="resetQueue" class="btn btn-secondary">Reset Assignment Queue</button>
                 </div>
 
             </div>
             <div id="ManagementHandle" onclick="toggleLeftSidebar()"><span class="directionalityFlip">
-                    < </span><span id="handleTitle">Management Options</span><span class="directionalityFlip">
-                            < </span>
+                    </span><span id="handleTitle">Management Options</span><span class="directionalityFlip">
+                            </span>
             </div>
             <div id="directionCircle"><span class="directionalityFlip" style="height: 62px;
     width: 25px;">
-                    < </span>
+                    </span>
             </div>
         </div>
         <div>
             <div id="assignmentModal" class="modal">
-                <div class="modal-content">
-                    <h2>Connect to Assignment</h2>
-                    <label for="modalAssignmentDropdown">Choose an Assignment:</label>
-                    <select id="modalAssignmentDropdown"></select>
-                    <button id="confirmAssignment">Confirm</button>
+                <div class="modal-content" style="color: #212529; background-color: #fff;">
+                    <h2 class="modal-title">Connect to Assignment</h2>
+                    <label for="modalAssignmentDropdown" class="form-label">Choose an Assignment:</label>
+                    <select id="modalAssignmentDropdown" class="form-select mb-3"></select>
+                    <button id="confirmAssignment" class="btn btn-primary">Confirm</button>
                 </div>
             </div>
 

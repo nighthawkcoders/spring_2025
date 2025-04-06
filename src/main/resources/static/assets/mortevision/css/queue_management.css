@@ -62,32 +62,6 @@
     margin: 20px 0;
 }
 
-.controls button,
-.dropdown-container button {
-    background-color: #e0e0e0;
-    /* Light button background */
-    color: #333;
-    /* Dark text */
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1em;
-    cursor: pointer;
-    box-shadow: 3px 3px 10px #d4d4d4, -3px -3px 10px #ffffff;
-    /* Light neumorphic shadows */
-    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
-}
-
-.controls button:hover,
-.dropdown-container button:hover {
-    background-color: #d6d6d6;
-    /* Slightly darker on hover */
-    transform: scale(1.05);
-    /* Slightly enlarge the button */
-    box-shadow: 4px 4px 12px #c9c9c9, -4px -4px 12px #ffffff;
-    /* More pronounced shadow */
-}
-
 /* Dropdown and initializer button */
 .dropdown-container {
     display: grid;
