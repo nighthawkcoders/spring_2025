@@ -90,6 +90,7 @@
 
 /* Dropdown and initializer button */
 .dropdown-container {
+    display: grid;
     gap: 10px;
 }
 
