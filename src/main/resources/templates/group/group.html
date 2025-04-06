@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+  <title>Group Management</title>
+</head>
+
+<body>
+<div layout:fragment="body" th:remove="tag">
+  <div class="container mt-4">
+    <h2 class="mb-4">Group Management</h2>
+
+    <!-- Search bar -->
+    <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search by Group ID or Member Name/Email">
+
+    <!-- Table -->
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Group ID</th>
+          <th>Number of Members</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="groupTableBody">
+        <!-- Groups will load here -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<th:block layout:fragment="script" th:remove="tag">
+<script>
+    // setup
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        javaURI = "http://localhost:8085";
+    } else {
+        javaURI = "https://spring2025.nighthawkcodingsociety.com";
+    }
+
+    const javaURL = javaURI + "/api/groups"
+
+    // get table
+    const $tableBody = $("#groupTableBody");
+
+    async function getTable() {
+        try {
+            const response = await fetch(javaURL);
+            const groups = await response.json();
+
+            groups.forEach(group => {
+                const groupId = group.id;
+                const memberCount = group.members.length;
+
+                const groupRow = `
+                    <tr class="group-row" data-groupid="${groupId}" data-members="${group.members.map(m => (m.name + m.email)).join(' ').toLowerCase()}">
+                        <td>${groupId}</td>
+                        <td>${memberCount}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary toggle-members" data-bs-toggle="collapse" data-bs-target="#members-${groupId}">
+                                View Members
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="collapse" id="members-${groupId}">
+                        <td colspan="3">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>UID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${group.members.map(m => `
+                                        <tr>
+                                            <td>${m.uid}</td>
+                                            <td>${m.name}</td>
+                                            <td><a href="mailto:${m.email}">${m.email}</a></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                `;
+                $tableBody.append(groupRow);
+            });
+        } catch (error) {
+            console.error("Failed to load groups:", error);
+        }
+    }
+
+    // Filter groups
+    $("#searchInput").on("keyup", function () {
+        const search = $(this).val().toLowerCase();
+        $("#groupTableBody tr.group-row").each(function () {
+            const groupId = $(this).data("groupid").toString();
+            const members = $(this).data("members");
+            const match = groupId.includes(search) || members.includes(search);
+            $(this).toggle(match);
+            $(`#members-${groupId}`).toggle(match); // Hide or show member details too
+        });
+    });
+
+    getTable()
+</script>
+</th:block>
+
+</body>
+</html>
