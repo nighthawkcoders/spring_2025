@@ -90,10 +90,6 @@
 
 /* Dropdown and initializer button */
 .dropdown-container {
-    padding: 100px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
     gap: 10px;
 }
 
@@ -174,6 +170,7 @@ select {
     top: 0;
     left: 0;
     width: 80%;
+    margin-top: 66px;
 }
 
 #ManagementHandle {

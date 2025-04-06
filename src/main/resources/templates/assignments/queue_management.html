@@ -12,7 +12,29 @@
 <body>
     <th:block layout:fragment="body" th:remove="tag">
         <div id="ManagementMenu">
-            <div id="ManagementContent"></div>
+            <div id="ManagementContent">
+
+                <h3>Initialize Live Reviews</h3>
+                <div class="dropdown-container">
+                    <label for="assignmentDropdown">Choose an Assignment:</label>
+                    <select id="assignmentDropdown"></select>
+                    <label for="durationInput">Presentation Length (Seconds):</label>
+                    <input type="number" id="durationInput" />
+                    <label for="presenterInput">Presenters</label>
+                    <select id="presenterInput">
+                        <option value="tester">Tester Set</option>
+                        <option value="p1">Period 1 | By Person</option>
+                        <option value="p3">Period 3 | By Person</option>
+                        <option value="p1t">Period 1 | By Table</option>
+                        <option value="p3t">Period 3 | By Table</option>
+                        <option value="p1g">Period 1 | By Group</option>
+                        <option value="p3g">Period 3 | By Group</option>
+                    </select>
+                    <button id="initializeQueue">Begin Presentations</button>
+                    <button id="resetQueue">Reset Assignment Queue</button>
+                </div>
+
+            </div>
             <div id="ManagementHandle" onclick="toggleLeftSidebar()"><span class="directionalityFlip">
                     < </span><span id="handleTitle">Management Options</span><span class="directionalityFlip">
                             < </span>
@@ -34,24 +56,7 @@
 
             <h1 class="centeredHeaders">Queue Management</h1>
             <h2 class="centeredHeaders" id="viewingAssignmentTitle">Viewing Assigment: [ASSIGNMENT]</h2>
-            <div class="dropdown-container">
-                <label for="assignmentDropdown">Choose an Assignment:</label>
-                <select id="assignmentDropdown"></select>
-                <label for="durationInput">Presentation Length (Seconds):</label>
-                <input type="number" id="durationInput" />
-                <label for="presenterInput">Presenters</label>
-                <select id="presenterInput">
-                    <option value="tester">Tester Set</option>
-                    <option value="p1">Period 1 | By Person</option>
-                    <option value="p3">Period 3 | By Person</option>
-                    <option value="p1t">Period 1 | By Table</option>
-                    <option value="p3t">Period 3 | By Table</option>
-                    <option value="p1g">Period 1 | By Group</option>
-                    <option value="p3g">Period 3 | By Group</option>
-                </select>
-                <button id="initializeQueue">Begin Presentations</button>
-                <button id="resetQueue">Reset Assignment Queue</button>
-            </div>
+            
         </div>
         <div class="queue-container">
             <div class="column">
