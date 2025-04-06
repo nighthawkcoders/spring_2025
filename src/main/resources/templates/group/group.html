@@ -176,7 +176,14 @@
             const members = $(this).data("members");
             const match = groupId.includes(search) || members.includes(search);
             $(this).toggle(match);
-            $(`#members-${groupId}`).toggle(match); // Hide or show member details too
+
+            const memberDetails = $(`#members-${groupId}`);
+            memberDetails.toggle(match);
+
+            // Reset the style when search is cleared
+            if (search === "") {
+                memberDetails.attr("style", "");
+            }
         });
     });
 
