@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/base}" lang="en">
+
+<head>
+  <title>Group Management</title>
+</head>
+
+<body>
+<div layout:fragment="body" th:remove="tag">
+  <div class="container mt-4">
+    <h2 class="mb-4">Group Management</h2>
+
+    <!-- Search bar -->
+    <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search by Group ID or Member Name/Email">
+
+    <!-- Table -->
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Group ID</th>
+          <th>Name</th>
+          <th>Period</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="groupTableBody">
+        <!-- Groups will load here -->
+      </tbody>
+    </table>
+  </div>
+  <!-- Create Group Button -->
+<div class="d-flex justify-content-center mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+      Create Group
+    </button>
+  </div>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="color: #212529; background-color: #fff;">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createGroupModalLabel">Create Group</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+  
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="groupNameInput" class="form-label">Group Name</label>
+            <input type="text" class="form-control" id="groupNameInput" placeholder="Enter group name">
+          </div>
+
+          <div class="mb-3">
+            <label for="groupPeriodInput" class="form-label">Group Period</label>
+            <input type="text" class="form-control" id="groupPeriodInput" placeholder="Enter group period">
+          </div>
+  
+          <!-- User selection list -->
+          <div id="userList" class="row"></div>
+        </div>
+  
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" id="createGroupBtn">Create Group</button>
+        </div>
+      </div>
+    </div>
+  </div>  
+</div>
+
+<th:block layout:fragment="script" th:remove="tag">
+<script>
+    // setup
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        javaURI = "http://localhost:8085";
+    } else {
+        javaURI = "https://spring2025.nighthawkcodingsociety.com";
+    }
+
+    const javaURL = javaURI + "/api/groups"
+
+    // get table
+    const $tableBody = $("#groupTableBody");
+
+    async function getTable() {
+        try {
+            const response = await fetch(javaURL);
+            const groups = await response.json();
+
+            groups.forEach(group => {
+                const groupId = group.id;
+                const name = group.name;
+                const period = group.period;
+
+                const groupRow = `
+                    <tr class="group-row" data-groupid="${groupId}" data-members="${group.members.map(m => (m.name + m.email)).join(' ').toLowerCase()}">
+                        <td>${groupId}</td>
+                        <td>${name}</td>
+                        <td>${period}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary toggle-members" data-bs-toggle="collapse" data-bs-target="#members-${groupId}">
+                                View Members
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="collapse" id="members-${groupId}">
+                        <td colspan="4">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>UID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${group.members.map(m => `
+                                        <tr>
+                                            <td>${m.uid}</td>
+                                            <td>${m.name}</td>
+                                            <td><a href="mailto:${m.email}">${m.email}</a></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                `;
+                $tableBody.append(groupRow);
+            });
+        } catch (error) {
+            console.error("Failed to load groups:", error);
+        }
+    }
+
+    // Filter groups
+    $("#searchInput").on("keyup", function () {
+        const search = $(this).val().toLowerCase();
+        $("#groupTableBody tr.group-row").each(function () {
+            const groupId = $(this).data("groupid").toString();
+            const members = $(this).data("members");
+            const match = groupId.includes(search) || members.includes(search);
+            $(this).toggle(match);
+            $(`#members-${groupId}`).toggle(match); // Hide or show member details too
+        });
+    });
+
+    const personURL = javaURI + "/api/people"; // Replace with your actual user API endpoint
+
+    // Populate user list in modal
+    async function fetchUsers() {
+        try {
+            const response = await fetch(personURL);
+            const users = await response.json();
+
+            const userList = document.getElementById("userList");
+            userList.innerHTML = "";
+
+            users.forEach(user => {
+                const div = document.createElement("div");
+                div.className = "col-md-6";
+                div.innerHTML = `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input user-checkbox" type="checkbox" value="${user.id}" id="user-${user.id}">
+                        <label class="form-check-label" for="user-${user.id}">
+                            ${user.name} (${user.email})
+                        </label>
+                    </div>
+                `;
+                userList.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Error loading users:", error);
+        }
+    }
+
+    // Open modal and load users
+    $('#createGroupModal').on('show.bs.modal', function () {
+        fetchUsers();
+    });
+
+    // Create group handler
+    document.getElementById("createGroupBtn").addEventListener("click", async () => {
+        const selectedUserIds = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+                                    .map(cb => parseInt(cb.value));
+
+        if (selectedUserIds.length === 0) {
+            alert("Please select at least one user.");
+            return;
+        }
+
+        try {
+            // Step 1: Create group with personUids
+            const response = await fetch(javaURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ personUids: [], name: document.getElementById("groupNameInput").value, period: document.getElementById("groupPeriodInput").value })
+            });
+
+            if (!response.ok) throw new Error("Failed to create group");
+
+            const newGroup = await response.json();
+            const groupId = newGroup.id;
+
+            // Step 2: Add people to group
+            const addPeopleResp = await fetch(`${javaURL}/${groupId}/addPeople`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(selectedUserIds)
+            });
+
+            if (!addPeopleResp.ok) throw new Error("Failed to add people to group");
+
+            alert("Group created successfully!");
+            $('#createGroupModal').modal('hide');
+            location.reload(); // Refresh group table
+
+        } catch (error) {
+            console.error("Error creating group:", error);
+            alert("An error occurred. See console.");
+        }
+    });
+
+    getTable();
+</script>
+</th:block>
+
+</body>
+</html>

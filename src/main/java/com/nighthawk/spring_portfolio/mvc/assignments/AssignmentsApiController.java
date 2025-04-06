@@ -1,23 +1,20 @@
 package com.nighthawk.spring_portfolio.mvc.assignments;
 
-import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,15 +32,11 @@ import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 @RestController
 @RequestMapping("/api/assignments")
 public class AssignmentsApiController {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private AssignmentJpaRepository assignmentRepo;
@@ -206,12 +199,13 @@ public class AssignmentsApiController {
             @PathVariable Long assignmentId,
             @RequestParam Long studentId,
             @RequestParam String content,
-            @RequestParam String comment
+            @RequestParam String comment,
+            @RequestParam Boolean isLate
             ) {
         Assignment assignment = assignmentRepo.findById(assignmentId).orElse(null);
         Person student = personRepo.findById(studentId).orElse(null);
         if (assignment != null) {
-            AssignmentSubmission submission = new AssignmentSubmission(assignment, student, content,comment);
+            AssignmentSubmission submission = new AssignmentSubmission(assignment, List.of(student), content, comment, isLate);
             AssignmentSubmission savedSubmission = submissionRepo.save(submission);
             return new ResponseEntity<>(savedSubmission, HttpStatus.CREATED);
         }
@@ -225,10 +219,30 @@ public class AssignmentsApiController {
      * @param assignmentId The ID of the assignment.
      * @return All submissions for the assignment.
      */
+    @Transactional
     @GetMapping("/{assignmentId}/submissions")
-    public ResponseEntity<?> getSubmissions(@PathVariable Long assignmentId) {
-        List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId);
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+    public ResponseEntity<?> getSubmissions(@PathVariable Long assignmentId, @AuthenticationPrincipal UserDetails userDetails) {
+        String uid = userDetails.getUsername();
+        Person user = personRepo.findByUid(uid);
+
+        if (user == null) {
+            logger.error("User not found with email: {}", uid);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with uid: " + uid);
+        }
+
+        Stream<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(assignmentId).stream();
+
+        if (!(user.hasRoleWithName("ROLE_TEACHER") || user.hasRoleWithName("ROLE_ADMIN"))) {
+            // if they aren't a teacher or admin, only let them see submissions they are assigned to grade
+            submissions = submissions
+                .filter(submission -> submission.getAssignedGraders().contains(user));
+        }
+
+        List<AssignmentSubmissionReturnDto> returnValue = submissions
+            .map(AssignmentSubmissionReturnDto::new)
+            .toList();
+
+        return new ResponseEntity<>(returnValue, HttpStatus.OK);
     }
 
     /**
@@ -397,10 +411,14 @@ public class AssignmentsApiController {
         }
 
         List<Assignment> assignments = assignmentRepo.findByAssignedGraders(user);
+        List<AssignmentSubmission> submissions = submissionRepo.findByAssignedGraders(user);
 
         List<AssignmentDto> formattedAssignments = new ArrayList<>();
         for (Assignment a : assignments) {
             formattedAssignments.add(new AssignmentDto(a));
+        }
+        for (AssignmentSubmission s: submissions) {
+            formattedAssignments.add(new AssignmentDto(s.getAssignment()));
         }
 
         return ResponseEntity.ok(formattedAssignments);

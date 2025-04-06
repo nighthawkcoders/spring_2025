@@ -14,12 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.cdimascio.dotenv.Dotenv;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @RestController
 @RequestMapping("/api/students")
 public class StudentInfoApiController {
+
+    private final Dotenv dotenv = Dotenv.load();
     
     @Autowired
     private StudentInfoJPARepository studentJPARepository;
@@ -33,7 +37,6 @@ public class StudentInfoApiController {
     public static class CriteriaDto {
         private String username;
         private String course;
-        private int trimester;
         private int period; 
     }
 
@@ -41,7 +44,7 @@ public class StudentInfoApiController {
     public ResponseEntity<StudentInfo> getStudentByCriteria(
             @RequestBody CriteriaDto criteriaDto) {
         
-        List<StudentInfo> students = studentJPARepository.findByUsernameCourseTrimesterPeriod(criteriaDto.getUsername(), criteriaDto.getCourse(), criteriaDto.getTrimester(), criteriaDto.getPeriod());
+        List<StudentInfo> students = studentJPARepository.findByUsernameCoursePeriod(criteriaDto.getUsername(), criteriaDto.getCourse(), criteriaDto.getPeriod());
         
         if (students.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -76,10 +79,15 @@ public class StudentInfoApiController {
         }
     }
 
+    @GetMapping("/apiKey")
+    public ResponseEntity<String> getApiKey() {
+        String apiKey = dotenv.get("GITHUB_TOKEN");
+        return ResponseEntity.ok(apiKey);
+    }
+
     @Getter
     public static class TeamDto {
         private String course;
-        private int trimester;
         private int period; 
         private int table;
     }
@@ -88,7 +96,7 @@ public class StudentInfoApiController {
     public ResponseEntity<Iterable<StudentInfo>> getTeamByCriteria(
             @RequestBody TeamDto teamDto) {
         
-        List<StudentInfo> students = studentJPARepository.findTeam(teamDto.getCourse(), teamDto.getTrimester(), teamDto.getPeriod(), teamDto.getTable());
+        List<StudentInfo> students = studentJPARepository.findTeam(teamDto.getCourse(), teamDto.getPeriod(), teamDto.getTable());
         
         if (students.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -96,6 +104,41 @@ public class StudentInfoApiController {
             return ResponseEntity.ok(students);
         }
     }
+
+    @Getter
+    public static class StudentName {
+        private String name;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class StudentInfoDto {
+        private String username;
+        private String course;
+        private int tableNumber;
+        private int period;
+    }
+
+    @PostMapping("/findbyName")
+    public ResponseEntity<List<StudentInfoDto>> getStudentByName(@RequestBody StudentName studentName) {
+        List<Object[]> studentData = studentJPARepository.findSelectedFieldsByPersonName(studentName.getName());
+
+        if (studentData.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            List<StudentInfoDto> studentDtos = studentData.stream()
+                .map(data -> new StudentInfoDto(
+                    (String) data[0],  // username
+                    (String) data[1],  // course
+                    (Integer) data[2], // tableNumber
+                    (Integer) data[3]  // period
+                ))
+                .toList();
+            
+            return ResponseEntity.ok(studentDtos);
+        }
+    }
+
 
 
     @Getter 
@@ -161,7 +204,6 @@ public class StudentInfoApiController {
     @Getter 
     public static class PeriodDto {
         private String course;
-        private int trimester;
         private int period;
     }
 
@@ -169,7 +211,7 @@ public class StudentInfoApiController {
     public ResponseEntity<Iterable<StudentInfo>> getPeriodByTrimester(
         @RequestBody PeriodDto periodDto) {
             
-        List<StudentInfo> students = studentJPARepository.findPeriod(periodDto.getCourse(), periodDto.getTrimester(), periodDto.getPeriod());
+        List<StudentInfo> students = studentJPARepository.findPeriod(periodDto.getCourse(), periodDto.getPeriod());
 
         if (students.isEmpty()) {
             return ResponseEntity.notFound().build();

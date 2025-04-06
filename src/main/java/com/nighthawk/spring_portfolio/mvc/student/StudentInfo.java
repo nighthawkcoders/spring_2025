@@ -67,17 +67,14 @@ public class StudentInfo {
 
     private Double averageRating;    
 
-    public StudentInfo(Person person, String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int trimester, int period) {
-        this.person = person;
+    public StudentInfo(String username, int tableNumber, String course, ArrayList<String> tasks, ArrayList<String> completed, int period, Person person) {
         this.username = username;
         this.tableNumber = tableNumber;
         this.course = course;
         this.tasks = tasks;
         this.completed = completed;
-        this.trimester = trimester;
         this.period = period;
-        this.person_name = person.getName();
-
+        this.person = person;
     }
 
     public static StudentInfo[] init(Person[] persons)
@@ -85,7 +82,7 @@ public class StudentInfo {
         ArrayList<StudentInfo> studentInfos = new ArrayList<>();
         for(Person person: persons)
         {
-            studentInfos.add(new StudentInfo(person, "temp", 0, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 0, 0));
+            studentInfos.add(new StudentInfo(person.getUid(), 0, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 0, person));
 
         }
         return studentInfos.toArray(new StudentInfo[0]);
@@ -100,33 +97,25 @@ public class StudentInfo {
             if (studentJPARepository == null) {
                 throw new RuntimeException("studentJPARepository is not initialized!");
             }
-            List<StudentInfo> students = new ArrayList<>();
-            //students.add(new StudentInfo("nitinsandiego", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 1));
-            //students.add(new StudentInfo("Akhil353", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 3));
-            //students.add(new StudentInfo("SrinivasNampalli", 2, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 1));
-            //students.add(new StudentInfo("adityasamavedam", 1, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 2, 3));
+            ArrayList<StudentInfo> studentInfos = new ArrayList<>();
+                for(Person person: persons) {
+            studentInfos.add(new StudentInfo(person.getUid(), 0, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 0, person));
+        }
 
-            for (StudentInfo student : students) {
-            Optional<StudentInfo> existingStudent = studentJPARepository.findByUsername(student.getUsername());
-            
-            for (Person person: persons) {
-                students.add(new StudentInfo(person, "temp", 0, "CSA", new ArrayList<String>(Arrays.asList("Task 1", "Task 2")), null, 0, 0));
-            };
-            
-            
-            
-            if (existingStudent.isEmpty()) {
-                studentJPARepository.save(student);
+            for (StudentInfo student : studentInfos) {
+                Optional<StudentInfo> existingStudent = studentJPARepository.findByUsername(student.getUsername());
+                if (existingStudent.isEmpty()) {
+                    studentJPARepository.save(student);
+                }
             }
         }
-    }
 
         public Iterable<StudentInfo> findAll() {
             return studentJPARepository.findAll();
         }
 
-        public List<StudentInfo> findByUsernameCourseTrimesterPeriod(String username, String course, int trimester, int period) {
-            return studentJPARepository.findByUsernameCourseTrimesterPeriod(username, course, trimester, period);
+        public List<StudentInfo> findByUsernameCoursePeriod(String username, String course, int period) {
+            return studentJPARepository.findByUsernameCoursePeriod(username, course,  period);
         }
 
         public StudentInfo createStudent(StudentInfo student) {
@@ -146,15 +135,12 @@ public class StudentInfo {
             return studentJPARepository.findByUsername(username);
         }
         
-        public List<StudentInfo> findTeam(String course, int trimester, int period, int table) {
-            return studentJPARepository.findTeam(course, trimester, period, table);
+        public List<StudentInfo> findTeam(String course, int period, int table) {
+            return studentJPARepository.findTeam(course,  period, table);
         }
 
-        public List<StudentInfo> findPeriod(String course, int trimester, int period) {
-            return studentJPARepository.findPeriod(course, trimester, period);
-        }
-        
-
-        
+        public List<StudentInfo> findPeriod(String course, int period) {
+            return studentJPARepository.findPeriod(course, period);
+        }   
     }
 }

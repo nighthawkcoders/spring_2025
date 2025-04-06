@@ -1,3 +1,4 @@
+
 package com.nighthawk.spring_portfolio.mvc.blackjack;
 
 import java.util.List;
@@ -5,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
+
+import io.jsonwebtoken.lang.Arrays;
 
 @RestController
 @RequestMapping("/api/casino/blackjack")
@@ -137,7 +139,6 @@ public class BlackjackApiController {
             int dealerScore = (int) game.getGameStateMap().getOrDefault("dealerScore", 0);
             double betAmount = game.getBetAmount();
 
-            // Dealer hits until reaching at least 17
             while (dealerScore < 17 && deck != null && !deck.isEmpty()) {
                 String drawnCard = deck.remove(0);
                 dealerHand.add(drawnCard);
@@ -163,7 +164,7 @@ public class BlackjackApiController {
                 double updatedBalance = person.getBalanceDouble() - betAmount;
                 person.setBalanceString(updatedBalance);
             } else {
-                result = "DRAW"; // No balance change on draw
+                result = "DRAW";
             }
 
             game.getGameStateMap().put("result", result);
@@ -176,5 +177,13 @@ public class BlackjackApiController {
             LOGGER.log(Level.SEVERE, "Error processing stand", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> safeCastToList(Object obj) {
+        if (obj instanceof List) {
+            return (List<String>) obj;
+        }
+        return Arrays.asList(new String[0]);
     }
 }

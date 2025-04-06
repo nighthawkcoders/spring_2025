@@ -22,8 +22,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
@@ -36,6 +38,7 @@ import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
@@ -43,6 +46,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
+import com.nighthawk.spring_portfolio.mvc.groups.Groups;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 
@@ -68,6 +72,7 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Convert(attributeName = "person", converter = JsonType.class)
+@JsonIgnoreProperties({"submissions"})
 public class Person implements Comparable<Person> {
 
     private static Person createPerson(String name, String email, String uid, String password, Boolean kasmServerNeeded, String balance, String dob, List<String> asList) {
@@ -91,9 +96,13 @@ public class Person implements Comparable<Person> {
     @JsonIgnore
     private List<SynergyGrade> grades;
     
-    @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
+    @ManyToMany(mappedBy="students", cascade=CascadeType.MERGE)
     @JsonIgnore
     private List<AssignmentSubmission> submissions;
+
+    @ManyToMany(mappedBy = "groupMembers")
+    @JsonIgnore
+    private List<Groups> groups = new ArrayList<>();
     
     @ManyToMany(fetch = EAGER)
     @JoinTable(
@@ -173,6 +182,7 @@ public class Person implements Comparable<Person> {
 
     @Column(nullable=true)
     private String sid;
+    
     /**
      * user_stocks and balance describe properties used by the gamify application
      */
@@ -182,14 +192,17 @@ public class Person implements Comparable<Person> {
 
     @Column
     private String balance;
+
     public double getBalanceDouble() {
         var balance_tmp = getBalance();
         return Double.parseDouble(balance_tmp);
     }
+
     public String setBalanceString(double updatedBalance) {
         this.balance = String.valueOf(updatedBalance); // Update the balance as a String
         return this.balance; // Return the updated balance as a String
     }
+
     /**
      * stats is used to store JSON for daily stats
      * --- @JdbcTypeCode annotation is used to specify the JDBC type code for a
@@ -207,6 +220,16 @@ public class Person implements Comparable<Person> {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
+
+    @PreRemove
+    private void removePersonFromSubmissions() {
+        if (submissions != null) {
+            // if a user is deleted, remove them from everything they've submitted
+            for (AssignmentSubmission submission : submissions) {
+                submission.getStudents().remove(this);
+            }
+        }
+    }
 
     /** Custom constructor for Person when building a new Person object from an API call
      * @param email, a String
@@ -226,6 +249,9 @@ public class Person implements Comparable<Person> {
         this.pfp = pfp;
         this.balance = balance;
         this.roles.add(role);
+        this.submissions = new ArrayList<>();
+
+        this.timeEntries = new Tinkle(this, "");
     }
 
     public boolean hasRoleWithName(String roleName) {
@@ -324,10 +350,10 @@ public class Person implements Comparable<Person> {
         people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "123", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
         people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
         people.add(createPerson("Alan Turing","alan",  "turing@gmail.com", defaultPassword, "2", "/images/alan.png", false, startingBalance, "06-23-1912", Arrays.asList("ROLE_USER", "ROLE_TESTER","ROLE_STUDENT")));
-        
+
         Collections.sort(people);
         for (Person person : people) {
-            userStocksTable stock = new userStocksTable("AAPL,TSLA,AMZN", "BTC,ETH", startingBalance, person.getEmail(), person, false);
+            userStocksTable stock = new userStocksTable(null, "BTC,ETH", startingBalance, person.getEmail(), person, false, true, "");
             person.setUser_stocks(stock);
         }
 
