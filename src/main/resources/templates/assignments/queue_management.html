@@ -300,8 +300,10 @@
             groups.forEach(group => {
                 const label = document.createElement('label');
                 label.innerHTML = `
-                    <input type="checkbox" value="${group.id}" />
-                    Group ${group.name}: ${group.members.map(m => m.name).join(', ')}
+                    <input type="checkbox" class="form-check-input" value="${group.id}" id="group-${group.id}"/>
+                    <label class="form-check-label" for="group-${group.id}">
+                        ${group.name}: ${group.members.map(m => m.name).join(', ')}
+                    </label>
                 `;
                 container.appendChild(label);
                 container.appendChild(document.createElement('br'));
