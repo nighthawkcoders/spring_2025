@@ -121,24 +121,26 @@ async function initializeQueue() {
     let peopleList;
     timerlength = document.getElementById("durationInput").value;
     const assignmentId = document.getElementById('assignmentDropdown').value;
-    if (document.getElementById("presenterInput").value == "tester") {
-        peopleList = ["Alexander Graham Bell",
-            "Grace Hopper",
-            "John Mortensen",
-            "Madam Curie",
-            "Nikola Tesla",
-            "Thomas Edison"]
-    } else if (document.getElementById("presenterInput").value == "p1") {
-        peopleList = ["Hanlun", "David", "Sharon", "Beijan", "Miheer", "Eshaan", "Tanav", "Saathvik", "Sri", "Aidan", "Nitin", "Srini", "Dinesh", "Josh", "Matthew", "Ian", "Trevor", "Alisha"]
-    } else if (document.getElementById("presenterInput").value == "p3") {
-        peopleList = ["Eric", "Shuban", "Aashray", "Anusha", "Vibha", "Avanthika", "Isabel", "Trystan", "Jason", "Tara", "Lilian", "Anika", "Arnav", "Drishya", "Tanuj", "Saaras", "Rahul", "Aadit", "Imaad", "Tanay", "Nisarg", "Arthur", "Nikhil", "Aditya", "Akhil", "Tarun", "Kayden", "Nandan", "Torin", "Dylan"]
-    } else if (document.getElementById("presenterInput").value == "p1t") {
-        peopleList = ["Hanlun | David | Sharon", "Beijan | Miheer | Eshaan", "Tanav | Saathvik | Sri", "Aidan | Nitin | Srini", "Dinesh | Josh | Matthew", "Ian | Trevor | Alisha"]
-    } else if (document.getElementById("presenterInput").value == "p3t") {
-        peopleList = ["Eric | Shuban | Aashray", "Anusha | Vibha | Avanthika", "Isabel | Trystan | Jason", "Tara | Lilian | Anika", "Arnav | Drishya | Tanuj", "Saaras | Rahul | Aadit", "Imaad | Tanay | Nisarg", "Arthur | Nikhil | Aditya", "Akhil | Tarun | Kayden", "Nandan | Torin | Dylan"]
-    } else if (document.getElementById("presenterInput").value == "p1g") {
-        peopleList = ["Ian | Matthew", "Saathvik | Aidan | Sri | Tanav", "Hanlun | Alisha", "Josh | David", "Dinesh", "Trevor", "Sharon | Miheer | Eshaan | Beijan", "Srini | Nitin"]
+    const checkedBoxes = [...document.querySelectorAll('#group-checkboxes input:checked')];
+    const selectedGroupIds = checkedBoxes.map(cb => parseInt(cb.value));
+
+    if (selectedGroupIds.length === 0) {
+        alert("Please select at least one group.");
+        return;
     }
+
+    const response = await fetch('/api/groups');
+    const allGroups = await response.json();
+
+    const selectedGroups = allGroups.filter(group => selectedGroupIds.includes(group.id));
+
+    const queueArray = selectedGroups.map(group =>
+        group.members.map(member => member.name).join(' | ')
+    );
+    console.log(selectedGroups);
+    console.log(queueArray);
+
+    peopleList = queueArray;
 
     await fetch(URL + `initQueue/${assignmentId}`, {
         method: 'PUT',
@@ -211,3 +213,22 @@ function showAssignmentModal() {
         }
     });
 }
+
+async function loadGroups() {
+    const response = await fetch('/api/groups');
+    const groups = await response.json();
+    const container = document.getElementById('group-checkboxes');
+    container.innerHTML = "<p>Select Groups:</p>";
+
+    groups.forEach(group => {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="checkbox" value="${group.id}" />
+            Group ${group.name}: ${group.members.map(m => m.name).join(', ')}
+        `;
+        container.appendChild(label);
+        container.appendChild(document.createElement('br'));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadGroups);
