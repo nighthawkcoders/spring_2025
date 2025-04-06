@@ -11,7 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,8 +23,12 @@ public class Groups {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    // Modified the cascade type to include PERSIST and MERGE to ensure changes are saved
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "group_members", 
+        joinColumns = @JoinColumn(name = "group_id"), 
+        inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
     @JsonIgnore
     private List<Person> groupMembers = new ArrayList<>();
 
@@ -53,7 +59,7 @@ public class Groups {
     public void addPerson(Person person) {
         if (!this.groupMembers.contains(person)) {
             this.groupMembers.add(person);
-            person.setGroup(this);
+            person.getGroups().add(this);
         }
     }
 
@@ -61,7 +67,7 @@ public class Groups {
     public void removePerson(Person person) {
         if (this.groupMembers.contains(person)) {
             this.groupMembers.remove(person);
-            person.setGroup(null);
+            person.getGroups().remove(this);
         }
     }
 }

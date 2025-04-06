@@ -221,7 +221,7 @@ public class GroupsApiController {
                     Optional<Person> optionalPerson = personRepository.findById(personId);
                     if (optionalPerson.isPresent()) {
                         Person person = optionalPerson.get();
-                        if (person.getGroup() == null) {
+                        if (person.getGroups() == null) {
                             personRepository.save(person);
                         }
                     }
