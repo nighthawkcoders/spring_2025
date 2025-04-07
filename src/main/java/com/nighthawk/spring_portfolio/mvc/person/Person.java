@@ -92,48 +92,7 @@ public class Person implements Comparable<Person> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
-    @JsonIgnore
-    private List<SynergyGrade> grades;
-    
-    @ManyToMany(mappedBy="students", cascade=CascadeType.MERGE)
-    @JsonIgnore
-    private List<AssignmentSubmission> submissions;
-
-    @ManyToMany(mappedBy = "groupMembers")
-    @JsonIgnore
-    private List<Groups> groups = new ArrayList<>();
-    
-    @ManyToMany(fetch = EAGER)
-    @JoinTable(
-        name = "person_person_sections",  // unique name to avoid conflicts
-        joinColumns = @JoinColumn(name = "person_id"),
-        inverseJoinColumns = @JoinColumn(name = "section_id")
-    )
-    private Collection<PersonSections> sections = new ArrayList<>();
-
-    /**
-     * Many to Many relationship with PersonRole
-     * --- @ManyToMany annotation is used to specify a many-to-many relationship
-     * between the entities.
-     * --- FetchType.EAGER is used to specify that data must be eagerly fetched,
-     * meaning that it must be loaded immediately.
-     * --- Collection is a root interface in the Java Collection Framework, in this
-     * case it is used to store PersonRole objects.
-     * --- ArrayList is a resizable array implementation of the List interface,
-     * allowing all elements to be accessed using an integer index.
-     * --- PersonRole is a POJO, Plain Old Java Object.
-     */
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Collection<PersonRole> roles = new ArrayList<>();
-
-    @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
-    private Tinkle timeEntries;
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
-    @JsonIgnore
-    private StudentInfo studentInfo;
-    /**
+/**
      * email, password, roles are key attributes to login and authentication
      * --- @NotEmpty annotation is used to validate that the annotated field is not
      * null or empty, meaning it has to have a value.
@@ -144,6 +103,11 @@ public class Person implements Comparable<Person> {
      * --- @Column annotation is used to specify the mapped column for a persistent
      * property or field, in this case unique and email.
      */
+
+    @NotEmpty
+    private String password;
+
+
     @NotEmpty
     @Size(min = 1)
     @Column(unique = true, nullable = false)
@@ -152,10 +116,6 @@ public class Person implements Comparable<Person> {
 
     @Column(unique = true, nullable = false)
     private String uid; // New `uid` column added
-
-
-    @NotEmpty
-    private String password;
 
     /**
      * name, dob are attributes to describe the person
@@ -183,13 +143,7 @@ public class Person implements Comparable<Person> {
     @Column(nullable=true)
     private String sid;
     
-    /**
-     * user_stocks and balance describe properties used by the gamify application
-     */
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
-    @JsonIgnore
-    private userStocksTable user_stocks;
-
+ 
     @Column
     private String balance;
 
@@ -221,6 +175,73 @@ public class Person implements Comparable<Person> {
     @Column(columnDefinition = "jsonb")
     private Map<String, Map<String, Object>> stats = new HashMap<>();
 
+
+//////////////////////////////////////////////////////////////////////////////////
+/// Relationships
+
+
+    @OneToMany(mappedBy="student", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonIgnore
+    private List<SynergyGrade> grades;
+    
+
+    @ManyToMany(mappedBy="students", cascade=CascadeType.MERGE)
+    @JsonIgnore
+    private List<AssignmentSubmission> submissions;
+    
+
+    @ManyToMany(fetch = EAGER)
+    @JoinTable(
+        name = "person_person_sections",  // unique name to avoid conflicts
+        joinColumns = @JoinColumn(name = "person_id"),
+        inverseJoinColumns = @JoinColumn(name = "section_id")
+    )
+    private Collection<PersonSections> sections = new ArrayList<>();
+
+
+    /**
+     * Many to Many relationship with PersonRole
+     * --- @ManyToMany annotation is used to specify a many-to-many relationship
+     * between the entities.
+     * --- FetchType.EAGER is used to specify that data must be eagerly fetched,
+     * meaning that it must be loaded immediately.
+     * --- Collection is a root interface in the Java Collection Framework, in this
+     * case it is used to store PersonRole objects.
+     * --- ArrayList is a resizable array implementation of the List interface,
+     * allowing all elements to be accessed using an integer index.
+     * --- PersonRole is a POJO, Plain Old Java Object.
+     */
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Collection<PersonRole> roles = new ArrayList<>();
+
+
+    @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
+    private Tinkle timeEntries;
+
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private StudentInfo studentInfo;
+
+
+    /**
+     * user_stocks and balance describe properties used by the gamify application
+     */
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private userStocksTable user_stocks;
+
+
+
+     @ManyToMany(mappedBy = "groupMembers")
+    @JsonIgnore
+    private List<Groups> groups = new ArrayList<>();
+
+
+//////////////////////////////////////////////////////////////////////////////////
+/// Methods
+  
+
     @PreRemove
     private void removePersonFromSubmissions() {
         if (submissions != null) {
@@ -231,6 +252,10 @@ public class Person implements Comparable<Person> {
         }
     }
 
+//////////////////////////////////////////////////////////////////////////////////
+/// Constructors
+  
+  
     /** Custom constructor for Person when building a new Person object from an API call
      * @param email, a String
      * @param password, a String
