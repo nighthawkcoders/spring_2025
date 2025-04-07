@@ -60,7 +60,7 @@ public class MiningController {
     private GPURepository gpuRepository;
 
     @Autowired
-    private MiningService miniddwdngService;
+    private MiningService miningService;
 
     private GPU getRandomBudgetGPU() {
         List<GPU> budgetGPUs = gpuRepository.findAll().stream()
