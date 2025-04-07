@@ -131,10 +131,10 @@ select {
     background-color: green;
     top: 0;
     left: 0px;
-    width: 400px;
+    width: 600px;
     cursor: pointer;
     transition: all .5s;
-    transform: translateX(-344px);
+    transform: translateX(-510px);
     z-index: 3;
 }
 

@@ -4,7 +4,7 @@ let leftSidebar = document.getElementById("ManagementMenu")
 function toggleLeftSidebar() {
     isSidebarClosed = !isSidebarClosed;
     if (isSidebarClosed) {
-        leftSidebar.style.transform = "translateX(-320px)"
+        leftSidebar.style.transform = "translateX(-520px)"
         document.querySelectorAll(".directionalityFlip").forEach(el => el.style.transform = "rotate(180deg)")
         return
     }
