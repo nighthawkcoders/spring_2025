@@ -4,10 +4,23 @@
 <head>
     <title>Tinkle View</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
     <style>
+        /* Adapted styles from read.html */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        th.sortable-header:hover {
+            cursor: pointer;
+            color: #007bff;
+        }
+
         /* Custom style for highlighting long duration */
         .highlight-long {
-            background-color: #f8d7da !important; /* Bootstrap danger light */
+            background-color: #f8d7da !important; 
             color: #842029 !important;
             font-weight: bold;
         }
@@ -23,83 +36,121 @@
             height: 400px;
             margin-bottom: 2rem;
         }
+
+        /* Search container styling from read.html */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        /* Match background styling from read.html */
+        .bg-primary-container {
+            background-color: #0d6efd;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+        }
+
+        .bg-success-container {
+            background-color: #198754;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            color: white;
+        }
+
+        /* Match table styling from read.html */
+        #userEntriesTable, #weeklyDurationTable {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="#">Tinkle View</a>
-        </div>
-    </nav>
+    <th:block layout:fragment="body" th:remove="tag">
+        <div class="container py-4 bg-primary rounded">
+            <!-- Main page content -->
+            <header class="pb-3 mb-4 border-bottom">
+                <a href="#" class="d-flex align-items-center text-light text-decoration-none">
+                    <span class="fs-4">Tinkle View</span>
+                </a>
+            </header>
 
-    <div class="container py-4" layout:fragment="body">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0">User Entries</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table id="userEntriesTable" class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th class="sortable-header">Person Name <i class="bi bi-arrow-down"></i></th>
-                                <th class="sortable-header">Day <i class="bi bi-arrow-down"></i></th>
-                                <th class="sortable-header">Time In <i class="bi bi-arrow-down"></i></th>
-                                <th class="sortable-header">Duration (HH:MM:SS) <i class="bi bi-arrow-down"></i></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="entry : ${tinkleList}">
-                                <td th:text="${entry.person_name}"></td>
-                                <td class="day-column" th:text="${entry.day}"></td>
-                                <td class="time-in-cell" th:utext="${entry.timeIn}"></td>
-                                <td th:text="${entry.duration}"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="container py-4 text-light bg-success rounded">
+                <h2>User Entries</h2>
+
+                <div class="row align-items-md-stretch">
+                    <div class="table-responsive">
+                        <table id="userEntriesTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable-header">Person Name</th>
+                                    <th class="sortable-header">Day</th>
+                                    <th class="sortable-header">Time In</th>
+                                    <th class="sortable-header">Duration (HH:MM:SS)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry : ${tinkleList}">
+                                    <td th:text="${entry.person_name}"></td>
+                                    <td class="day-column" th:text="${entry.day}"></td>
+                                    <td class="time-in-cell" th:utext="${entry.timeIn}"></td>
+                                    <td th:text="${entry.duration}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0">Average Weekly Duration per User</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table id="weeklyDurationTable" class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th class="sortable-header">Person Name <i class="bi bi-arrow-down"></i></th>
-                                <th class="sortable-header">Average weekly duration <i class="bi bi-arrow-down"></i></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="entry : ${averageWeeklyDurations}">
-                                <td th:text="${entry.key}"></td>
-                                <td th:text="${entry.value}"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div class="container py-4 bg-primary rounded mt-4">
+            <header class="pb-3 mb-4 border-bottom">
+                <a href="#" class="d-flex align-items-center text-light text-decoration-none">
+                    <span class="fs-4">Average Weekly Duration</span>
+                </a>
+            </header>
+
+            <div class="container py-4 text-light bg-success rounded">
+                <h2>Average Weekly Duration per User</h2>
+
+                <div class="row align-items-md-stretch">
+                    <div class="table-responsive">
+                        <table id="weeklyDurationTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable-header">Person Name</th>
+                                    <th class="sortable-header">Average weekly duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry : ${averageWeeklyDurations}">
+                                    <td th:text="${entry.key}"></td>
+                                    <td th:text="${entry.value}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0">Average Weekly Duration Visualization</h4>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="weeklyDurationChart"></canvas>
+        <div class="container py-4 bg-primary rounded mt-4">
+            <header class="pb-3 mb-4 border-bottom">
+                <a href="#" class="d-flex align-items-center text-light text-decoration-none">
+                    <span class="fs-4">Data Visualization</span>
+                </a>
+            </header>
+
+            <div class="container py-4 text-light bg-success rounded">
+                <h2>Average Weekly Duration Visualization</h2>
+
+                <div class="row align-items-md-stretch">
+                    <div class="chart-container">
+                        <canvas id="weeklyDurationChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- jQuery -->
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-        <!-- DataTables JS -->
-        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
 
         <script th:inline="javascript">
             $(document).ready(function () {
@@ -219,6 +270,6 @@
                 });
             });
         </script>
-    </div>
+    </th:block>
 </body>
 </html>
