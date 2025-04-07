@@ -38,3 +38,4 @@ public class AssignmentQueue {
         this.completed.clear();
     }
 }
+

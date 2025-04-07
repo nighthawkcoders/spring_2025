@@ -1,4 +1,3 @@
-
 package com.nighthawk.spring_portfolio.mvc.groups;
 
 import java.util.List;
@@ -16,15 +15,12 @@ public interface GroupsJpaRepository extends JpaRepository<Groups, Long> {
     // Find all groups
     List<Groups> findAll();
     
-    // Find groups containing a specific person by uid
-    @Query("SELECT g FROM Groups g JOIN g.groupMembers p WHERE p.uid = :personUid")
-    List<Groups> findGroupsByPersonUid(@Param("personUid") String personUid);
-    
-    // Find groups containing a specific person by id
+    // Find groups containing a specific person
     @Query("SELECT g FROM Groups g JOIN g.groupMembers p WHERE p.id = :personId")
     List<Groups> findGroupsByPersonId(@Param("personId") Long personId);
     
     // Find groups with a specific number of members
     @Query("SELECT g FROM Groups g WHERE SIZE(g.groupMembers) = :memberCount")
     List<Groups> findGroupsByMemberCount(@Param("memberCount") int memberCount);
+
 }
