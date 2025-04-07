@@ -1,11 +1,10 @@
 package com.nighthawk.spring_portfolio.mvc.groups;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 public interface GroupsJpaRepository extends JpaRepository<Groups, Long> {
     
