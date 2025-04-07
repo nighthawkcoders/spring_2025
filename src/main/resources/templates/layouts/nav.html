@@ -31,6 +31,11 @@
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink0">
                                 <li><a class="dropdown-item" th:href="@{/greet}">Spring Greeting</a></li>
                                 <li><a class="dropdown-item" th:href="@{/birds}">Birds Background</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/person/cookie-clicker}">Cookie Clicker</a></li>
+                                <li><a class="dropdown-item" th:href="@{/profileThymeleaf}" Fibonacci</a></li>
+                                <li><a class="dropdown-item" th:href="@{/palindrome}">Palindrome</a></li>
+                                <li><a class="dropdown-item" th:href="@{/profileThymeleaf}">Profile Thymeleaf</a></li>
+                                <li><a class="dropdown-item" th:href="@{/factorial}">Factorial</a></li>
                                 <li><a class="dropdown-item" th:href="@{/dne}">404 Error</a></li>
                             </ul>
                         </li>
@@ -47,8 +52,11 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
                                 <li><a class="dropdown-item" th:href="@{/mvc/person/read}">SQL Person</a></li>
-                                <li><a class="dropdown-item" th:href="@{/mvc/person/person-quiz}">Database Person Quiz</a></li>
-                            </ul>
+
+                                <li><a class="dropdown-item" th:href="@{/mvc/person/cookie-clicker}">Database Cookie Clicker</a></li>
+                      <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/api/imports/backups}">Database Backups</a></li>
+                                <li><a class="dropdown-item" th:href="@{/mvc/person/person-quiz}">Database Person Quiz</a></li>                  
+              </ul>
                         </li>
                     </ul>
                 </div>
@@ -80,6 +88,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
                                 <li><a class="dropdown-item" th:href="@{/admin/tinkle-view}">Tinkle View</a></li>
+                                <li><a class="dropdown-item" th:href="@{/admin/approval-requests}">Approval Requests</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -88,7 +97,6 @@
 
                 <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0" sec:authorize="isAuthenticated()">
                     <ul class="navbar-nav">
-                        <a id="awayStudents" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')"></a>
                     </ul>
                 </div>
 
@@ -138,44 +146,17 @@
          
             </div>
 
-            <div class="collapse navbar-collapse" id="navbarNavDarkDropdown0" sec:authorize="isAuthenticated()">
-                <ul class="navbar-nav">
-                    <a id="approvalAlert" sec:authorize="hasRole('ROLE_TEACHER') or hasRole('ROLE_ADMIN')"></a>
-                </ul>
-            </div>
-
             <!-- Navigation bar JavaScript support -->
             <script>
+                if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+                    javaURI = "http://localhost:8085";
+                } else {
+                    javaURI = "https://spring2025.nighthawkcodingsociety.com";
+                }
+
                 const search = document.getElementById('search');
                 const google = 'https://www.google.com/search?q=site%3A+';
                 const site = 'https://nighthawkcodingsociety.com';
-
-                function appendApprovalAlert(data) {
-                    let approvalAlert = document.getElementById('approvalAlert');
-            
-                    if (data.length > 0) {
-                        // Show alert with the number of pending approvals
-                        approvalAlert.innerHTML = `🔔 ${data.length} students need approval!`;
-                        approvalAlert.style.color = "red";
-                        approvalAlert.style.fontWeight = "bold";
-                    } else {
-                        approvalAlert.innerHTML = ""; // Clear alert if no pending requests
-                    }
-                }
-            
-                function fetchApprovalRequests() {
-                    fetch('http://127.0.0.1:8085/api/approval/pendingRequests')
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Pending approval requests:", data);
-                            appendApprovalAlert(data);
-                        })
-                        .catch(error => console.log('Error fetching approval requests:', error));
-                }
-            
-                window.addEventListener('load', function () {
-                    setInterval(fetchApprovalRequests, 5000); // Fetch every 5 seconds
-                });
 
                 function submitted(event) {
                     if (event.key === 'Enter') {
@@ -229,38 +210,6 @@
                         : localStorage.removeItem("darkSwitch");
                 }
                 // End Dark Mode Control
-
-                function appendStatus(data) {
-                    awayStudents = document.getElementById('awayStudents');
-
-                    if (data) {
-                        awayStudents.innerHTML = data + ' is currently in the bathroom';
-                    } else {
-                        awayStudents.innerHTML = "Nobody is in the bathroom as of right now"
-                    }
-
-                }
-                function fetchStatus() {
-                    fetch('http://localhost:8085/api/queue/getActive')
-                        .then(function (response) {
-                            return response.json();
-                        })
-                        .then(function (data) {
-                            console.log("Data received:", JSON.stringify(data[0], null, 2));  // Pretty print the object
-                            appendStatus(data[0].frontStudent);
-                        })
-                        .catch(function (err) {
-                            console.log('error: ' + err);
-                    });
-                }
-
-                window.addEventListener('load', function () {
-                    // Your document is loaded.
-                    var fetchInterval = 5000; // 5 seconds.
-
-                    // Invoke the request every 5 seconds.
-                    setInterval(fetchStatus, fetchInterval);
-                });
             </script>
 
         </div>

@@ -60,7 +60,7 @@ public class userStocksTable {
     private boolean hasSimulated;
 
     @Column
-    private boolean period1;
+    private Boolean period1;
     
     @Column(columnDefinition = "TEXT")
     private String cryptoHistory; // Stores all crypto purchase histories

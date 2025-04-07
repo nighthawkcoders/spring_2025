@@ -47,12 +47,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/analytics/**").permitAll()   
                         .requestMatchers(HttpMethod.POST, "/api/person/**").permitAll()           
                         .requestMatchers(HttpMethod.GET,"/api/person/{id}/balance").permitAll() // Allow unauthenticated access to this endpoint
-                        .requestMatchers(HttpMethod.GET, "/api/person/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/person/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/people/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/person/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/person/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/synergy/grades/requests").hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/synergy/**").hasAnyAuthority("ROLE_TEACHER", "ROLE_ADMIN")
+                        
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/synergy/saigai/").hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/calendar/add").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/calendar/add_event").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/calendar/edit/{id}").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/calendar/delete/{id}").permitAll()
+                    
+
 
                 )
                 .cors(Customizer.withDefaults())
@@ -77,6 +86,7 @@ public class SecurityConfig {
                         .requestMatchers("/mvc/person/create/**").permitAll()
                         .requestMatchers("mvc/person/reset/**").permitAll()
                         .requestMatchers("/mvc/person/read/**").authenticated()
+                        .requestMatchers("/mvc/person/cookie-clicker").authenticated()
                         .requestMatchers(HttpMethod.GET,"/mvc/person/update/user").authenticated()
                         .requestMatchers(HttpMethod.GET,"/mvc/person/update/**").authenticated()
                         .requestMatchers(HttpMethod.POST,"/mvc/person/update/").authenticated()

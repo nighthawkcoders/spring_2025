@@ -1,11 +1,15 @@
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
-import java.time.LocalTime;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class TinkleStatisticsService {
@@ -20,7 +24,7 @@ public class TinkleStatisticsService {
         // Group durations by person name
         Map<String, List<Long>> userWeeklyDurations = tinkleList.stream()
             .collect(Collectors.groupingBy(
-                Tinkle::getPerson_name,
+                Tinkle::getPersonName,
                 Collectors.mapping(
                     t -> calculateTotalDurationInSeconds(t.getTimeIn()),
                     Collectors.toList()
@@ -35,7 +39,7 @@ public class TinkleStatisticsService {
 
             // Sum all durations and divide by the number of weeks (assuming 1 entry per week)
             long totalDuration = durations.stream().mapToLong(Long::longValue).sum();
-            long averageDuration = totalDuration / durations.size();
+            long averageDuration = durations.isEmpty() ? 0 : totalDuration / durations.size();
             averageWeeklyDurations.put(userName, averageDuration);
         }
 
@@ -50,15 +54,19 @@ public class TinkleStatisticsService {
      */
     public long calculateTotalDurationInSeconds(String timeIn) {
         if (timeIn == null || timeIn.isEmpty()) return 0;
-    
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        
         return Arrays.stream(timeIn.split(","))
             .mapToLong(pair -> {
-                String[] times = pair.split("-");
+                String[] times = pair.split("--"); // Changed delimiter to match new format
                 if (times.length == 2) {
                     try {
-                        return Duration.between(LocalTime.parse(times[0]), LocalTime.parse(times[1])).getSeconds();
+                        LocalDateTime start = LocalDateTime.parse(times[0].trim(), formatter);
+                        LocalDateTime end = LocalDateTime.parse(times[1].trim(), formatter);
+                        return Duration.between(start, end).getSeconds();
                     } catch (Exception e) {
-                        return 0; // Skip malformed entries
+                        return 0; // skip malformed entries
                     }
                 }
                 return 0;
@@ -87,5 +95,82 @@ public class TinkleStatisticsService {
         return formatDuration(totalSeconds); // Reuse the formatDuration method
     }
     
+    /**
+     * Format timeIn string to display just HH:MM--HH:MM for each pair
+     * @param timeIn The raw datetime pairs string
+     * @return Formatted time pairs
+     */
+    public String formatTimeIn(String timeIn) {
+        if (timeIn == null || timeIn.isEmpty()) return "No data";
+        
+        try {
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            
+            return Arrays.stream(timeIn.split(","))
+                .map(pair -> {
+                    String[] times = pair.split("--");
+                    if (times.length == 2) {
+                        try {
+                            LocalDateTime start = LocalDateTime.parse(times[0].trim(), inputFormatter);
+                            LocalDateTime end = LocalDateTime.parse(times[1].trim(), inputFormatter);
+                            return String.format("%02d:%02d--%02d:%02d", 
+                                start.getHour(), start.getMinute(),
+                                end.getHour(), end.getMinute());
+                        } catch (Exception e) {
+                            return "Invalid";
+                        }
+                    }
+                    return "Invalid format";
+                })
+                .collect(Collectors.joining(", "));
+        } catch (Exception e) {
+            return "Format error";
+        }
+    }
     
+    /**
+     * Extract and format the day from timeIn string (MM-DD format)
+     * @param timeIn The raw datetime pairs string
+     * @return Day in MM-DD format
+     */
+    public String extractDay(String timeIn) {
+        if (timeIn == null || timeIn.isEmpty()) return "No date";
+        
+        try {
+            String[] times = timeIn.split("--");
+            if (times.length >= 1) {
+                String firstTime = times[0].trim();
+                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime dateTime = LocalDateTime.parse(firstTime, inputFormatter);
+                return String.format("%02d-%02d", dateTime.getMonthValue(), dateTime.getDayOfMonth());
+            }
+            return "Invalid";
+        } catch (Exception e) {
+            return "Date error";
+        }
+    }
+    
+    /**
+     * Checks if a time range exceeds the threshold (for highlighting)
+     * @param timeIn Single time range pair
+     * @param thresholdMinutes Minutes threshold
+     * @return true if time range exceeds threshold
+     */
+    public boolean isLongDuration(String timeInPair, int thresholdMinutes) {
+        if (timeInPair == null || timeInPair.isEmpty()) return false;
+        
+        try {
+            String[] times = timeInPair.split("--");
+            if (times.length == 2) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime start = LocalDateTime.parse(times[0].trim(), formatter);
+                LocalDateTime end = LocalDateTime.parse(times[1].trim(), formatter);
+                long durationMinutes = Duration.between(start, end).toMinutes();
+                return durationMinutes > thresholdMinutes;
+            }
+        } catch (Exception e) {
+            // Ignore parsing errors
+        }
+        return false;
+    }
 }

@@ -1,7 +1,5 @@
 package com.nighthawk.spring_portfolio.mvc.Slack;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -11,6 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +26,7 @@ public class CalendarEventController {
 
     @Autowired
     private CalendarEventService calendarEventService;
+
     @PostMapping("/add")
     public void addEventsFromSlackMessage(@RequestBody Map<String, String> jsonMap) {
         LocalDateTime now = LocalDateTime.now();
@@ -73,19 +73,19 @@ public class CalendarEventController {
         }
     }
 
-
     @GetMapping("/events/{date}")
     public List<CalendarEvent> getEventsByDate(@PathVariable String date) {
         LocalDate localDate = LocalDate.parse(date);
         return calendarEventService.getEventsByDate(localDate);
     }
 
-    @PutMapping("/edit/{title}")
-    public ResponseEntity<String> editEvent(@PathVariable String title, @RequestBody Map<String, String> payload) {
+    @PutMapping("/edit/{id}")
+    @CrossOrigin(origins = {"http://127.0.0.1:4100","https://nighthawkcoders.github.io/portfolio_2025/"}, allowCredentials = "true")
+    public ResponseEntity<String> editEvent(@PathVariable int id, @RequestBody Map<String, String> payload) {
         try {
-            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
             String newTitle = payload.get("newTitle");
             String description = payload.get("description");
+            String dateStr = payload.get("date");
 
             if (newTitle == null || newTitle.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("New title cannot be null or empty.");
@@ -93,16 +93,25 @@ public class CalendarEventController {
             if (description == null || description.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Description cannot be null or empty.");
             }
+            if (dateStr == null || dateStr.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Date cannot be null or empty.");
+            }
 
-            boolean updated = calendarEventService.updateEventByTitle(decodedTitle, newTitle.trim(), description.trim());
+            LocalDate date;
+            try {
+                date = LocalDate.parse(dateStr);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("Invalid date format. Use YYYY-MM-DD.");
+            }
+
+            boolean updated = calendarEventService.updateEventById(id, newTitle.trim(), description.trim(), date);
             return updated ? ResponseEntity.ok("Event updated successfully.")
-                           : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
+                        : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given id not found.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while updating the event: " + e.getMessage());
         }
-}
-
+    }
 
     @GetMapping("/events")
     public List<CalendarEvent> getAllEvents() {
@@ -118,32 +127,21 @@ public class CalendarEventController {
     public List<CalendarEvent> getNextDayEvents() {
         return calendarEventService.getEventsByDate(LocalDate.now().plusDays(1));
     }
-    @DeleteMapping("/delete/{title}")
-    public ResponseEntity<String> deleteEvent(@PathVariable String title) {
-        // Decode the title to handle multi-word or special character titles
-        String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
-        // Log the decoded title for debugging purposes
-        System.out.println("Attempting to delete event with title: " + decodedTitle);
+    
+    @DeleteMapping("/delete/{id}")
+    @CrossOrigin(origins = {"http://127.0.0.1:4100","https://nighthawkcoders.github.io/portfolio_2025/"}, allowCredentials = "true")
+    public ResponseEntity<String> deleteEvent(@PathVariable int id) {
+        System.out.println("Attempting to delete event...");
         try {
-            // Call your service to delete the event
-            boolean deleted = calendarEventService.deleteEventByTitle(decodedTitle);
-            // If the event wasn't found and deleted, return a 404 response
+            boolean deleted = calendarEventService.deleteEventById(id);
             if (!deleted) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given title not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event with the given id not found.");
             }
-            // Return a success response if the event is deleted
             return ResponseEntity.ok("Event deleted successfully.");
         } catch (Exception e) {
-            // Log the exception and return a 500 error response
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred: " + e.getMessage());
         }
     }
-
-
-
-
-
-
 }
