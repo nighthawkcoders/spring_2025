@@ -375,7 +375,6 @@ public class AssignmentsApiController {
 
         assignmentRepo.save(assignment);
 
-        System.out.println("hi");
         return ResponseEntity.ok("Persons assigned successfully");
     }
 
@@ -429,12 +428,10 @@ public class AssignmentsApiController {
     @PostMapping("/randomizeGraders/{id}")
     @Transactional
     public ResponseEntity<?> randomizePeerGraders(@PathVariable Long id) {
-        System.out.println("Bruh are you here please thanks");
         Optional<Assignment> assignmentOptional = assignmentRepo.findById(id);
         if (!assignmentOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Assignment not found");
         }
-        System.out.println("Zero");
 
         List<AssignmentSubmission> submissions = submissionRepo.findByAssignmentId(id);
     
@@ -445,7 +442,6 @@ public class AssignmentsApiController {
         if (submissions.size() == 1) {
             return ResponseEntity.badRequest().body("Only one submission found for this assignment, can't really do peer grading");
         }
-        System.out.println("One");
 
         
         // Keep latest submission
@@ -457,7 +453,6 @@ public class AssignmentsApiController {
         ));
     
         List<AssignmentSubmission> uniqueSubmissions = new ArrayList<>(latestSubmissions.values());
-        System.out.println("Two");
 
     
         Collections.shuffle(uniqueSubmissions);
@@ -485,18 +480,17 @@ public class AssignmentsApiController {
                 new ArrayList<>(graderSubmission.getStudents())
             );
         }
-        System.out.println("Three");
 
     
         submissionRepo.saveAll(uniqueSubmissions);
         // test debug
-        for (AssignmentSubmission sub : uniqueSubmissions) {
-            System.out.println("Submission by: " + sub.getStudents().get(0).getName() + 
-                            " is graded by: " + 
-                            sub.getAssignedGraders().stream()
-                                .map(Person::getName)
-                                .collect(Collectors.joining(", ")));
-        }
+        // for (AssignmentSubmission sub : uniqueSubmissions) {
+        //     System.out.println("Submission by: " + sub.getStudents().get(0).getName() + 
+        //                     " is graded by: " + 
+        //                     sub.getAssignedGraders().stream()
+        //                         .map(Person::getName)
+        //                         .collect(Collectors.joining(", ")));
+        // }
     
         return ResponseEntity.ok("Graders randomized successfully!");
     }
