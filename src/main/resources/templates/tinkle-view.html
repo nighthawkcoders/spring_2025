@@ -2,6 +2,7 @@
 <html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/base}" lang="en">
 <head>
+    <title>Tinkle View</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
     <style>
@@ -62,6 +63,8 @@
     </style>
 </head>
 <body>
+    <!-- page title -->
+    <th:block layout:fragment="title" th:remove="tag">Bathroom Statistics</th:block>
     <th:block layout:fragment="body" th:remove="tag">
         <div class="container py-4 bg-primary rounded">
             <!-- Main page content -->
