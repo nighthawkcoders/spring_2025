@@ -8,9 +8,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Date;
 
 // Add these imports
@@ -34,6 +36,12 @@ public class MiningService {
     @Autowired
     private PersonJpaRepository personRepository;
 
+    @Autowired
+    private CryptocurrencyRepository cryptocurrencyRepository;
+
+    @Autowired
+    private CryptoBalanceRepository cryptoBalanceRepository;
+
     // Fine-tune constants
     public static final double HASH_TO_BTC_RATE = 0.0001; // Current rate
     public static final double DIFFICULTY_FACTOR = 1.0;
@@ -42,11 +50,17 @@ public class MiningService {
     public static final double ELECTRICITY_RATE = 0.12; // USD per kWh
     public static final double BTC_PRICE = 45000.0;
 
+    // Hashrate to crypto mining rates - each crypto has a different efficiency
+    private final Map<String, Double> CRYPTO_MINING_RATES = Map.of(
+        "BTC", 0.0001,  // Bitcoin
+        "ETH", 0.001,   // Ethereum
+        "LTC", 0.01,    // Litecoin
+        "XMR", 0.005    // Monero
+    );
+
     @Scheduled(fixedRate = MINING_INTERVAL)
     @Transactional
     public void processMining() {
-        System.out.println("\n=== Mining Process Started ===");
-        
         List<MiningUser> activeMiners = miningUserRepository.findAll().stream()
             .filter(user -> user.isMining() && !user.getActiveGPUs().isEmpty())
             .collect(Collectors.toList());
@@ -55,14 +69,31 @@ public class MiningService {
             double hashrate = miner.getCurrentHashrate();
             
             if (hashrate > 0) {
-                // Calculate mining reward
-                double btcMined = hashrate * HASH_TO_BTC_RATE / 60.0;
+                // Get the current cryptocurrency being mined or default to Bitcoin
+                Cryptocurrency currentCrypto = miner.getCurrentCryptocurrency();
+                if (currentCrypto == null) {
+                    currentCrypto = cryptocurrencyRepository.findBySymbol("BTC")
+                        .orElseThrow(() -> new RuntimeException("Bitcoin not found in database"));
+                    miner.setCurrentCryptocurrency(currentCrypto);
+                }
                 
-                // Convert BTC to USD
-                double usdMined = btcMined * BTC_PRICE;
+                // Get mining rate for this crypto
+                double miningRate = CRYPTO_MINING_RATES.getOrDefault(
+                    currentCrypto.getSymbol(), HASH_TO_BTC_RATE);
                 
-                // Update BTC balance
-                miner.setPendingBalance(miner.getPendingBalance() + btcMined);
+                // Calculate mining reward for specific crypto
+                double cryptoMined = hashrate * miningRate / 60.0;
+                
+                // Add to pending balance for this crypto
+                miner.addCryptoBalance(currentCrypto, cryptoMined, true);
+                
+                // For backward compatibility - maintain BTC balance if mining BTC
+                if ("BTC".equals(currentCrypto.getSymbol())) {
+                    miner.setPendingBalance(miner.getPendingBalance() + cryptoMined);
+                }
+                
+                // Convert crypto to USD
+                double usdMined = cryptoMined * currentCrypto.getPrice();
                 
                 // Update Person's USD balance
                 Person person = miner.getPerson();
@@ -71,12 +102,11 @@ public class MiningService {
                 personRepository.save(person);
                 
                 // Update mining stats
-                miner.setTotalBtcEarned(miner.getTotalBtcEarned() + btcMined);
+                if ("BTC".equals(currentCrypto.getSymbol())) {
+                    miner.setTotalBtcEarned(miner.getTotalBtcEarned() + cryptoMined);
+                }
                 miner.setShares(miner.getShares() + 1);
                 miner.setTotalSharesMined(miner.getTotalSharesMined() + 1);
-                
-                System.out.println(String.format("Miner %s earned %.8f BTC (%.2f USD)", 
-                    miner.getPerson().getEmail(), btcMined, usdMined));
             }
             
             miningUserRepository.save(miner);
@@ -86,48 +116,48 @@ public class MiningService {
     @Scheduled(fixedRate = BALANCE_TRANSFER_INTERVAL)
     @Transactional
     public void processPendingBalances() {
-        System.out.println("\n=== Processing Pending Balances ===");
-        
         List<MiningUser> miners = miningUserRepository.findAll();
-        System.out.println("Found " + miners.size() + " total miners");
         
         miners.forEach(miner -> {
-            double pending = miner.getPendingBalance();
-            if (pending > 0) {
-                try {
-                    // First, transfer BTC from pending to confirmed
-                    double currentConfirmed = miner.getBtcBalance();
-                    double newConfirmed = currentConfirmed + pending;
-                    miner.setBtcBalance(newConfirmed);
-                    
-                    // Calculate USD value
-                    double pendingUSD = pending * BTC_PRICE;
-                    
-                    // Get user's stocks/balance record for USD update
-                    userStocksTable userStocks = userStocksRepo.findByEmail(miner.getPerson().getEmail());
-                    if (userStocks != null) {
-                        double oldBalance = Double.parseDouble(userStocks.getBalance());
-                        double newBalance = oldBalance + pendingUSD;
+            // Process all crypto balances
+            miner.getCryptoBalances().forEach(balance -> {
+                double pending = balance.getPendingBalance();
+                if (pending > 0) {
+                    try {
+                        // Transfer from pending to confirmed for this crypto
+                        double currentConfirmed = balance.getConfirmedBalance();
+                        double newConfirmed = currentConfirmed + pending;
+                        balance.setConfirmedBalance(newConfirmed);
                         
-                        // Update USD balance
-                        userStocks.setBalance(String.format("%.2f", newBalance));
-                        userStocksRepo.save(userStocks);
+                        // Calculate USD value
+                        double pendingUSD = pending * balance.getCryptocurrency().getPrice();
+                        
+                        // Get user's stocks/balance record for USD update
+                        userStocksTable userStocks = userStocksRepo.findByEmail(miner.getPerson().getEmail());
+                        if (userStocks != null) {
+                            double oldBalance = Double.parseDouble(userStocks.getBalance());
+                            double newBalance = oldBalance + pendingUSD;
+                            
+                            // Update USD balance
+                            userStocks.setBalance(String.format("%.2f", newBalance));
+                            userStocksRepo.save(userStocks);
+                        }
+                        
+                        // Clear pending crypto
+                        balance.setPendingBalance(0.0);
+                        
+                        // For BTC compatibility
+                        if ("BTC".equals(balance.getCryptocurrency().getSymbol())) {
+                            miner.setBtcBalance(miner.getBtcBalance() + pending);
+                            miner.setPendingBalance(0.0);
+                        }
+                    } catch (Exception e) {
+                        // Silently handle error
                     }
-                    
-                    // Clear pending BTC
-                    miner.setPendingBalance(0.0);
-                    miningUserRepository.save(miner);
-                    
-                    System.out.println("\nTransfer Details for " + miner.getPerson().getEmail());
-                    System.out.println("BTC Transferred: " + String.format("%.8f", pending));
-                    System.out.println("New Confirmed BTC: " + String.format("%.8f", newConfirmed));
-                    System.out.println("USD Value: $" + String.format("%.2f", pendingUSD));
-                    
-                } catch (Exception e) {
-                    System.out.println("Error processing pending balance: " + e.getMessage());
-                    e.printStackTrace();
                 }
-            }
+            });
+            
+            miningUserRepository.save(miner);
         });
     }
 
@@ -150,9 +180,20 @@ public class MiningService {
     public void calculateProfitability(MiningUser miner) {
         double hashrate = miner.getCurrentHashrate();
         
+        // Get current cryptocurrency
+        Cryptocurrency currentCrypto = miner.getCurrentCryptocurrency();
+        if (currentCrypto == null) {
+            currentCrypto = cryptocurrencyRepository.findBySymbol("BTC")
+                .orElseThrow(() -> new RuntimeException("Bitcoin not found in database"));
+        }
+        
+        // Get mining rate for this crypto
+        double miningRate = CRYPTO_MINING_RATES.getOrDefault(
+            currentCrypto.getSymbol(), HASH_TO_BTC_RATE);
+        
         // Calculate daily earnings (24 hours)
-        double dailyBTC = hashrate * HASH_TO_BTC_RATE * 24.0;
-        double dailyUSD = dailyBTC * BTC_PRICE;
+        double dailyCrypto = hashrate * miningRate * 24.0;
+        double dailyUSD = dailyCrypto * currentCrypto.getPrice();
         
         // Calculate power costs
         double dailyPowerKWH = miner.getActiveGPUs().stream()
@@ -163,16 +204,49 @@ public class MiningService {
         // Set values
         miner.setDailyRevenue(dailyUSD);
         miner.setPowerCost(dailyPowerCost);
+    }
+    
+    // Change current cryptocurrency for mining
+    @Transactional
+    public Map<String, Object> changeMiningCrypto(MiningUser user, String symbol) {
+        Optional<Cryptocurrency> cryptoOpt = cryptocurrencyRepository.findBySymbol(symbol);
         
-        // Log profitability details
-        System.out.println("\nDaily Mining Projections:");
-        System.out.println("GPU: " + miner.getActiveGPUs().get(0).getName());
-        System.out.println("Hashrate: " + String.format("%.2f", hashrate) + " MH/s");
-        System.out.println("BTC Revenue: " + String.format("%.8f", dailyBTC) + " BTC");
-        System.out.println("USD Revenue: $" + String.format("%.2f", dailyUSD));
-        System.out.println("Power Cost: $" + String.format("%.2f", dailyPowerCost));
-        System.out.println("Net Profit: $" + String.format("%.2f", dailyUSD - dailyPowerCost));
-        System.out.println("ROI (days): " + String.format("%.1f", 
-            (miner.getActiveGPUs().get(0).getPrice() / (dailyUSD - dailyPowerCost))));
+        if (cryptoOpt.isEmpty()) {
+            return Map.of(
+                "success", false,
+                "message", "Cryptocurrency with symbol " + symbol + " not found"
+            );
+        }
+        
+        Cryptocurrency crypto = cryptoOpt.get();
+        user.setCurrentCryptocurrency(crypto);
+        miningUserRepository.save(user);
+        
+        return Map.of(
+            "success", true,
+            "message", "Now mining " + crypto.getName(),
+            "symbol", crypto.getSymbol()
+        );
+    }
+    
+    // Get all available cryptocurrencies
+    public List<Map<String, Object>> getAvailableCryptocurrencies() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        for (Cryptocurrency crypto : cryptocurrencyRepository.findByActiveTrue()) {
+            Map<String, Object> cryptoMap = new HashMap<>();
+            cryptoMap.put("id", crypto.getId());
+            cryptoMap.put("name", crypto.getName());
+            cryptoMap.put("symbol", crypto.getSymbol());
+            cryptoMap.put("price", crypto.getPrice());
+            cryptoMap.put("logoUrl", crypto.getLogoUrl());
+            cryptoMap.put("algorithm", crypto.getMiningAlgorithm());
+            cryptoMap.put("blockReward", crypto.getBlockReward());
+            cryptoMap.put("difficulty", crypto.getDifficulty());
+            cryptoMap.put("minPayout", crypto.getMinPayout());
+            result.add(cryptoMap);
+        }
+        
+        return result;
     }
 }
