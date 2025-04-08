@@ -1,16 +1,17 @@
 <!DOCTYPE HTML>
-<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/base}" lang="en">
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml"
+    layout:decorate="~{layouts/base}" lang="en">
 
-<head>
-    <title>Assignment Tracker</title>
+<!-- page style -->
+<th:block layout:fragment="style" th:remove="tag">
     <style>
-        .container {
+        .container-page {
             max-width: 1000px;
             margin: 20px auto;
             padding: 20px;
             font-family: Arial, sans-serif;
         }
+
         .btn {
             background-color: #4CAF50;
             border: none;
@@ -24,17 +25,23 @@
             cursor: pointer;
             border-radius: 4px;
         }
-        .btn-delete, .btn-grade, .toggle-active {
+
+        .btn-delete,
+        .btn-grade,
+        .toggle-active {
             background-color: #007bff;
         }
+
         .btn-view-submissions {
             background-color: #17a2b8;
         }
+
         .toggle-container {
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
         }
+
         .toggle-btn {
             padding: 10px 20px;
             margin: 0 10px;
@@ -42,29 +49,38 @@
             border: 1px solid #ddd;
             cursor: pointer;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         th {
-            background-color:rgb(12, 10, 10);
+            background-color: rgb(12, 10, 10);
         }
+
         tr:nth-child(even) {
-            background-color:rgb(30, 25, 25);
+            background-color: rgb(30, 25, 25);
         }
+
         .student-row {
             cursor: pointer;
         }
+
         .student-row:hover {
             background-color: #f1f1f1;
         }
-        #submissionsModal, #addAssignmentModal {
+
+        #submissionsModal,
+        #addAssignmentModal {
             display: none;
             position: fixed;
             z-index: 1000;
@@ -73,16 +89,18 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
         }
+
         .modal-content {
-            background-color:rgb(55, 54, 54);
+            background-color: rgb(55, 54, 54);
             margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
             max-width: 800px;
         }
+
         .close-btn {
             color: #aaa;
             float: right;
@@ -90,18 +108,24 @@
             font-weight: bold;
             cursor: pointer;
         }
+
         .close-btn:hover {
             color: black;
         }
-        #assignmentView, #studentView {
+
+        #assignmentView,
+        #studentView {
             display: none;
         }
     </style>
-</head>
+</th:block>
 
-<body>
+<!-- page title -->
+<th:block layout:fragment="title" th:remove="tag">Assignment Tracker</th:block>
+
+<!-- The 'body' section is defined using Thymeleaf's layout fragment. It will replace the 'body' content in the base layout -->
 <th:block layout:fragment="body" th:remove="tag">
-    <div class="container">
+    <div class="container-page">
         <div class="toggle-container">
             <button class="toggle-btn toggle-active" onclick="toggleView('assignment')">Assignment Focused</button>
             <button class="toggle-btn" onclick="toggleView('student')">Student Focused</button>
@@ -111,10 +135,12 @@
         <div id="assignmentView">
             <h1>Assignment Tracker</h1>
             <button class="btn" onclick="showAddAssignmentModal()">Add Assignment</button>
-            
+
             <!-- Add Assignment Modal -->
-            <div id="addAssignmentModal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-                <div style="background-color:rgb(31, 31, 31); margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%;">
+            <div id="addAssignmentModal"
+                style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+                <div
+                    style="background-color:rgb(31, 31, 31); margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%;">
                     <h2>Add New Assignment</h2>
                     <label>Name: <input type="text" id="assignmentName"></label><br>
                     <label>Type: <input type="text" id="assignmentType"></label><br>
@@ -129,7 +155,8 @@
                 <div class="modal-content">
                     <span class="close-btn" onclick="closeAssignToGradeModal()">&times;</span>
                     <h2>Assign to Students</h2>
-                    <input type="text" id="studentSearchBar" placeholder="Search students..." oninput="filterStudentList()">
+                    <input type="text" id="studentSearchBar" placeholder="Search students..."
+                        oninput="filterStudentList()">
                     <ul id="studentChecklist">
                         <!-- Dynamically populated list -->
                     </ul>
@@ -137,7 +164,7 @@
                     <button class="btn" onclick="closeAssignToGradeModal()">Close</button>
                 </div>
             </div>
-            
+
             <table id="assignmentTable">
                 <thead>
                     <tr>
@@ -157,7 +184,7 @@
         <!-- Student View -->
         <div id="studentView">
             <h1>Student Submissions Tracker</h1>
-            
+
             <table id="studentsTable">
                 <thead>
                     <tr>
@@ -171,7 +198,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Submissions for both cause its shared -->
         <div id="submissionsModal" class="modal">
             <div class="modal-content">
@@ -194,47 +221,47 @@
         </div>
     </div>
 </th:block>
-</body>
+<!-- End of the body fragment -->
 
 <th:block layout:fragment="script" th:remove="tag">
-<script>
-    // Default to Assignment View 
-    document.addEventListener('DOMContentLoaded', () => {
-        toggleView('assignment');
-        fetchAssignments();
-    });
-
-    function toggleView(view) {
-        const assignmentView = document.getElementById('assignmentView');
-        const studentView = document.getElementById('studentView');
-        const assignmentToggle = document.querySelector('.toggle-btn:first-child');
-        const studentToggle = document.querySelector('.toggle-btn:last-child');
-
-        if (view === 'assignment') {
-            assignmentView.style.display = 'block';
-            studentView.style.display = 'none';
-            assignmentToggle.classList.add('toggle-active');
-            studentToggle.classList.remove('toggle-active');
+    <script>
+        // Default to Assignment View 
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleView('assignment');
             fetchAssignments();
-        } else {
-            assignmentView.style.display = 'none';
-            studentView.style.display = 'block';
-            assignmentToggle.classList.remove('toggle-active');
-            studentToggle.classList.add('toggle-active');
-            fetchStudents();
+        });
+
+        function toggleView(view) {
+            const assignmentView = document.getElementById('assignmentView');
+            const studentView = document.getElementById('studentView');
+            const assignmentToggle = document.querySelector('.toggle-btn:first-child');
+            const studentToggle = document.querySelector('.toggle-btn:last-child');
+
+            if (view === 'assignment') {
+                assignmentView.style.display = 'block';
+                studentView.style.display = 'none';
+                assignmentToggle.classList.add('toggle-active');
+                studentToggle.classList.remove('toggle-active');
+                fetchAssignments();
+            } else {
+                assignmentView.style.display = 'none';
+                studentView.style.display = 'block';
+                assignmentToggle.classList.remove('toggle-active');
+                studentToggle.classList.add('toggle-active');
+                fetchStudents();
+            }
         }
-    }
 
-    function fetchAssignments() {
-        fetch('/api/assignments/debug')
-            .then(response => response.json())
-            .then(assignments => {
-                const tableBody = document.getElementById('assignmentList');
-                tableBody.innerHTML = ''; 
+        function fetchAssignments() {
+            fetch('/api/assignments/debug')
+                .then(response => response.json())
+                .then(assignments => {
+                    const tableBody = document.getElementById('assignmentList');
+                    tableBody.innerHTML = '';
 
-                assignments.forEach(assignment => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                    assignments.forEach(assignment => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
                         <td>${assignment.name}</td>
                         <td>${assignment.type}</td>
                         <td>${assignment.description || ''}</td>
@@ -246,30 +273,30 @@
                             <button class="btn btn-grade" onclick="showAssignToGradeModal(${assignment.id})">Assign to Grade</button>
                         </td>
                     `;
-                    tableBody.appendChild(row);
+                        tableBody.appendChild(row);
+                    });
                 });
-            });
-    }
+        }
 
-    function fetchStudents() {
-        fetch('/api/people')
-            .then(response => response.json())
-            .then(people => {
-                const tableBody = document.getElementById('studentList');
-                tableBody.innerHTML = '';
+        function fetchStudents() {
+            fetch('/api/people')
+                .then(response => response.json())
+                .then(people => {
+                    const tableBody = document.getElementById('studentList');
+                    tableBody.innerHTML = '';
 
-                // Filter only students
-                // temporarily remove filter bc roles are broken -> nede functional MVP
-                /*const students = people.filter(person => 
-                person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-                );*/
+                    // Filter only students
+                    // temporarily remove filter bc roles are broken -> nede functional MVP
+                    /*const students = people.filter(person => 
+                    person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
+                    );*/
 
-                const students = people;
+                    const students = people;
 
-                students.forEach(student => {
-                    const row = document.createElement('tr');
-                    row.classList.add('student-row');
-                    row.innerHTML = `
+                    students.forEach(student => {
+                        const row = document.createElement('tr');
+                        row.classList.add('student-row');
+                        row.innerHTML = `
                         <td>${student.name}</td>
                         <td>${student.email}</td>
                         <td id="submissionCount-${student.id}">Loading...</td>
@@ -277,82 +304,82 @@
                             <button class="btn btn-view-submissions" onclick="viewStudentSubmissions(${student.id}, '${student.name}')">View Submissions</button>
                         </td>
                     `;
-                    tableBody.appendChild(row);
+                        tableBody.appendChild(row);
 
-                    // Fetch submission count
-                    fetch(`/api/assignments/submissions/student/${student.id}`)
-                        .then(response => response.json())
-                        .then(submissions => {
-                            document.getElementById(`submissionCount-${student.id}`).textContent = submissions.length;
-                        });
+                        // Fetch submission count
+                        fetch(`/api/assignments/submissions/student/${student.id}`)
+                            .then(response => response.json())
+                            .then(submissions => {
+                                document.getElementById(`submissionCount-${student.id}`).textContent = submissions.length;
+                            });
+                    });
                 });
+        }
+
+        function showAddAssignmentModal() {
+            document.getElementById('addAssignmentModal').style.display = 'block';
+        }
+
+        function closeAddAssignmentModal() {
+            document.getElementById('addAssignmentModal').style.display = 'none';
+        }
+
+        function createAssignment() {
+            const name = document.getElementById('assignmentName').value;
+            const type = document.getElementById('assignmentType').value;
+            const description = document.getElementById('assignmentDescription').value;
+            const points = document.getElementById('assignmentPoints').value;
+            const dueDate = document.getElementById('assignmentDueDate').value;
+
+            const params = new URLSearchParams({
+                name, type, description, points, dueDate
             });
-    }
 
-    function showAddAssignmentModal() {
-        document.getElementById('addAssignmentModal').style.display = 'block';
-    }
+            fetch('/api/assignments/create', {
+                method: 'POST',
+                body: params
+            }).then(fetchAssignments).finally(closeAddAssignmentModal);
+        }
 
-    function closeAddAssignmentModal() {
-        document.getElementById('addAssignmentModal').style.display = 'none';
-    }
+        function deleteAssignment(id) {
+            fetch(`/api/assignments/delete/${id}`, {
+                method: 'POST'
+            }).then(fetchAssignments);
+        }
 
-    function createAssignment() {
-        const name = document.getElementById('assignmentName').value;
-        const type = document.getElementById('assignmentType').value;
-        const description = document.getElementById('assignmentDescription').value;
-        const points = document.getElementById('assignmentPoints').value;
-        const dueDate = document.getElementById('assignmentDueDate').value;
+        function viewSubmissions(id) {
+            console.log(`Fetching submissions for assignment ID: ${id}`);
+            fetch(`/api/submissions/assignment/${id}`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(submissions => {
+                    console.log('Submissions received:', submissions);
+                    const submissionsList = document.getElementById('submissionsList');
+                    submissionsList.innerHTML = '';
 
-        const params = new URLSearchParams({
-            name, type, description, points, dueDate
-        });
-
-        fetch('/api/assignments/create', {
-            method: 'POST',
-            body: params
-        }).then(fetchAssignments).finally(closeAddAssignmentModal);
-    }
-
-    function deleteAssignment(id) {
-        fetch(`/api/assignments/delete/${id}`, {
-            method: 'POST'
-        }).then(fetchAssignments);
-    }
-
-    function viewSubmissions(id) {
-        console.log(`Fetching submissions for assignment ID: ${id}`);
-        fetch(`/api/submissions/assignment/${id}`)
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(submissions => {
-                console.log('Submissions received:', submissions);
-                const submissionsList = document.getElementById('submissionsList');
-                submissionsList.innerHTML = ''; 
-
-                if (submissions.length === 0) {
-                    submissionsList.innerHTML = '<tr><td colspan="5">No submissions found</td></tr>';
-                } else {
-                    submissions.forEach(submission => {
-                        console.log('Processing submission:', submission);
-                        const row = document.createElement('tr');
-                        if (submission.students.length === 0) {
-                            submission.students = [{ name: 'Unknown Student'}]
-                        }
-                        let studentNames = "";
-                        submission.students.forEach(student => {
-                            studentNames += student.name + ", ";
-                        });
-                        // for (student in submission.students) {
-                        //     studentNames += student.name + ", ";
-                        // }
-                        studentNames = studentNames.slice(0, -2);
-                        row.innerHTML = `
+                    if (submissions.length === 0) {
+                        submissionsList.innerHTML = '<tr><td colspan="5">No submissions found</td></tr>';
+                    } else {
+                        submissions.forEach(submission => {
+                            console.log('Processing submission:', submission);
+                            const row = document.createElement('tr');
+                            if (submission.students.length === 0) {
+                                submission.students = [{ name: 'Unknown Student' }]
+                            }
+                            let studentNames = "";
+                            submission.students.forEach(student => {
+                                studentNames += student.name + ", ";
+                            });
+                            // for (student in submission.students) {
+                            //     studentNames += student.name + ", ";
+                            // }
+                            studentNames = studentNames.slice(0, -2);
+                            row.innerHTML = `
                             <td>${studentNames}</td>
                             <td>${submission.content || 'No content'}</td>
                             <td>${submission.comment || 'No comments'}</td>
@@ -361,50 +388,50 @@
                                 <button class="btn btn-grade" onclick="gradeSubmission(${submission.id})">Grade</button>
                             </td>
                         `;
-                        submissionsList.appendChild(row);
-                    });
-                }
-
-                document.getElementById('submissionsModal').style.display = 'block';
-            })
-            .catch(error => {
-                console.error('Error fetching submissions:', error);
-                alert('Failed to fetch submissions: ' + error.message);
-            });
-    }
-
-
-    function viewStudentSubmissions(studentId, studentName) {
-    fetch(`/api/assignments/submissions/student/${studentId}`)
-        .then(response => response.json())
-        .then(async (submissions) => {
-            const submissionsList = document.getElementById('submissionsList');
-            const studentNameHeader = document.getElementById('studentNameHeader');
-            studentNameHeader.textContent = `${studentName}'s Submissions`;
-            submissionsList.innerHTML = '';
-
-            if (submissions.length === 0) {
-                submissionsList.innerHTML = '<tr><td colspan="5">No submissions found</td></tr>';
-            } else {
-                for (const submission of submissions) {
-                    let assignmentName = 'Unknown Assignment';
-
-                    // Fetch the assignment name using the submission ID
-                    if (submission.id) {
-                        try {
-                            const assignmentResponse = await fetch(`/api/assignments/${submission.id}`);
-                            if (assignmentResponse.ok) {
-                                assignmentName = await assignmentResponse.text();
-                            } else {
-                                console.error(`Failed to fetch assignment for submission ID: ${submission.id}`);
-                            }
-                        } catch (error) {
-                            console.error(`Error fetching assignment name for submission ${submission.id}:`, error);
-                        }
+                            submissionsList.appendChild(row);
+                        });
                     }
 
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                    document.getElementById('submissionsModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching submissions:', error);
+                    alert('Failed to fetch submissions: ' + error.message);
+                });
+        }
+
+
+        function viewStudentSubmissions(studentId, studentName) {
+            fetch(`/api/assignments/submissions/student/${studentId}`)
+                .then(response => response.json())
+                .then(async (submissions) => {
+                    const submissionsList = document.getElementById('submissionsList');
+                    const studentNameHeader = document.getElementById('studentNameHeader');
+                    studentNameHeader.textContent = `${studentName}'s Submissions`;
+                    submissionsList.innerHTML = '';
+
+                    if (submissions.length === 0) {
+                        submissionsList.innerHTML = '<tr><td colspan="5">No submissions found</td></tr>';
+                    } else {
+                        for (const submission of submissions) {
+                            let assignmentName = 'Unknown Assignment';
+
+                            // Fetch the assignment name using the submission ID
+                            if (submission.id) {
+                                try {
+                                    const assignmentResponse = await fetch(`/api/assignments/${submission.id}`);
+                                    if (assignmentResponse.ok) {
+                                        assignmentName = await assignmentResponse.text();
+                                    } else {
+                                        console.error(`Failed to fetch assignment for submission ID: ${submission.id}`);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching assignment name for submission ${submission.id}:`, error);
+                                }
+                            }
+
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
                         <td>${assignmentName}</td>
                         <td>${submission.content || 'No content'}</td>
                         <td>${submission.timestamp || 'N/A'}</td>
@@ -413,128 +440,129 @@
                             <button class="btn btn-grade" onclick="gradeSubmission(${submission.id})">Grade</button>
                         </td>
                     `;
-                    submissionsList.appendChild(row);
-                }
-            }
+                            submissionsList.appendChild(row);
+                        }
+                    }
 
-            document.getElementById('submissionsModal').style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error fetching student submissions:', error);
-            alert('Failed to fetch student submissions');
-        });
-}
-
-
-    function closeSubmissionsModal() {
-        document.getElementById('submissionsModal').style.display = 'none';
-    }
-
-    function gradeSubmission(submissionId) {
-        const grade = prompt('Enter grade:');
-        const feedback = prompt('Enter feedback (optional):');
-
-        if (grade !== null) {
-            const params = new URLSearchParams({
-                grade,
-                feedback: feedback || ''
-            });
-
-            fetch(`/api/submissions/grade/${submissionId}`, {
-                method: 'POST',
-                body: params
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Submission graded successfully');
-
-                } else {
-                    throw new Error('Grading failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error grading submission:', error);
-                alert('Failed to grade submission');
-            });
+                    document.getElementById('submissionsModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching student submissions:', error);
+                    alert('Failed to fetch student submissions');
+                });
         }
-    }
 
-    function showAssignToGradeModal(assignmentId) {
-    const modal = document.getElementById('assignToGradeModal');
-    modal.dataset.assignmentId = assignmentId;
-    const checklist = document.getElementById('studentChecklist');
-    checklist.innerHTML = '';
 
-    fetch('/api/people')
-        .then(response => response.json())
-        .then(people => {
-            // temporarily remove filter bc roles are broken -> nede functional MVP
-            /*const students = people.filter(person => 
-                person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
-            );*/
-            const students = people;
+        function closeSubmissionsModal() {
+            document.getElementById('submissionsModal').style.display = 'none';
+        }
 
-            students.forEach(student => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
+        function gradeSubmission(submissionId) {
+            const grade = prompt('Enter grade:');
+            const feedback = prompt('Enter feedback (optional):');
+
+            if (grade !== null) {
+                const params = new URLSearchParams({
+                    grade,
+                    feedback: feedback || ''
+                });
+
+                fetch(`/api/submissions/grade/${submissionId}`, {
+                    method: 'POST',
+                    body: params
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Submission graded successfully');
+
+                        } else {
+                            throw new Error('Grading failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error grading submission:', error);
+                        alert('Failed to grade submission');
+                    });
+            }
+        }
+
+        function showAssignToGradeModal(assignmentId) {
+            const modal = document.getElementById('assignToGradeModal');
+            modal.dataset.assignmentId = assignmentId;
+            const checklist = document.getElementById('studentChecklist');
+            checklist.innerHTML = '';
+
+            fetch('/api/people')
+                .then(response => response.json())
+                .then(people => {
+                    // temporarily remove filter bc roles are broken -> nede functional MVP
+                    /*const students = people.filter(person => 
+                        person.roles && person.roles.some(role => role.name === 'ROLE_STUDENT')
+                    );*/
+                    const students = people;
+
+                    students.forEach(student => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
                     <label>
                         <input type="checkbox" data-student-id="${student.id}">
                         ${student.name} (${student.email})
                     </label>
                 `;
-                checklist.appendChild(listItem);
-            });
+                        checklist.appendChild(listItem);
+                    });
 
-            modal.style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error fetching students:', error);
-            alert('Failed to load students.');
-        });
-    }
-
-    function closeAssignToGradeModal() {
-        document.getElementById('assignToGradeModal').style.display = 'none';
-    }
-
-    function saveAssignedGraders() {
-        const modal = document.getElementById('assignToGradeModal');
-        const assignmentId = modal.dataset.assignmentId;
-        const selectedCheckboxes = Array.from(document.querySelectorAll('#studentChecklist input:checked'));
-        const selectedIds = selectedCheckboxes.map(cb => parseInt(cb.dataset.studentId));
-
-        fetch(`/api/assignments/assignGraders/${assignmentId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(selectedIds),
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Assigned persons saved successfully.');
-                closeAssignToGradeModal();
-            } else {
-                alert('Failed to save assigned persons.');
-            }
-        })
-        .catch(error => {
-            console.error('Error saving assigned persons:', error);
-            alert('An error occurred while saving.');
-        });
-    }
-    function filterStudentList() {
-    const searchValue = document.getElementById('studentSearchBar').value.toLowerCase();
-    const studentItems = document.querySelectorAll('#studentChecklist li');
-
-    studentItems.forEach(item => {
-        const studentName = item.textContent.toLowerCase();
-        if (studentName.includes(searchValue)) {
-            item.style.display = ''; // Show item
-        } else {
-            item.style.display = 'none'; // Hide item
+                    modal.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching students:', error);
+                    alert('Failed to load students.');
+                });
         }
-    });
-}
 
-</script>
+        function closeAssignToGradeModal() {
+            document.getElementById('assignToGradeModal').style.display = 'none';
+        }
+
+        function saveAssignedGraders() {
+            const modal = document.getElementById('assignToGradeModal');
+            const assignmentId = modal.dataset.assignmentId;
+            const selectedCheckboxes = Array.from(document.querySelectorAll('#studentChecklist input:checked'));
+            const selectedIds = selectedCheckboxes.map(cb => parseInt(cb.dataset.studentId));
+
+            fetch(`/api/assignments/assignGraders/${assignmentId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(selectedIds),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Assigned persons saved successfully.');
+                        closeAssignToGradeModal();
+                    } else {
+                        alert('Failed to save assigned persons.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving assigned persons:', error);
+                    alert('An error occurred while saving.');
+                });
+        }
+        function filterStudentList() {
+            const searchValue = document.getElementById('studentSearchBar').value.toLowerCase();
+            const studentItems = document.querySelectorAll('#studentChecklist li');
+
+            studentItems.forEach(item => {
+                const studentName = item.textContent.toLowerCase();
+                if (studentName.includes(searchValue)) {
+                    item.style.display = ''; // Show item
+                } else {
+                    item.style.display = 'none'; // Hide item
+                }
+            });
+        }
+
+    </script>
 </th:block>
+
 </html>
