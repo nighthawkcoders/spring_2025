@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,7 +47,7 @@ public class TinkleViewController {
         if (user == null || !user.hasRoleWithName("ROLE_ADMIN")) {
             return "redirect:/access-denied";
         }
-        
+
         try {
             // Fetch all Tinkle records from the database
             List<Tinkle> tinkleList = tinkleRepository.findAll();
@@ -61,10 +62,7 @@ public class TinkleViewController {
                 String personName = tinkle.getPersonName() != null ? tinkle.getPersonName() : "Unknown";
                 String timeIn = tinkle.getTimeIn() != null ? tinkle.getTimeIn() : "";
                 
-                // Basic data
                 row.put("person_name", personName);
-                
-                // Format timeIn for display
                 String formattedTimeIn = tinkleStatisticsService.formatTimeIn(timeIn);
                 row.put("timeIn", formattedTimeIn);
                 
@@ -76,18 +74,20 @@ public class TinkleViewController {
                 String duration = tinkleStatisticsService.calculateDurationFormatted(timeIn);
                 row.put("duration", duration);
                 
-                // Add formatted data 
                 tinkleDataFormatted.add(row);
             }
 
-            // Calculate average weekly durations
+            // Group formatted entries by day (each day will have its own table)
+            Map<String, List<Map<String, Object>>> dailyTinkleData = 
+                tinkleDataFormatted.stream()
+                    .collect(Collectors.groupingBy(row -> (String) row.get("day")));
+            
+            // Calculate average weekly durations as before
             Map<String, String> averageWeeklyDurations = tinkleStatisticsService.calculateAverageWeeklyDurationsFormatted(tinkleList);
-
-            // Prepare data for chart (weekly durations per user)
             Map<String, Long> rawWeeklyDurations = tinkleStatisticsService.calculateAverageWeeklyDurations(tinkleList);
             
-            // Add all data to the model
-            model.addAttribute("tinkleList", tinkleDataFormatted);
+            // Add everything to the model
+            model.addAttribute("dailyTinkleData", dailyTinkleData);
             model.addAttribute("averageWeeklyDurations", averageWeeklyDurations);
             model.addAttribute("chartLabels", rawWeeklyDurations.keySet());
             model.addAttribute("chartData", rawWeeklyDurations.values());
@@ -95,10 +95,7 @@ public class TinkleViewController {
             return "tinkle-view";
             
         } catch (Exception e) {
-            // Log error
             e.printStackTrace();
-            
-            // Add error message
             redirectAttributes.addFlashAttribute("error", "An error occurred while loading tinkle data: " + e.getMessage());
             return "error";
         }
