@@ -90,6 +90,7 @@ public class TinkleViewController {
                 // Skip entries with empty timeIn
                 if (timeIn.isEmpty()) continue;
                 
+
                 row.put("person_name", personName);
                 String formattedTimeIn = tinkleStatisticsService.formatTimeIn(timeIn);
                 row.put("timeIn", formattedTimeIn);
