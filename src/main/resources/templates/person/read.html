@@ -84,7 +84,7 @@
                                             <td>
                                                 <a th:href="'https://github.com/' + ${person.uid}" target="_blank" th:text="${person.uid}">User UID</a>
                                             </td>
-                                            <td th:text="${person.name}">Name</td>
+                                            <td th:text="${person.name}" class="text-white">Name</td>
                                             <td th:text="${person.email}">Email</td>
                                             <td>
                                                 <img th:src="@{${person.kasmServerNeeded} ? 'https://github.com/user-attachments/assets/da1c6827-8c47-4ba9-a979-980eb3c685cd' : 'https://github.com/user-attachments/assets/53e808fc-3c01-4cae-b403-73116a71122f'}" 
