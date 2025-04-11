@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.person;
 
+import static jakarta.persistence.FetchType.EAGER;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -38,24 +39,39 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
-import com.vladmihalcea.hibernate.type.json.JsonType;
-
-import io.github.cdimascio.dotenv.Dotenv;
-
 import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
+import com.nighthawk.spring_portfolio.mvc.bank.Bank;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.groups.Groups;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
+import com.vladmihalcea.hibernate.type.json.JsonType;
 
+import io.github.cdimascio.dotenv.Dotenv;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PreRemove;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 /**
  * Person is a POJO, Plain Old Java Object.
  * --- @Data is Lombox annotation
@@ -147,10 +163,42 @@ public class Person implements Comparable<Person> {
     @Column(nullable=true)
     private String sid;
     
+    /**
+     * user_stocks and balance describe properties used by the gamify application
+     */
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JsonIgnore
+    private Bank banks;
+
+
  
     @Column
     private String balance;
 
+    public double getBalanceDouble() {
+        var balance_tmp = getBalance();
+        return Double.parseDouble(balance_tmp);
+    }
+
+    public String setBalanceString(double updatedBalance, String source) {
+        this.balance = String.valueOf(updatedBalance); // Update the balance as a String
+        Double profit = updatedBalance - this.banks.getBalance();
+        this.banks.setBalance(updatedBalance);
+        System.out.println("Profit: " + profit);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String timestamp = dateFormat.format(new Date());
+        this.banks.updateProfitMap(source, timestamp, profit);
+        
+        return this.balance; // Return the updated balance as a String
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        if (this.banks != null) {
+            this.banks.setUsername(name);
+        }
+    }
 
     /**
      * stats is used to store JSON for daily stats
@@ -301,7 +349,8 @@ public class Person implements Comparable<Person> {
             roles.add(role);
         }
         person.setRoles(roles);
-        
+        person.setBanks(new Bank(person, 0));
+
         return person;
     }
     
@@ -315,10 +364,6 @@ public class Person implements Comparable<Person> {
 /// getter methods
 
 
-    public double getBalanceDouble() {
-        var balance_tmp = getBalance();
-        return Double.parseDouble(balance_tmp);
-    }
 
 
     /** Custom getter to return age from dob attribute
@@ -403,20 +448,137 @@ public class Person implements Comparable<Person> {
         final Dotenv dotenv = Dotenv.load();
         final String adminPassword = dotenv.get("ADMIN_PASSWORD");
         final String defaultPassword = dotenv.get("DEFAULT_PASSWORD");
-        people.add(createPerson("Thomas Edison", "toby", "toby@gmail.com",  adminPassword, "1", "/images/toby.png", true, startingBalance, "01-01-1840", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")));
-        people.add(createPerson("Alexander Graham Bell", "lex", "lexb@gmail.com", defaultPassword, "1", "/images/lex.png", true, startingBalance, "01-01-1847", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Nikola Tesla", "niko",  "niko@gmail.com",  defaultPassword, "1", "/images/niko.png", true, startingBalance, "01-01-1850", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Madam Curie", "madam", "madam@gmail.com", defaultPassword, "1", "/images/madam.png", true, startingBalance, "01-01-1860", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("Grace Hopper", "hop",  "hop@gmail.com", defaultPassword, "123", "/images/hop.png", true, startingBalance, "12-09-1906", Arrays.asList("ROLE_USER", "ROLE_STUDENT")));
-        people.add(createPerson("John Mortensen","jm1021",  "jmort1021@gmail.com", defaultPassword, "1", "/images/jm1021.png", true, startingBalance, "10-21-1959", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")));
-        people.add(createPerson("Alan Turing","alan",  "turing@gmail.com", defaultPassword, "2", "/images/alan.png", false, startingBalance, "06-23-1912", Arrays.asList("ROLE_USER", "ROLE_TESTER","ROLE_STUDENT")));
-
-        Collections.sort(people);
-        for (Person person : people) {
-            userStocksTable stock = new userStocksTable(null, "BTC,ETH", startingBalance, person.getEmail(), person, false, true, "");
+    
+        // JSON-like list of person data using Map.ofEntries
+        List<Map<String, Object>> personData = Arrays.asList(
+            Map.ofEntries(
+                Map.entry("name", "Thomas Edison"),
+                Map.entry("uid", "toby"),
+                Map.entry("email", "toby@gmail.com"),
+                Map.entry("password", adminPassword),
+                Map.entry("sid", "1"),
+                Map.entry("pfp", "/images/toby.png"),
+                Map.entry("kasmServerNeeded", true),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "01-01-1840"),
+                Map.entry("roles", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")),
+                Map.entry("stocks", "BTC,ETH")
+            ),
+            Map.ofEntries(
+                Map.entry("name", "Alexander Graham Bell"),
+                Map.entry("uid", "lex"),
+                Map.entry("email", "lexb@gmail.com"),
+                Map.entry("password", defaultPassword),
+                Map.entry("sid", "1"),
+                Map.entry("pfp", "/images/lex.png"),
+                Map.entry("kasmServerNeeded", true),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "01-01-1847"),
+                Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
+                Map.entry("stocks", "BTC,ETH")
+            ),
+            Map.ofEntries(
+                Map.entry("name", "Nikola Tesla"),
+                Map.entry("uid", "niko"),
+                Map.entry("email", "niko@gmail.com"),
+                Map.entry("password", defaultPassword),
+                Map.entry("sid", "1"),
+                Map.entry("pfp", "/images/niko.png"),
+                Map.entry("kasmServerNeeded", true),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "01-01-1850"),
+                Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
+                Map.entry("stocks", "BTC,ETH")
+            ),
+            Map.ofEntries(
+                Map.entry("name", "Madam Curie"),
+                Map.entry("uid", "madam"),
+                Map.entry("email", "madam@gmail.com"),
+                Map.entry("password", defaultPassword),
+                Map.entry("sid", "1"),
+                Map.entry("pfp", "/images/madam.png"),
+                Map.entry("kasmServerNeeded", true),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "01-01-1860"),
+                Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
+                Map.entry("stocks", "BTC,ETH")
+            ),
+            Map.ofEntries(
+                Map.entry("name", "Grace Hopper"),
+                Map.entry("uid", "hop"),
+                Map.entry("email", "hop@gmail.com"),
+                Map.entry("password", defaultPassword),
+                Map.entry("sid", "123"),
+                Map.entry("pfp", "/images/hop.png"),
+                Map.entry("kasmServerNeeded", true),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "12-09-1906"),
+                Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
+                Map.entry("stocks", "BTC,ETH")
+            ),
+            Map.ofEntries(
+                Map.entry("name", "John Mortensen"),
+                Map.entry("uid", "jm1021"),
+                Map.entry("email", "jmort1021@gmail.com"),
+                Map.entry("password", defaultPassword),
+                Map.entry("sid", "1"),
+                Map.entry("pfp", "/images/jm1021.png"),
+                Map.entry("kasmServerNeeded", true),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "10-21-1959"),
+                Map.entry("roles", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")),
+                Map.entry("stocks", "BTC,ETH")
+            ),
+            Map.ofEntries(
+                Map.entry("name", "Alan Turing"),
+                Map.entry("uid", "alan"),
+                Map.entry("email", "turing@gmail.com"),
+                Map.entry("password", defaultPassword),
+                Map.entry("sid", "2"),
+                Map.entry("pfp", "/images/alan.png"),
+                Map.entry("kasmServerNeeded", false),
+                Map.entry("balance", startingBalance),
+                Map.entry("dob", "06-23-1912"),
+                Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_TESTER", "ROLE_STUDENT")),
+                Map.entry("stocks", "BTC,ETH")
+            )
+        );
+    
+        // Iterate over the JSON-like list to create Person objects
+        for (Map<String, Object> data : personData) {
+            Person person = createPerson(
+                (String) data.get("name"),
+                (String) data.get("uid"),
+                (String) data.get("email"),
+                (String) data.get("password"),
+                (String) data.get("sid"),
+                (String) data.get("pfp"),
+                (Boolean) data.get("kasmServerNeeded"),
+                (String) data.get("balance"),
+                (String) data.get("dob"),
+                (List<String>) data.get("roles")
+            );
+    
+            // Create userStocksTable and set the one-to-one relationship
+            userStocksTable stock = new userStocksTable(
+                null,
+                (String) data.get("stocks"),
+                (String) data.get("balance"),
+                person.getEmail(),
+                person,
+                false,
+                true,
+                ""
+            );
+            stock.setPerson(person); // Set the one-to-one relationship
             person.setUser_stocks(stock);
+    
+            people.add(person);
         }
-
+    
+        // Sort the list of people
+        Collections.sort(people);
+    
         return people.toArray(new Person[0]);
     }
 
