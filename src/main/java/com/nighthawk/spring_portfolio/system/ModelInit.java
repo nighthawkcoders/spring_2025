@@ -53,6 +53,9 @@ import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.bank.BankJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.bank.BankService;
+
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -76,6 +79,8 @@ public class ModelInit {
     @Autowired SynergyGradeJpaRepository gradeJpaRepository;
     @Autowired StudentQueueJPARepository studentQueueJPA;
     @Autowired StudentService studentService;
+    @Autowired BankJpaRepository bankJpaRepository;
+    @Autowired BankService bankService;
     @Autowired AdventureRubricJpaRepository rubricJpaRepository;
     @Autowired AdventureChoiceJpaRepository choiceJpaRepository;
     @Autowired GameJpaRepository gameJpaRepository;
