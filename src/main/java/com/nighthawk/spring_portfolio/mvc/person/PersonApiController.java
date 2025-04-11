@@ -95,6 +95,14 @@ public class PersonApiController {
         return new ResponseEntity<>( repository.findAllByOrderByNameAsc(), HttpStatus.OK);
     }
 
+    /**The get feature above does not work unless the fetch request is in a HTML file (who knows) 
+     * the function below works everywhere (including .md files and postman)
+    */
+    @GetMapping("/peopleget")
+    public ResponseEntity<List<Person>> findPeople() {
+        return new ResponseEntity<>( repository.findAllByOrderByNameAsc(), HttpStatus.OK);
+    }
+
     /**
      * Retrieves a Person entity by its ID.
      *
