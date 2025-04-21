@@ -203,17 +203,23 @@ function showAssignmentModal() {
 
     // Add event listener for the confirm button
     document.getElementById('confirmAssignment').addEventListener('click', () => {
-        const selectedAssignment = modalDropdown.value-1;
+        let selectedAssignment = modalDropdown.value-1;
+        console.log(modalDropdown.value-1)
         document.getElementById("viewingAssignmentTitle").innerText = `Viewing Assigment: ${modalDropdown.options[selectedAssignment].text}`
-        if (selectedAssignment) {
-            assignment = selectedAssignment; // Set the global assignment variable
-            fetchQueue();
-            startQueueUpdateInterval(10);
-            fetchTimerLength();
-            modal.style.display = 'none';
-        } else {
-            alert('Please select an assignment.');
-        }
+        // if (modalDropdown.options[selectedAssignment].text != null) {
+        //     assignment = selectedAssignment; // Set the global assignment variable
+        //     fetchQueue();
+        //     startQueueUpdateInterval(10);
+        //     fetchTimerLength();
+        //     modal.style.display = 'none';
+        // } else {
+        //     alert('Please select an assignment.');
+        // }
+        assignment = selectedAssignment; // Set the global assignment variable
+        fetchQueue();
+        startQueueUpdateInterval(10);
+        fetchTimerLength();
+        modal.style.display = 'none';
     });
 }
 
