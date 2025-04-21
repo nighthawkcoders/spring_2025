@@ -1,6 +1,21 @@
 document.querySelector(".navbar").style.zIndex = 4
 let isSidebarClosed = true
 let leftSidebar = document.getElementById("ManagementMenu")
+let completedExpander = document.getElementById("expandableCompleted")
+let isCompleteExpanded = false;
+let completedStatus = document.getElementById("completedStatus")
+function toggleCompletedExpander()
+{
+    isCompleteExpanded = !isCompleteExpanded;
+    if(isCompleteExpanded)
+    {
+        completedStatus.innerText = "visibility"
+        return
+    }
+    completedStatus.innerText = "visibility_off"
+}
+
+
 function toggleLeftSidebar() {
     isSidebarClosed = !isSidebarClosed;
     if (isSidebarClosed) {
