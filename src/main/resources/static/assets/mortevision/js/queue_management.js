@@ -10,9 +10,11 @@ function toggleCompletedExpander()
     if(isCompleteExpanded)
     {
         completedStatus.innerText = "visibility"
+        document.getElementById("doneList").style.display = "block"
         return
     }
     completedStatus.innerText = "visibility_off"
+    document.getElementById("doneList").style.display = "none"
 }
 
 
@@ -118,6 +120,7 @@ function updateQueueDisplay(queue) {
     notGoneList.innerHTML = queue.working.map(person => `<div class="card">${person}</div>`).join('');
     waitingList.innerHTML = queue.waiting.map(person => `<div class="card">${person}</div>`).join('');
     doneList.innerHTML = queue.completed.map(person => `<div class="card">${person}</div>`).join('');
+    
 }
 
 document.getElementById('initializeQueue').addEventListener('click', initializeQueue);

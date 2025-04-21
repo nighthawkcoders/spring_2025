@@ -226,6 +226,7 @@ select {
         justify-content: center;
         align-items: center;
         pointer-events: none;
+        user-select: none;
 }
 
 #header2
@@ -238,4 +239,9 @@ select {
 #expandableCompleted
 {
     cursor: pointer;
+}
+
+#doneList
+{
+    display: none;
 }
