@@ -76,9 +76,6 @@
         </div>
     </div>
 
-</th:block>
-
-<th:block layout:fragment="script" th:remove="tag">
     <script>
         document.querySelector(".navbar").style.zIndex = 4
         let isSidebarClosed = true
@@ -462,5 +459,9 @@
         };
         }
     </script>
+</th:block>
+
+<th:block layout:fragment="script" th:remove="tag">
+   
 </th:block>
 </html>
