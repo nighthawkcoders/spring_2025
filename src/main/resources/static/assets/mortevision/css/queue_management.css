@@ -105,6 +105,22 @@ select {
     /* White with slight opacity */
 }
 
+#streamWrapper
+{
+    width: 650px;
+    height: 370px;
+    position: relative;
+    background-color: #2a2828;
+}
+
+#mortStream
+{
+    height: 100%;
+    width: 100%;
+    display: none;
+    pointer-events: none;
+}
+
 .modal-content {
     background-color: #ffffff;
     /* Light modal background */
