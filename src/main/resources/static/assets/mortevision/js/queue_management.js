@@ -5,11 +5,11 @@ function toggleLeftSidebar() {
     isSidebarClosed = !isSidebarClosed;
     if (isSidebarClosed) {
         leftSidebar.style.transform = "translateX(-510px)"
-        document.querySelectorAll(".directionalityFlip").forEach(el => el.style.transform = "rotate(180deg)")
+        document.querySelectorAll(".directionalityFlip").forEach(el => el.style.transform = "rotate(180deg) translateX(-8px)")
         return
     }
     leftSidebar.style.transform = "translateX(0px)"
-    document.querySelectorAll(".directionalityFlip").forEach(el => el.style.transform = "rotate(0deg)")
+    document.querySelectorAll(".directionalityFlip").forEach(el => el.style.transform = "rotate(0deg) translateX(-8px)")
 }
 
 let socketURI
@@ -215,11 +215,11 @@ function showAssignmentModal() {
         // } else {
         //     alert('Please select an assignment.');
         // }
-        assignment = selectedAssignment; // Set the global assignment variable
-        fetchQueue();
-        startQueueUpdateInterval(10);
-        fetchTimerLength();
-        modal.style.display = 'none';
+         assignment = selectedAssignment; // Set the global assignment variable
+            fetchQueue();
+            startQueueUpdateInterval(10);
+            fetchTimerLength();
+            modal.style.display = 'none';
     });
 }
 
