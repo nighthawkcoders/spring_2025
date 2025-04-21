@@ -29,6 +29,8 @@ import com.nighthawk.spring_portfolio.mvc.comment.Comment;
 import com.nighthawk.spring_portfolio.mvc.comment.CommentJPA;
 import com.nighthawk.spring_portfolio.mvc.jokes.Jokes;
 import com.nighthawk.spring_portfolio.mvc.jokes.JokesJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.media.MediaJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.media.Score;
 import com.nighthawk.spring_portfolio.mvc.note.Note;
 import com.nighthawk.spring_portfolio.mvc.note.NoteJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
@@ -51,6 +53,9 @@ import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGradeJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.user.UserJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.bank.BankJpaRepository;
+import com.nighthawk.spring_portfolio.mvc.bank.BankService;
+
 
 @Component
 @Configuration // Scans Application for ModelInit Bean, this detects CommandLineRunner
@@ -74,9 +79,12 @@ public class ModelInit {
     @Autowired SynergyGradeJpaRepository gradeJpaRepository;
     @Autowired StudentQueueJPARepository studentQueueJPA;
     @Autowired StudentService studentService;
+    @Autowired BankJpaRepository bankJpaRepository;
+    @Autowired BankService bankService;
     @Autowired AdventureRubricJpaRepository rubricJpaRepository;
     @Autowired AdventureChoiceJpaRepository choiceJpaRepository;
     @Autowired GameJpaRepository gameJpaRepository;
+    @Autowired MediaJpaRepository mediaJpaRepository;
 
     @Bean
     @Transactional
@@ -268,6 +276,18 @@ public class ModelInit {
                 }
             }
 
+
+            //Media Bias Table
+
+            List<Score> scores = new ArrayList<>();
+            scores.add(new Score("Thomas Edison", 0));
+            for (Score score : scores) {
+                List<Score> existingPlayers = mediaJpaRepository.findByPersonName(score.getPersonName());
+
+                if (existingPlayers.isEmpty()) {
+                    mediaJpaRepository.save(score);
+                }
+            }
         };
     }
 }
