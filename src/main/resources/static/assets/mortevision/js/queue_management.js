@@ -246,13 +246,14 @@ document.addEventListener('DOMContentLoaded', loadGroups);
 
 document.getElementById('groupSearch').addEventListener('input', function () {
     const search = this.value.toLowerCase();
-    const checkboxes = document.querySelectorAll('#group-checkboxes label');
+    const groups = document.querySelectorAll('#group-checkboxes > label');
 
-    checkboxes.forEach(label => {
-        const text = label.textContent.toLowerCase();
-        label.parentElement.style.display = text.includes(search) ? '' : 'none';
+    groups.forEach(group => {
+        const text = group.textContent.toLowerCase();
+        group.style.display = text.includes(search) ? '' : 'none';
     });
 });
+
 const servers = {
     iceServers: [
         {
