@@ -106,6 +106,7 @@ function updateQueueDisplay(queue) {
 }
 
 document.getElementById('initializeQueue').addEventListener('click', initializeQueue);
+document.getElementById('initializeIndividualQueue').addEventListener('click', initializeIndividualQueue);
 
 // get assignments, used for initialization and popup connection
 async function fetchAssignments() {
@@ -153,6 +154,40 @@ async function initializeQueue() {
     assignment = assignmentId;
     fetchQueue();
 }
+
+async function initializeIndividualQueue() {
+    let peopleList;
+    timerlength = document.getElementById("durationInput").value;
+    const assignmentId = document.getElementById('assignmentDropdown').value;
+    const checkedBoxes = [...document.querySelectorAll('#group-checkboxes input:checked')];
+    const selectedGroupIds = checkedBoxes.map(cb => parseInt(cb.value));
+
+    if (selectedGroupIds.length === 0) {
+        alert("Please select at least one group.");
+        return;
+    }
+
+    const response = await fetch('/api/groups');
+    const allGroups = await response.json();
+
+    const selectedGroups = allGroups.filter(group => selectedGroupIds.includes(group.id));
+
+    // Flatten the list of all members' names
+    peopleList = selectedGroups.flatMap(group => group.members.map(member => member.name));
+
+    console.log(selectedGroups);
+    console.log(peopleList);
+
+    await fetch(URL + `initQueue/${assignmentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([peopleList, [timerlength]])
+    });
+
+    assignment = assignmentId;
+    fetchQueue();
+}
+
 
 // Start the interval to periodically update the queue
 function startQueueUpdateInterval(intervalInSeconds) {

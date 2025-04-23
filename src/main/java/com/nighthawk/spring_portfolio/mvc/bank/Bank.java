@@ -104,9 +104,39 @@ public class Bank {
 
     public void requestLoan(double loanAmount) {
         this.loanAmount += loanAmount;  // Increase the loan amount
-        this.balance += loanAmount;     // Add the loan amount to the balance
+        double currentBalance = Double.parseDouble(this.person.getBalance());
+        this.person.setBalance(Double.toString(currentBalance+loanAmount));  
+        balance += loanAmount;   // Add the loan amount to the balance
         
         // Re-assess risk using ML model
+        assessRiskUsingML();
+    }
+    
+    public void repayLoan(double repaymentAmount) {
+        // Validate the repayment amount
+        if (repaymentAmount <= 0) {
+            throw new IllegalArgumentException("Repayment amount must be positive");
+        }
+        
+        // Check if the user has enough balance
+        if (balance < repaymentAmount) {
+            throw new IllegalArgumentException("Insufficient balance for this repayment");
+        }
+        
+        // Check if the repayment is more than the loan
+        if (repaymentAmount > loanAmount) {
+            throw new IllegalArgumentException("Repayment amount exceeds the loan balance");
+        }
+        
+        // Process the repayment
+        balance -= repaymentAmount;
+        loanAmount -= repaymentAmount;
+        
+        // Record transaction
+        String timestamp = Instant.now().toString();
+        this.updateProfitMap("loan_repayment", timestamp, -repaymentAmount);
+        
+        // Re-assess risk after repayment
         assessRiskUsingML();
     }
 
