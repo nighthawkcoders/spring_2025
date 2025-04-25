@@ -30,7 +30,7 @@ public class CalendarEventService {
                 "Description: " + savedEvent.getDescription() + "\n" +
                 "Date: " + savedEvent.getDate() + "\n" +
                 "Type: " + savedEvent.getType() + "\n" +
-                "Period: " + savedEvent.getPeriod(), SLACK_WEBHOOK_URL
+                "Period: " + savedEvent.getPeriod(), SLACK_WEBHOOK_URL);
         return savedEvent;
     }
 
