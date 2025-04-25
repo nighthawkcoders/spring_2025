@@ -1,6 +1,23 @@
 document.querySelector(".navbar").style.zIndex = 4
 let isSidebarClosed = true
 let leftSidebar = document.getElementById("ManagementMenu")
+let completedExpander = document.getElementById("expandableCompleted")
+let isCompleteExpanded = false;
+let completedStatus = document.getElementById("completedStatus")
+function toggleCompletedExpander()
+{
+    isCompleteExpanded = !isCompleteExpanded;
+    if(isCompleteExpanded)
+    {
+        completedStatus.innerText = "visibility"
+        document.getElementById("doneList").style.display = "block"
+        return
+    }
+    completedStatus.innerText = "visibility_off"
+    document.getElementById("doneList").style.display = "none"
+}
+
+
 function toggleLeftSidebar() {
     isSidebarClosed = !isSidebarClosed;
     if (isSidebarClosed) {
@@ -103,6 +120,7 @@ function updateQueueDisplay(queue) {
     notGoneList.innerHTML = queue.working.map(person => `<div class="card">${person}</div>`).join('');
     waitingList.innerHTML = queue.waiting.map(person => `<div class="card">${person}</div>`).join('');
     doneList.innerHTML = queue.completed.map(person => `<div class="card">${person}</div>`).join('');
+    
 }
 
 document.getElementById('initializeQueue').addEventListener('click', initializeQueue);
