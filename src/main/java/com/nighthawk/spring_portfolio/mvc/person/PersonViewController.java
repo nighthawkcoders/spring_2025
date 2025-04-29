@@ -143,6 +143,9 @@ public class PersonViewController {
         if (person.getName() != null && !person.getName().isBlank() && !person.getName().equals(personToUpdate.getName())) {
             personToUpdate.setName(person.getName());
         }
+        if (person.getEmail() != null && !person.getEmail().isBlank() && !person.getEmail().equals(personToUpdate.getEmail())) {
+            personToUpdate.setEmail(person.getEmail());
+        }
         if (person.getKasmServerNeeded() != null && !person.getKasmServerNeeded().equals(personToUpdate.getKasmServerNeeded())) {
             personToUpdate.setKasmServerNeeded(person.getKasmServerNeeded());
         }
