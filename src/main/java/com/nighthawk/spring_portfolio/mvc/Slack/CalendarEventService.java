@@ -27,12 +27,12 @@ public class CalendarEventService {
     // Save a new event
     public CalendarEvent saveEvent(CalendarEvent event) {
         CalendarEvent savedEvent = calendarEventRepository.save(event);
-        slackService.sendMessage("New Event Added:\n" +
-                "Title: " + savedEvent.getTitle() + "\n" +
-                "Description: " + savedEvent.getDescription() + "\n" +
-                "Date: " + savedEvent.getDate() + "\n" +
-                "Type: " + savedEvent.getType() + "\n" +
-                "Period: " + savedEvent.getPeriod(), SLACK_WEBHOOK_URL);
+        //slackService.sendMessage("New Event Added:\n" +
+        //        "Title: " + savedEvent.getTitle() + "\n" +
+        //        "Description: " + savedEvent.getDescription() + "\n" +
+        //        "Date: " + savedEvent.getDate() + "\n" +
+        //        "Type: " + savedEvent.getType() + "\n" +
+        //        "Period: " + savedEvent.getPeriod(), SLACK_WEBHOOK_URL);
         return savedEvent;
     }
 
@@ -64,7 +64,7 @@ public class CalendarEventService {
                     "Type: " + event.getType() + "\n" +
                     "Period: " + event.getPeriod();
 
-            slackService.sendMessage("Event Updated:\n" + oldDetails + "\n\n" + newDetails, SLACK_WEBHOOK_URL);
+            //slackService.sendMessage("Event Updated:\n" + oldDetails + "\n\n" + newDetails, SLACK_WEBHOOK_URL);
             return true;
         }
         return false;
@@ -75,12 +75,12 @@ public class CalendarEventService {
         CalendarEvent event = getEventById(id);
         if (event != null) {
             calendarEventRepository.delete(event);
-            slackService.sendMessage("Event Deleted:\n" +
-                    "Title: " + event.getTitle() + "\n" +
-                    "Description: " + event.getDescription() + "\n" +
-                    "Date: " + event.getDate() + "\n" +
-                    "Type: " + event.getType() + "\n" +
-                    "Period: " + event.getPeriod(), SLACK_WEBHOOK_URL);
+            //slackService.sendMessage("Event Deleted:\n" +
+            //        "Title: " + event.getTitle() + "\n" +
+            //        "Description: " + event.getDescription() + "\n" +
+            //        "Date: " + event.getDate() + "\n" +
+            //        "Type: " + event.getType() + "\n" +
+            //        "Period: " + event.getPeriod(), SLACK_WEBHOOK_URL);
             return true;
         }
         return false;
