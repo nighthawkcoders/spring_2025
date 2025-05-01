@@ -17,7 +17,7 @@
     <form name="f" th:action="@{/login}" method="POST">
 
         <!-- Success message when the user logs out, conditional rendering based on the 'logout' param -->
-        <label for="f" th:if="${param.logout}" class="text-success">
+        <label for="f" th:if="${param.logout}" class="text-success" style="margin-bottom: 10px; margin-left: 10px;">
             You have been logged out.
         </label> <br th:if="${param.logout}">
 
