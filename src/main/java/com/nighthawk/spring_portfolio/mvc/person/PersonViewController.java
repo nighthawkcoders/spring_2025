@@ -152,7 +152,7 @@ public class PersonViewController {
         if (person.getSid() != null && !person.getSid().equals(personToUpdate.getSid())) {
             personToUpdate.setSid(person.getSid());
         }
-        if (person.getBalance() != null && !person.getBalance().equals(personToUpdate.getBalance())) {
+        if (person.getBalance() != null && !person.getBalance().isBlank() && !person.getBalance().equals(personToUpdate.getBalance())) {
             personToUpdate.setBalance(person.getBalance());
         }
                 
