@@ -90,7 +90,7 @@
                         <td>
                             <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}" class="btn btn-warning btn-sm"
                                 name="update">Update</a>
-                            <a th:href="@{/mvc/person/update/roles/{id}(id = ${person.id})}" class="btn btn-warning btn-sm"
+                            <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/mvc/person/update/roles/{id}(id = ${person.id})}" class="btn btn-warning btn-sm"
                                 name="update">Update Roles</a>
                             <a th:href="@{/mvc/person/delete/{id}(id = ${person.id})}"
                                 class="btn btn-danger btn-sm">Delete</a>
