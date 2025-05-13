@@ -26,6 +26,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PreRemove;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
@@ -45,6 +46,7 @@ import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.groups.Groups;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.trains.TrainCompany;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
@@ -279,6 +281,11 @@ public class Person implements Comparable<Person> {
     @JsonIgnore
     private List<Groups> groups = new ArrayList<>();
 
+    @OneToOne(mappedBy = "owner",  cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    @JsonIgnore
+    private TrainCompany company;
+
 //////////////////////////////////////////////////////////////////////////////////
 /// Constructors
 
@@ -442,7 +449,6 @@ public class Person implements Comparable<Person> {
      * Sorts the list of Person objects using Collections.sort which uses the compareTo method 
      * @return Person[], an array of Person objects
      */
-    public static String startingBalance = "100000";
     public static Person[] init() {
         ArrayList<Person> people = new ArrayList<>();
         final Dotenv dotenv = Dotenv.load();
@@ -459,7 +465,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "1"),
                 Map.entry("pfp", "/images/toby.png"),
                 Map.entry("kasmServerNeeded", true),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "01-01-1840"),
                 Map.entry("roles", Arrays.asList("ROLE_ADMIN", "ROLE_USER", "ROLE_TESTER", "ROLE_TEACHER")),
                 Map.entry("stocks", "BTC,ETH")
@@ -472,7 +478,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "1"),
                 Map.entry("pfp", "/images/lex.png"),
                 Map.entry("kasmServerNeeded", true),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "01-01-1847"),
                 Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
                 Map.entry("stocks", "BTC,ETH")
@@ -485,7 +491,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "1"),
                 Map.entry("pfp", "/images/niko.png"),
                 Map.entry("kasmServerNeeded", true),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "01-01-1850"),
                 Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
                 Map.entry("stocks", "BTC,ETH")
@@ -498,7 +504,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "1"),
                 Map.entry("pfp", "/images/madam.png"),
                 Map.entry("kasmServerNeeded", true),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "01-01-1860"),
                 Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
                 Map.entry("stocks", "BTC,ETH")
@@ -511,7 +517,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "123"),
                 Map.entry("pfp", "/images/hop.png"),
                 Map.entry("kasmServerNeeded", true),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "12-09-1906"),
                 Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_STUDENT")),
                 Map.entry("stocks", "BTC,ETH")
@@ -524,7 +530,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "1"),
                 Map.entry("pfp", "/images/jm1021.png"),
                 Map.entry("kasmServerNeeded", true),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "10-21-1959"),
                 Map.entry("roles", Arrays.asList("ROLE_ADMIN", "ROLE_TEACHER")),
                 Map.entry("stocks", "BTC,ETH")
@@ -537,7 +543,7 @@ public class Person implements Comparable<Person> {
                 Map.entry("sid", "2"),
                 Map.entry("pfp", "/images/alan.png"),
                 Map.entry("kasmServerNeeded", false),
-                Map.entry("balance", startingBalance),
+                Map.entry("balance", "0"),
                 Map.entry("dob", "06-23-1912"),
                 Map.entry("roles", Arrays.asList("ROLE_USER", "ROLE_TESTER", "ROLE_STUDENT")),
                 Map.entry("stocks", "BTC,ETH")
