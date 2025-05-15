@@ -28,11 +28,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
