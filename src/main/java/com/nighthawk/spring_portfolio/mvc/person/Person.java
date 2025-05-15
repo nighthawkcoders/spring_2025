@@ -26,6 +26,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PreRemove;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Convert;
 import static jakarta.persistence.FetchType.EAGER;
 import jakarta.validation.constraints.Email;
@@ -45,6 +46,7 @@ import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.groups.Groups;
 import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
+import com.nighthawk.spring_portfolio.mvc.trains.TrainCompany;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
@@ -278,6 +280,11 @@ public class Person implements Comparable<Person> {
     @ManyToMany(mappedBy = "groupMembers")
     @JsonIgnore
     private List<Groups> groups = new ArrayList<>();
+
+    @OneToOne(mappedBy = "owner",  cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    @JsonIgnore
+    private TrainCompany company;
 
 //////////////////////////////////////////////////////////////////////////////////
 /// Constructors
