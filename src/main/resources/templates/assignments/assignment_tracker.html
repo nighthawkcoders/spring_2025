@@ -81,7 +81,7 @@
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
-            max-width: 800px;
+            max-width: 900px;
         }
         .btn-randomize {
             background-color: #6610f2;
@@ -101,6 +101,12 @@
         #assignmentView, #studentView {
             display: none;
         }
+        td.wrap-text {
+            max-width: 200px;        /* set the max width you want */
+            word-wrap: break-word;   /* ensures long words like URLs will break*/
+            word-break: break-all;   /* breaks within words if needed */
+            white-space: normal;     /* allows wrapping */
+          }
         
     </style>
 </head>
@@ -371,7 +377,7 @@
                         studentNames = studentNames.slice(0, -2);
                         row.innerHTML = `
                             <td>${studentNames}</td>
-                            <td>${submission.content || 'No content'}</td>
+                            <td class="wrap-text">${submission.content || 'No content'}</td>
                             <td>${submission.comment || 'No comments'}</td>
                             <td>${submission.grade || 'Not graded'}</td>
                             <td>
