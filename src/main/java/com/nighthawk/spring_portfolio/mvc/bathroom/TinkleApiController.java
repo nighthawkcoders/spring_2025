@@ -100,4 +100,9 @@ public class TinkleApiController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
         }
     }
+
+    @GetMapping("/bulk/extract")
+    public List<Tinkle> bulkExtract() {
+        return repository.findAll();  // This returns JSON automatically via @RestController
+    }
 }
