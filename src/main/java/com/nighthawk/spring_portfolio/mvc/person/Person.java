@@ -44,7 +44,6 @@ import com.nighthawk.spring_portfolio.mvc.assignments.AssignmentSubmission;
 import com.nighthawk.spring_portfolio.mvc.bank.Bank;
 import com.nighthawk.spring_portfolio.mvc.bathroom.Tinkle;
 import com.nighthawk.spring_portfolio.mvc.groups.Groups;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfo;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
 import com.nighthawk.spring_portfolio.mvc.trains.TrainCompany;
 import com.nighthawk.spring_portfolio.mvc.userStocks.userStocksTable;
@@ -262,11 +261,6 @@ public class Person implements Comparable<Person> {
 
     @OneToOne(mappedBy = "person", cascade=CascadeType.ALL)
     private Tinkle timeEntries;
-
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
-    @JsonIgnore
-    private StudentInfo studentInfo;
 
 
     /**
