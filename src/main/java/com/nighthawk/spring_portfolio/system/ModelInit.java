@@ -46,8 +46,8 @@ import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubric;
 import com.nighthawk.spring_portfolio.mvc.rpg.adventureRubric.AdventureRubricJpaRepository;
 import com.nighthawk.spring_portfolio.mvc.rpg.gamifyGame.Game;
 import com.nighthawk.spring_portfolio.mvc.rpg.gamifyGame.GameJpaRepository;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfo.StudentService;
-import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
+// import com.nighthawk.spring_portfolio.mvc.student.StudentInfo.StudentService;
+// import com.nighthawk.spring_portfolio.mvc.student.StudentInfoJPARepository;
 import com.nighthawk.spring_portfolio.mvc.student.StudentQueue;
 import com.nighthawk.spring_portfolio.mvc.student.StudentQueueJPARepository;
 import com.nighthawk.spring_portfolio.mvc.synergy.SynergyGrade;
@@ -75,10 +75,10 @@ public class ModelInit {
     @Autowired UserJpaRepository userJpaRepository;
     @Autowired AssignmentJpaRepository assignmentJpaRepository;
     @Autowired AssignmentSubmissionJPA submissionJPA;
-    @Autowired StudentInfoJPARepository studentInfoJPA;
+    // @Autowired StudentInfoJPARepository studentInfoJPA;
     @Autowired SynergyGradeJpaRepository gradeJpaRepository;
     @Autowired StudentQueueJPARepository studentQueueJPA;
-    @Autowired StudentService studentService;
+    // @Autowired StudentService studentService;
     @Autowired BankJpaRepository bankJpaRepository;
     @Autowired BankService bankService;
     @Autowired AdventureRubricJpaRepository rubricJpaRepository;
@@ -118,7 +118,7 @@ public class ModelInit {
                 }
             }
 
-            studentService.initialization(personArray);
+            // studentService.initialization(personArray);
 
 
             
