@@ -26,21 +26,6 @@ public class StudentInfoViewController {
 
     @GetMapping("/tabledetails")
     public String viewTableDetails() {
-        /* 
-        // Retrieve students by table and period
-        List<StudentInfo> students = studentService.findTeam("CSA", 2, period, table);
-
-        // Add attributes to the model
-        model.addAttribute("students", students);
-        model.addAttribute("progress", calculateProgress(students));
-        model.addAttribute("table", table);
-        model.addAttribute("period", period);
-        // Map<Long, ArrayList<String>> tasks 
-        // for (StudentInfo student : students) {
-
-        // }
-        // model.addAttribute("tasks", tasks);*/
-
         return "student/table-details.html";
     }
 
