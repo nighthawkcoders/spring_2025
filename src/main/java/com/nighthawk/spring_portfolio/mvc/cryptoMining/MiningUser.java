@@ -41,7 +41,7 @@ public class MiningUser {
     private double dailyRevenue;
     private double powerCost;
     private String energySupplier;
-    private String EEM;
+    private double EEM;
     
     @ManyToMany
     private List<GPU> ownedGPUs = new ArrayList<>();
@@ -73,11 +73,10 @@ public class MiningUser {
         return (totalSharesMined * 1.0) / totalMiningTimeMinutes;
     }
 
-    public Energy setEnergyPlan(Energy energyPlan) {
+    public void setEnergyPlan(Energy energyPlan) {
         this.energyPlan = energyPlan;
         this.energySupplier = energyPlan.getSupplierName();
-        this.EEM = String.valueOf(energyPlan.getEEM());
-        return energyPlan;
+        this.EEM = energyPlan.getEEM();
     }
 
     public MiningUser(Person person) {
