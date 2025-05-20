@@ -19,10 +19,11 @@ public class DataInitializer implements CommandLineRunner {
             initializeGPUs();
         }
         
-        // Initialize Energy Plans if none exist
-        if (energyRepository.count() == 0) {
-            initializeEnergyPlans();
-        }
+        // Always initialize Energy Plans
+        System.out.println("Initializing energy plans...");
+        energyRepository.deleteAll(); // Clear existing plans
+        initializeEnergyPlans();
+        System.out.println("Energy plans initialized successfully");
     }
 
     private void initializeGPUs() {

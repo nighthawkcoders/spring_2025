@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nighthawk.spring_portfolio.mvc.person.Person;
+import com.nighthawk.spring_portfolio.mvc.person.PersonApiController.PersonDto;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import jakarta.transaction.Transactional;
@@ -425,6 +426,26 @@ public class AssignmentsApiController {
         return ResponseEntity.ok(formattedAssignments);
     }
 
+    @GetMapping("/bulk/extract")
+    public ResponseEntity<List<AssignmentDto>> bulkExtractAssignments() {
+        // Fetch all Assignment entities from the database
+        List<Assignment> assignment = assignmentRepo.findAll();
+
+        // Map Assignment entities to Assignment objects
+        List<AssignmentDto> assignmentDtos = new ArrayList<>();
+        for (Assignment assignment2 : assignment) {
+            AssignmentDto assignmentDto = new AssignmentDto(assignment2);
+            
+            assignmentDtos.add(assignmentDto);
+        }
+        // Return the list of Assignment objects
+        return new ResponseEntity<>(assignmentDtos, HttpStatus.OK);
+    }
+
+
+
+
+    
     @PostMapping("/randomizeGraders/{id}")
     @Transactional
     public ResponseEntity<?> randomizePeerGraders(@PathVariable Long id) {
