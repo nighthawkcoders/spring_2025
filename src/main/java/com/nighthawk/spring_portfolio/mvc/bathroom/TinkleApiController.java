@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import com.nighthawk.spring_portfolio.mvc.person.Person;
 import com.nighthawk.spring_portfolio.mvc.person.PersonJpaRepository;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/api/tinkle")
@@ -30,6 +32,7 @@ public class TinkleApiController {
 
 
     @Getter
+    @Setter
     public static class TinkleDto {
         private String studentEmail;
         private String timeIn;
@@ -102,7 +105,21 @@ public class TinkleApiController {
     }
 
     @GetMapping("/bulk/extract")
-    public List<Tinkle> bulkExtract() {
-        return repository.findAll();  // This returns JSON automatically via @RestController
+    public ResponseEntity<List<TinkleDto>> bulkExtract() {
+        // Fetch all Tinkle entries from the database
+        List<Tinkle> tinkleList = repository.findAll();
+        
+        // Map Tinkle entities to TinkleDto objects
+        List<TinkleDto> tinkleDtos = new ArrayList<>();
+        for (Tinkle tinkle : tinkleList) {
+            TinkleDto tinkleDto = new TinkleDto();
+            tinkleDto.setStudentEmail(tinkle.getPersonName());
+            tinkleDto.setTimeIn(tinkle.getTimeIn());
+            // You can add more fields here if needed
+            tinkleDtos.add(tinkleDto);
+        }
+        
+        // Return the list of TinkleDto objects
+        return new ResponseEntity<>(tinkleDtos, HttpStatus.OK);
     }
 }
