@@ -132,7 +132,7 @@
                     searching: true,
                     ordering: true,
                     lengthMenu: [5, 10, 25, 50],
-                    pageLength: 5,
+                    pageLength: 10,  // Change from 5 to 10
                     responsive: true,
                     autoWidth: false,
                     language: {
@@ -149,6 +149,7 @@
                         }
                     }
                 });
+
                 
                 // DataTables for the weekly duration table remains the same
                 $('#weeklyDurationTable').DataTable({
@@ -156,7 +157,7 @@
                     searching: true,
                     ordering: true,
                     lengthMenu: [5, 10, 25, 50],
-                    pageLength: 5,
+                    pageLength: 10,  // Change from 5 to 10
                     responsive: true,
                     autoWidth: false,
                     language: {
@@ -173,6 +174,7 @@
                         }
                     }
                 });
+
 
                 // Initialize Chart.js for Average Weekly Duration Visualization
                 const labels = /*[[${chartLabels}]]*/ [];

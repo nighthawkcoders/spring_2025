@@ -78,8 +78,10 @@
     <script th:src="@{https://cdn.datatables.net/2.1.8/js/dataTables.js}" 
         integrity="sha384-cDXquhvkdBprgcpTQsrhfhxXRN4wfwmWauQ3wR5ZTyYtGrET2jd68wvJ1LlDqlQG" 
         crossorigin="anonymous"></script>
+
+    <th:block layout:fragment="script" th:remove="tag"></th:block>
 </body>
 
-<th:block layout:fragment="script" th:remove="tag"></th:block>
+
 
 </html>
