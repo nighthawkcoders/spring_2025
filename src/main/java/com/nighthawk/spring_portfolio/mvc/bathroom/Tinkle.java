@@ -33,7 +33,7 @@ public class Tinkle {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "person_id")
+    @JoinColumn(name = "uid")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
     private Person person;
