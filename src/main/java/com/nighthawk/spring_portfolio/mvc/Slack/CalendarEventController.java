@@ -159,4 +159,24 @@ public class CalendarEventController {
                     .body("An error occurred: " + e.getMessage());
         }
     }
+
+    @GetMapping("/events/bulk")
+    public ResponseEntity<List<CalendarEvent>> bulkExtractEvents(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        try {
+            List<CalendarEvent> events;
+            if (startDate != null && endDate != null) {
+                LocalDate start = LocalDate.parse(startDate);
+                LocalDate end = LocalDate.parse(endDate);
+                events = calendarEventService.getEventsWithinDateRange(start, end);
+            } else {
+                events = calendarEventService.getAllEvents();
+            }
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 }
