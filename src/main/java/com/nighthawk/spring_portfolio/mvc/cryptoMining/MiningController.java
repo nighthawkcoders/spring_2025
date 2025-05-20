@@ -472,25 +472,39 @@ public class MiningController {
     @PostMapping("/chooseEnergy/{supplierName}/{eem}")
     public ResponseEntity<?> chooseEnergyPlan(@PathVariable String supplierName, @PathVariable double eem) {
         try {
+            System.out.println("\n=== Choosing Energy Plan ===");
+            System.out.println("Requested plan: " + supplierName + " with EEM: " + eem);
+            
             MiningUser user = getOrCreateMiningUser();
-            if (user != null) { System.out.println("Got the user for chooseEnergy endpoint"); }
+            if (user != null) { 
+                System.out.println("Got user: " + user.getPerson().getEmail());
+            }
 
-            // Simulate fetching the chosen energy plan
-            List<Energy> matchingPlans = energyRepository.findBySupplierName(supplierName)
+            // List all available energy plans
+            System.out.println("\nAvailable energy plans:");
+            energyRepository.findAll().forEach(plan -> {
+                System.out.println("- " + plan.getSupplierName() + " (EEM: " + plan.getEEM() + ")");
+            });
+
+            // Find the energy plan
+            Energy chosenPlan = energyRepository.findBySupplierName(supplierName)
                 .stream()
-                .filter(plan -> plan.getEEM() == eem)
-                .toList();
+                .filter(plan -> Math.abs(plan.getEEM() - eem) < 0.0001)
+                .findFirst()
+                .orElse(null);
 
-            if (matchingPlans.isEmpty()) {
+            if (chosenPlan == null) {
+                System.out.println("Energy plan not found: " + supplierName + " with EEM: " + eem);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "Energy plan not found."));
             }
 
-            Energy chosenPlan = matchingPlans.get(0);
+            System.out.println("Found energy plan: " + chosenPlan.getSupplierName() + " with EEM: " + chosenPlan.getEEM());
 
-            // Simulate assigning this plan to the user
-            user.setEnergyPlan(chosenPlan);  // You need this setter on MiningUser
-            miningUserRepository.save(user); // Save the user with the new plan
+            // Assign the plan to the user
+            user.setEnergyPlan(chosenPlan);
+            miningUserRepository.save(user);
+            System.out.println("Successfully assigned energy plan to user");
 
             // Return confirmation
             return ResponseEntity.ok(Map.of(
@@ -500,6 +514,10 @@ public class MiningController {
             ));
 
         } catch (Exception e) {
+            System.out.println("\n=== Error in chooseEnergyPlan ===");
+            System.out.println("Error type: " + e.getClass().getName());
+            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
         }

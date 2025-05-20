@@ -100,14 +100,13 @@ public class CalendarEventService {
         return false;
     }
 
-    // Get events within a date range
-    public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {
-        return calendarEventRepository.findByDateBetween(startDate, endDate);
-    }
-
     // Retrieve all events
     public List<CalendarEvent> getAllEvents() {
         return calendarEventRepository.findAll();
+    }
+
+    public List<CalendarEvent> getEventsWithinDateRange(LocalDate startDate, LocalDate endDate) {
+        return calendarEventRepository.findByDateBetween(startDate, endDate);
     }
 
     // Get event by id
