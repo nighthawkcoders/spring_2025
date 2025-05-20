@@ -1,6 +1,8 @@
 package com.nighthawk.spring_portfolio.mvc.bathroom;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,5 +123,49 @@ public class TinkleApiController {
         
         // Return the list of TinkleDto objects
         return new ResponseEntity<>(tinkleDtos, HttpStatus.OK);
+    }
+
+    @PostMapping("/bulk/create")
+    public ResponseEntity<Object> bulkCreateTinkles(@RequestBody List<TinkleDto> tinkleDtos) {
+        List<String> createdTinkles = new ArrayList<>();
+        List<String> duplicateTinkles = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        for (TinkleDto tinkleDto : tinkleDtos) {
+            try {
+                // Check if student already exists
+                Optional<Tinkle> existingTinkle = repository.findByPersonName(tinkleDto.getStudentEmail());
+                
+                if (existingTinkle.isPresent()) {
+                    // Update existing tinkle with new timeIn data
+                    Tinkle tinkle = existingTinkle.get();
+                    tinkle.addTimeIn(tinkleDto.getTimeIn());
+                    repository.save(tinkle);
+                    createdTinkles.add(tinkleDto.getStudentEmail() + " (updated)");
+                } else {
+                    // Find the person first
+                    Person person = personRepository.findByName(tinkleDto.getStudentEmail());
+                    
+                    if (person != null) {
+                        // Create new tinkle entry
+                        Tinkle newTinkle = new Tinkle(person, tinkleDto.getTimeIn());
+                        repository.save(newTinkle);
+                        createdTinkles.add(tinkleDto.getStudentEmail());
+                    } else {
+                        errors.add("Person not found with name: " + tinkleDto.getStudentEmail());
+                    }
+                }
+            } catch (Exception e) {
+                errors.add("Exception occurred for student: " + tinkleDto.getStudentEmail() + " - " + e.getMessage());
+            }
+        }
+
+        // Prepare the response
+        Map<String, Object> response = new HashMap<>();
+        response.put("created", createdTinkles);
+        response.put("duplicates", duplicateTinkles);
+        response.put("errors", errors);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
