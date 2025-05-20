@@ -140,7 +140,6 @@ public class PersonApiController {
         private String sid;
         private String password;
         private String name;
-        private String dob;
         private String pfp;
         private double balance;
         private Boolean kasmServerNeeded; 
@@ -155,15 +154,10 @@ public class PersonApiController {
      */
     @PostMapping("/person/create")
     public ResponseEntity<Object> postPerson(@RequestBody PersonDto personDto) {
-        // Validate dob input
-        Date dob;
-        try {
-            dob = new SimpleDateFormat("MM-dd-yyyy").parse(personDto.getDob());
-        } catch (Exception e) {
-            return new ResponseEntity<>(personDto.getDob() + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
-        }
+
+  
         // A person object WITHOUT ID will create a new record in the database
-        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(), dob, "/images/default.png", "0", true, personDetailsService.findRole("USER"));
+        Person person = new Person(personDto.getEmail(), personDto.getUid(),personDto.getPassword(),personDto.getSid(), personDto.getName(),  "/images/default.png", "0", true, personDetailsService.findRole("USER"));
 
         personDetailsService.save(person);
 
@@ -254,7 +248,6 @@ public class PersonApiController {
             personDto.setSid(person.getSid());
             personDto.setPassword(person.getPassword()); // Optional: You may want to exclude passwords for security reasons
             personDto.setName(person.getName());
-            personDto.setDob(new SimpleDateFormat("MM-dd-yyyy").format(person.getDob()));
             personDto.setPfp(person.getPfp());
             personDto.setBalance(Double.parseDouble(person.getBalance())); // Assuming balance is stored as a String
             personDto.setKasmServerNeeded(person.getKasmServerNeeded());
