@@ -137,6 +137,15 @@ public class Tinkle {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Tinkle{" +
+                "id=" + id +
+                ", personName='" + personName + '\'' +
+                ", timeInOutPairs size=" + (timeInOutPairs != null ? timeInOutPairs.size() : 0) +
+                '}';
+    }
+
     public static Tinkle[] init(Person[] persons) {
         ArrayList<Tinkle> tinkles = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
