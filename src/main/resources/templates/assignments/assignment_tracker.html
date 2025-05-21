@@ -99,7 +99,7 @@
             padding: 20px;
             border-radius: 8px;
             width: 80%;
-            max-width: 800px;
+            max-width: 900px;
         }
 
         .close-btn {
@@ -138,6 +138,13 @@
         .modal tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+        td.wrap-text {
+            max-width: 200px;        /* set the max width you want */
+            word-wrap: break-word;   /* ensures long words like URLs will break*/
+            word-break: break-all;   /* breaks within words if needed */
+            white-space: normal;     /* allows wrapping */
+          }
+        
     </style>
 </th:block>
 
@@ -396,6 +403,17 @@
                                     submission.grade || 'Not graded',
                                     `<button class="btn btn-grade" onclick="gradeSubmission(${submission.id})">Grade</button>`
                                 ]);
+                                studentNames = studentNames.slice(0, -2);
+                                row.innerHTML = `
+                                    <td>${studentNames}</td>
+                                    <td class="wrap-text">${submission.content || 'No content'}</td>
+                                    <td>${submission.comment || 'No comments'}</td>
+                                    <td>${submission.grade || 'Not graded'}</td>
+                                    <td>
+                                        <button class="btn btn-grade" onclick="gradeSubmission(${submission.id})">Grade</button>
+                                    </td>
+                                `;
+                                submissionsList.appendChild(row);
                             });
                         }
                         submissionsTable.draw();
@@ -434,7 +452,6 @@
                             `;
                             checklist.appendChild(listItem);
                         });
-
                         modal.style.display = 'block';
                     })
                     .catch(error => {

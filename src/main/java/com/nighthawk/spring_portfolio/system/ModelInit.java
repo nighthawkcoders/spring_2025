@@ -199,14 +199,14 @@ public class ModelInit {
                 }
             }
 
-            Tinkle[] tinkleArray = Tinkle.init(personArray);
-            for(Tinkle tinkle: tinkleArray) {
-                // List<Tinkle> tinkleFound = 
-                Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPersonName());
-                if(tinkleFound.isEmpty()) {
-                    tinkleJPA.save(tinkle);
-                }
-            }
+            // Tinkle[] tinkleArray = Tinkle.init(personArray);
+            // for(Tinkle tinkle: tinkleArray) {
+            //     // List<Tinkle> tinkleFound = 
+            //     Optional<Tinkle> tinkleFound = tinkleJPA.findByPersonName(tinkle.getPersonName());
+            //     if(tinkleFound.isEmpty()) {
+            //         tinkleJPA.save(tinkle);
+            //     }
+            // }
 
             BathroomQueue[] queueArray = BathroomQueue.init();
             for(BathroomQueue queue: queueArray) {
