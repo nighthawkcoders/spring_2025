@@ -27,9 +27,55 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="groupTableBody">
-                <!-- Groups will load here -->
+            <tbody id="groupTableBody" th:each="group : ${groups}">
+                <tr class="group-row">
+                    <td th:text="${group.id}"></td>
+                    <td th:text="${group.name}"></td>
+                    <td th:text="${group.period}"></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary toggle-members" 
+                                data-bs-toggle="collapse" 
+                                th:data-bs-target="'#members-' + ${group.id}">
+                            View Members
+                        </button>
+                        <button class="btn btn-sm btn-warning edit-group" 
+                                th:data-groupid="${group.id}" 
+                                th:data-name="${group.name}" 
+                                th:data-period="${group.period}">
+                            Edit
+                        </button>
+                        <form th:action="@{/groups/delete}" method="post" style="display:inline;">
+                            <input type="hidden" name="id" th:value="${group.id}" />
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this group?')">
+                                Delete
+                            </button>
+                        </form>
+
+                    </td>
+                </tr>
+
+                <tr class="collapse" th:id="'members-' + ${group.id}">
+                    <td colspan="4">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>UID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="member : ${group.groupMembers}">
+                                    <td th:text="${member.uid}"></td>
+                                    <td th:text="${member.name}"></td>
+                                    <td><a th:href="'mailto:' + ${member.email}" th:text="${member.email}"></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
             </tbody>
+
         </table>
     </div>
     <!-- Create Group Button -->
@@ -128,60 +174,6 @@
         // get table
         const $tableBody = $("#groupTableBody");
 
-        async function getTable() {
-            try {
-                const response = await fetch(javaURL);
-                const groups = await response.json();
-
-                groups.forEach(group => {
-                    const groupId = group.id;
-                    const name = group.name;
-                    const period = group.period;
-
-                    const groupRow = `
-                    <tr class="group-row" data-groupid="${groupId}" data-members="${group.members.map(m => (m.name + m.email)).join(' ').toLowerCase()}">
-                        <td>${groupId}</td>
-                        <td>${name}</td>
-                        <td>${period}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary toggle-members" data-bs-toggle="collapse" data-bs-target="#members-${groupId}">
-                                View Members
-                            </button>
-                            <button class="btn btn-sm btn-warning edit-group" data-groupid="${groupId}" data-name="${name}" data-period="${period}">Edit</button>
-                            <button class="btn btn-sm btn-danger delete-group" data-groupid="${groupId}">Delete</button>
-                        </td>
-
-                    </tr>
-                    <tr class="collapse" id="members-${groupId}">
-                        <td colspan="4">
-                            <table class="table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>UID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${group.members.map(m => `
-                                        <tr>
-                                            <td>${m.uid}</td>
-                                            <td>${m.name}</td>
-                                            <td><a href="mailto:${m.email}">${m.email}</a></td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                `;
-                    $tableBody.append(groupRow);
-                });
-            } catch (error) {
-                console.error("Failed to load groups:", error);
-            }
-        }
-
         // Filter groups
         $("#searchInput").on("keyup", function () {
             const search = $(this).val().toLowerCase();
@@ -276,8 +268,6 @@
                 alert("An error occurred. See console.");
             }
         });
-
-        getTable();
 
         // Open edit modal and pre-fill
         $(document).on("click", ".edit-group", async function () {
