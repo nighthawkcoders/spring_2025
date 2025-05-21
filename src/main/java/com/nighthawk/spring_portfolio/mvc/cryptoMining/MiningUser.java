@@ -86,6 +86,10 @@ public class MiningUser {
         this.shares = 0;
         this.isMining = false;
         this.currentPool = "default";
+        
+        // Set default energy plan (Tesla Energy with EEM 0.12)
+        Energy defaultEnergy = new Energy("Tesla Energy", 0.12);
+        this.setEnergyPlan(defaultEnergy);
     }
 
     // Add this explicit getter for the controller

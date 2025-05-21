@@ -295,6 +295,7 @@ public class Person implements Comparable<Person> {
         this.submissions = new ArrayList<>();
 
         this.timeEntries = new Tinkle(this, "");
+        this.timeEntries.setPerson(this);
     }
 
 
