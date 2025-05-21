@@ -406,8 +406,8 @@ public class AssignmentsApiController {
         return ResponseEntity.ok(assignedGraderIds);
     }
     
-    @GetMapping("/assigned")
     @Transactional
+    @GetMapping("/assigned")
     public ResponseEntity<?> getAssignedAssignments(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

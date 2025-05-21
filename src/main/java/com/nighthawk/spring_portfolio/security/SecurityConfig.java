@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/synergy/**").hasAnyAuthority("ROLE_TEACHER", "ROLE_ADMIN")
                         
 
+                        .requestMatchers(HttpMethod.GET,"/api/assignments/assigned").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/synergy/saigai/").hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/calendar/add").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/calendar/add_event").permitAll()
