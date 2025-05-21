@@ -1,8 +1,1 @@
 Name,MeanDuration,MaxDuration,StdDevDuration,TotalVisits,PercentAbnormal,AbnormalPerson
-Thomas Edison,0.7872340425531915,0.75,1.0,,0.8,true
-Alexander Graham Bell,0.4964539007092198,0.5,0.0,,0.6,true
-John Mortensen,0.26241134751773043,0.25,0.6900871063411549,,0.4,true
-Alan Turing,0.5815602836879429,0.625,0.5644409204140131,,0.7,true
-Nikola Tesla,0.22695035460992902,0.25,0.5644409204140126,,0.25,false
-Madam Curie,0.0,0.0,0.9216625142554836,,0.0,false
-Grace Hopper,1.0,1.0,0.5116369826543992,,1.0,true

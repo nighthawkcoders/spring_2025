@@ -163,12 +163,12 @@ public class BathroomQueueApiController {
                     );
 
                     // Send the email
-                    String emailStatus = emailService.sendSimpleMail(emailDetails);
-                    if (emailStatus.equals("Email sent successfully!")) {
-                        return new ResponseEntity<>("Approval email sent successfully!", HttpStatus.OK);
-                    } else {
-                        return new ResponseEntity<>("Failed to send approval email: " + emailStatus, HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
+                    // String emailStatus = emailService.sendSimpleMail(emailDetails);
+                    // if (emailStatus.equals("Email sent successfully!")) {
+                    //     return new ResponseEntity<>("Approval email sent successfully!", HttpStatus.OK);
+                    // } else {
+                    //     return new ResponseEntity<>("Failed to send approval email: " + emailStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+                    // }
                 } catch (UnsupportedEncodingException e) {
                     // Handle URL encoding errors
                     return new ResponseEntity<>("Error encoding URL parameters", HttpStatus.INTERNAL_SERVER_ERROR);
