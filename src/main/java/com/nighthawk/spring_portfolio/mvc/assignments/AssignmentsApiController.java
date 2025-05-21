@@ -135,11 +135,20 @@ public class AssignmentsApiController {
         error.put("error", "Assignment not found: " + name);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-
+    // add at transactional to make it work
     @GetMapping("/submissions/student/{studentId}")
+    @Transactional
     public ResponseEntity<?> getStudentSubmissions(@PathVariable Long studentId) {
         List<AssignmentSubmission> submissions = submissionRepo.findByStudentId(studentId);
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+        
+        // Convert to dtos to avoid some bugs
+        List<AssignmentSubmissionReturnDto> submissionDtos = submissions.stream()
+            .map(AssignmentSubmissionReturnDto::new)
+            .collect(Collectors.toList());
+        
+        System.out.println("Number of responses: " + submissionDtos.size());
+
+        return new ResponseEntity<>(submissionDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
