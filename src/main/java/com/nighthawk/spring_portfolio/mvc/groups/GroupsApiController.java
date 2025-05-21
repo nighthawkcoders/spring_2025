@@ -197,74 +197,35 @@ public ResponseEntity<Object> bulkCreateGroups(@RequestBody List<GroupDto> group
     return new ResponseEntity<>(response, HttpStatus.OK);
 }
 
-/**
- * Bulk extract all Group entities from the database.
- * 
- * @return A ResponseEntity containing a list of group information
- */
-@GetMapping("/bulk/extract")
-@Transactional(readOnly = true)
-public ResponseEntity<List<Map<String, Object>>> bulkExtractGroups() {
-    // Fetch all Group entities from the database
-    List<Groups> groups = groupsRepository.findAll();
-    List<Map<String, Object>> groupsWithMembers = new ArrayList<>();
-    
-    for (Groups group : groups) {
-        Map<String, Object> groupMap = new HashMap<>();
-        groupMap.put("id", group.getId());
-        groupMap.put("name", group.getName());
-        groupMap.put("period", group.getPeriod());
+    /**
+     * Bulk extract all groups with their members in a simplified format
+     */
+    @GetMapping("/bulk/extract")
+    public ResponseEntity<List<Map<String, Object>>> bulkExtractGroups() {
+        // Fetch all Groups entities from the database
+        List<Groups> groups = groupsRepository.findAll();
         
-        // Extract person UIDs for recreating the group elsewhere
-        List<String> personUids = new ArrayList<>();
-        for (Person person : group.getGroupMembers()) {
-            personUids.add(person.getUid());
+        // Map Groups entities to Map objects
+        List<Map<String, Object>> groupsList = new ArrayList<>();
+        for (Groups group : groups) {
+            Map<String, Object> groupMap = new HashMap<>();
+            groupMap.put("id", group.getId());
+            groupMap.put("name", group.getName());
+            groupMap.put("period", group.getPeriod());
+            
+            // Extract basic info for each member
+            List<Map<String, Object>> membersList = new ArrayList<>();
+            for (Person person : group.getGroupMembers()) {
+                membersList.add(getPersonBasicInfo(person));
+            }
+            groupMap.put("members", membersList);
+            
+            groupsList.add(groupMap);
         }
-        groupMap.put("personUids", personUids);
         
-        // Also include full information about members
-        List<Map<String, Object>> membersList = new ArrayList<>();
-        for (Person person : group.getGroupMembers()) {
-            membersList.add(getPersonBasicInfo(person));
-        }
-        groupMap.put("members", membersList);
-        
-        groupsWithMembers.add(groupMap);
+        // Return the list of group maps
+        return new ResponseEntity<>(groupsList, HttpStatus.OK);
     }
-    
-    return new ResponseEntity<>(groupsWithMembers, HttpStatus.OK);
-}
-
-/**
- * Bulk extract groups in a format suitable for importing elsewhere
- * 
- * @return A ResponseEntity containing a list of GroupDto objects for export/import
- */
-@GetMapping("/bulk/export")
-@Transactional(readOnly = true)
-public ResponseEntity<List<Map<String, Object>>> bulkExportGroups() {
-    // Fetch all Group entities from the database
-    List<Groups> groups = groupsRepository.findAll();
-    List<Map<String, Object>> exportedGroups = new ArrayList<>();
-    
-    for (Groups group : groups) {
-        // Create a map that matches the expected GroupDto structure
-        Map<String, Object> groupData = new HashMap<>();
-        groupData.put("name", group.getName());
-        groupData.put("period", group.getPeriod());
-        
-        // Extract all person UIDs
-        List<String> personUids = new ArrayList<>();
-        for (Person person : group.getGroupMembers()) {
-            personUids.add(person.getUid());
-        }
-        groupData.put("personUids", personUids);
-        
-        exportedGroups.add(groupData);
-    }
-    
-    return new ResponseEntity<>(exportedGroups, HttpStatus.OK);
-}
 
     /**
      * Add people to an existing group

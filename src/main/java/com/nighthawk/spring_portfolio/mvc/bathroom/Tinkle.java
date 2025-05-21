@@ -33,7 +33,7 @@ public class Tinkle {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "person_id")
+    @JoinColumn(name = "uid")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
     private Person person;
@@ -135,6 +135,15 @@ public class Tinkle {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Tinkle{" +
+                "id=" + id +
+                ", personName='" + personName + '\'' +
+                ", timeInOutPairs size=" + (timeInOutPairs != null ? timeInOutPairs.size() : 0) +
+                '}';
     }
 
     public static Tinkle[] init(Person[] persons) {
