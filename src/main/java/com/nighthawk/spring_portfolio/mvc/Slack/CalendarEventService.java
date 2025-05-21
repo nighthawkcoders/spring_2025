@@ -36,6 +36,17 @@ public class CalendarEventService {
         return savedEvent;
     }
 
+    // Create a calendar event
+    public void createCalendarEvent(String title, LocalDate eventDate, String description, String type, String period) {
+        CalendarEvent event = new CalendarEvent();
+        event.setTitle(title);
+        event.setDate(eventDate);
+        event.setDescription(description);
+        event.setType(type);
+        event.setPeriod(period);
+        calendarEventRepository.save(event);
+    }
+
     // Get events by a specific date
     public List<CalendarEvent> getEventsByDate(LocalDate date) {
         return calendarEventRepository.findByDate(date);
@@ -128,6 +139,18 @@ public class CalendarEventService {
 
     private List<CalendarEvent> extractEventsFromText(Map<String, String> jsonMap, LocalDate weekStartDate) {
         String text = jsonMap.get("text");
+        // Use SlackService to determine the correct week start date from the message
+        LocalDate parsedWeekStartDate = null;
+        try {
+            java.lang.reflect.Method method = SlackService.class.getDeclaredMethod("getWeekStartDateFromMessage", String.class);
+            method.setAccessible(true);
+            parsedWeekStartDate = (LocalDate) method.invoke(slackService, text);
+        } catch (Exception e) {
+            // Handle exception or log as needed
+        }
+        if (parsedWeekStartDate != null) {
+            weekStartDate = parsedWeekStartDate;
+        }
         List<CalendarEvent> events = new ArrayList<>();
         Pattern dayPattern = Pattern.compile("\\[(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?: - (Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\\]:\\s*(\\*\\*|\\*)?\\s*(.+)");
         Pattern descriptionPattern = Pattern.compile("(\\*\\*|\\*)?\\s*\\u2022\\s*(.+)");
