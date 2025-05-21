@@ -140,48 +140,6 @@ public class BathroomQueueApiController {
         return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
     }
 
-    // Endpoint to send an approval email to the teacher
-    @PostMapping("/sendApprovalEmail")
-    public ResponseEntity<Object> sendApprovalEmail(@RequestBody QueueDto queueDto) {
-        Optional<BathroomQueue> queueEntry = repository.findByTeacherEmail(queueDto.getTeacherEmail());
-        if (queueEntry.isPresent()) {
-            BathroomQueue bathroomQueue = queueEntry.get();
-            String frontStudent = bathroomQueue.getFrontStudent();
-            if (frontStudent != null && frontStudent.equals(queueDto.getStudentName())) {
-                try {
-                    // Create a link for approving the student
-                    String encodedTeacherEmail = URLEncoder.encode(queueDto.getTeacherEmail(), StandardCharsets.UTF_8.toString());
-                    String encodedStudentName = URLEncoder.encode(queueDto.getStudentName(), StandardCharsets.UTF_8.toString());
-                    String approvalLink = queueDto.getUri() + "/api/queue/approveLink?teacherEmail=" + encodedTeacherEmail + "&studentName=" + encodedStudentName;
-
-                    // Construct the email details
-                    EmailDetails emailDetails = new EmailDetails(
-                        "dnhsbathroom@gmail.com", // Email Address
-                        "Student Approval Request\n\nPlease click the link below to approve " + queueDto.getStudentName() + ":\n" + approvalLink, //Message
-                        "Approval Request for Bathroom Access", //Subject
-                        null
-                    );
-
-                    // Send the email
-                    // String emailStatus = emailService.sendSimpleMail(emailDetails);
-                    // if (emailStatus.equals("Email sent successfully!")) {
-                    //     return new ResponseEntity<>("Approval email sent successfully!", HttpStatus.OK);
-                    // } else {
-                    //     return new ResponseEntity<>("Failed to send approval email: " + emailStatus, HttpStatus.INTERNAL_SERVER_ERROR);
-                    // }
-                } catch (UnsupportedEncodingException e) {
-                    // Handle URL encoding errors
-                    return new ResponseEntity<>("Error encoding URL parameters", HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                // Handle case where student is not at the front
-                return new ResponseEntity<>("Student is not at the front of the queue", HttpStatus.BAD_REQUEST);
-            }
-        }
-        // Handle case where no queue exists for the teacher
-        return new ResponseEntity<>("Queue for " + queueDto.getTeacherEmail() + " not found", HttpStatus.NOT_FOUND);
-    }
-
     // Endpoint for approving a student via a link
     @GetMapping("/approveLink")
     public ResponseEntity<Object> approveStudentViaLink(@RequestParam String teacherEmail, @RequestParam String studentName) {
