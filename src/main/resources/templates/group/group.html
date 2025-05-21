@@ -44,13 +44,12 @@
                                 th:data-period="${group.period}">
                             Edit
                         </button>
-                        <form th:action="@{/groups/delete}" method="post" style="display:inline;">
-                            <input type="hidden" name="id" th:value="${group.id}" />
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this group?')">
+                        <form th:action="@{'/api/groups/delete/' + ${group.id}}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" 
+                                    onclick="return confirm('Are you sure you want to delete this group?')">
                                 Delete
                             </button>
                         </form>
-
                     </td>
                 </tr>
 
@@ -360,23 +359,6 @@
             } catch (error) {
                 console.error("Error saving edits:", error);
                 alert("Failed to save changes.");
-            }
-        });
-
-        $(document).on("click", ".delete-group", async function () {
-            const groupId = $(this).data("groupid");
-            if (!confirm("Are you sure you want to delete this group?")) return;
-
-            try {
-                const resp = await fetch(`${javaURL}/${groupId}`, {
-                    method: "DELETE"
-                });
-                if (!resp.ok) throw new Error("Failed to delete");
-                alert("Group deleted.");
-                location.reload();
-            } catch (err) {
-                console.error("Error deleting group:", err);
-                alert("Could not delete group.");
             }
         });
 

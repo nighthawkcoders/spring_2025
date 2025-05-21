@@ -337,7 +337,7 @@ public ResponseEntity<Object> bulkCreateGroups(@RequestBody List<GroupDto> group
     /**
      * Delete a group (but not its members)
      */
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete/{id}")
     @Transactional
     public ResponseEntity<Object> deleteGroup(@PathVariable Long id) {
         Optional<Groups> optionalGroup = groupsRepository.findById(id);
