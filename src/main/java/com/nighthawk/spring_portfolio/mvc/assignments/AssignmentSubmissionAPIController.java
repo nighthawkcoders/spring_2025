@@ -54,6 +54,43 @@ public class AssignmentSubmissionAPIController {
     @Autowired
     private SynergyGradeJpaRepository gradesRepo;
 
+    @Getter
+    @Setter
+    public static class PersonSubmissionDto {
+        public Long id;
+        public String name;
+        public String email;
+        public String uid;
+
+        public PersonSubmissionDto(Person person) {
+            this.id = person.getId();
+            this.name = person.getName();
+            this.email = person.getEmail();
+            this.uid = person.getUid();
+        }
+    }
+    
+    @Getter
+    @Setter
+    public static class AssignmentReturnDto {
+        public Long id;
+        public String name;
+        public String type;
+        public String description;
+        public Double points;
+        public String dueDate;
+        public String timestamp;
+
+        public AssignmentReturnDto(Assignment assignment) {
+            this.id = assignment.getId();
+            this.name = assignment.getName();
+            this.type = assignment.getType();
+            this.description = assignment.getDescription();
+            this.points = assignment.getPoints();
+            this.dueDate = assignment.getDueDate();
+            this.timestamp = assignment.getTimestamp();
+        }
+    }
 
     /**
      * Get all submissions for a specific student.
