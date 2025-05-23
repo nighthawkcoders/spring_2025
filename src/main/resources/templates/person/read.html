@@ -43,7 +43,6 @@
             <button class="btn btn-secondary toggle-column inactive" data-column="4">KSM</button>
             <button class="btn btn-secondary toggle-column active" data-column="5">PFP</button>
             <button class="btn btn-secondary toggle-column inactive" data-column="6">SID</button>
-            <button class="btn btn-secondary toggle-column inactive" data-column="7">Balance</button>
             <button class="btn btn-secondary toggle-column active" data-column="8">Action</button>
         </div> <br>
 
@@ -61,7 +60,6 @@
                         <th>KSM</th>
                         <th>PFP</th>
                         <th>SID</th>
-                        <th>Balance</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -88,7 +86,6 @@
                             </div>
                         </td>
                         <td th:text="${person.sid}">Student ID</td>
-                        <td th:text="${person.balance}">Balance</td>
                         <td>
                             <a th:href="@{/mvc/person/update/{id}(id = ${person.id})}" class="btn btn-warning btn-sm"
                                 name="update">Update</a>
