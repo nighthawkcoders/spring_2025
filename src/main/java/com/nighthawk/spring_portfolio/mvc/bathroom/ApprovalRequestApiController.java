@@ -38,10 +38,16 @@ public class ApprovalRequestApiController {
     @PostMapping("/sendApprovalRequest")
     public ResponseEntity<Object> sendApprovalRequest(@RequestBody ApprovalRequest requestDto) {
         ApprovalRequest newRequest = new ApprovalRequest(requestDto.getTeacherEmail(), requestDto.getStudentName(), null);
-        approvalRepository.save(newRequest);
+        Optional<ApprovalRequest> request = approvalRepository.findByTeacherEmailAndStudentName(
+            requestDto.getTeacherEmail(), requestDto.getStudentName());
+
+        if (!request.isPresent()) {
+            approvalRepository.save(newRequest);
+            return new ResponseEntity<>("Approval request sent successfully!", HttpStatus.CREATED);
     
-        return new ResponseEntity<>("Approval request sent successfully!", HttpStatus.CREATED);
-    }
+        }
+        return new ResponseEntity<>("Request already exists", HttpStatus.OK);
+        }
 
     @GetMapping("/pendingRequests")
     public ResponseEntity<List<ApprovalRequest>> getAllPendingRequests() {
